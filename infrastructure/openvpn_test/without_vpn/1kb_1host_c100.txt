@@ -1,0 +1,56 @@
+ ^C
+[root@tesla43 ~]# ab -n 1000000 -c 100 'http://tesla44/1kb.dat' 
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking tesla44 (be patient)
+Completed 100000 requests
+Completed 200000 requests
+Completed 300000 requests
+Completed 400000 requests
+Completed 500000 requests
+Completed 600000 requests
+Completed 700000 requests
+Completed 800000 requests
+Completed 900000 requests
+Completed 1000000 requests
+Finished 1000000 requests
+
+
+Server Software:        nginx/1.0.15
+Server Hostname:        tesla44
+Server Port:            80
+
+Document Path:          /1kb.dat
+Document Length:        1000 bytes
+
+Concurrency Level:      100
+Time taken for tests:   57.353 seconds
+Complete requests:      1000000
+Failed requests:        0
+Write errors:           0
+Total transferred:      1227000000 bytes
+HTML transferred:       1000000000 bytes
+Requests per second:    17435.89 [#/sec] (mean)
+Time per request:       5.735 [ms] (mean)
+Time per request:       0.057 [ms] (mean, across all concurrent requests)
+Transfer rate:          20892.42 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.1      0       6
+Processing:     1    6  11.8      4     121
+Waiting:        1    6  11.8      4     120
+Total:          2    6  11.9      4     121
+
+Percentage of the requests served within a certain time (ms)
+  50%      4
+  66%      4
+  75%      4
+  80%      4
+  90%      4
+  95%      4
+  98%      5
+  99%    101
+ 100%    121 (longest request)

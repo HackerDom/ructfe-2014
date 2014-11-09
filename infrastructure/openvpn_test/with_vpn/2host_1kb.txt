@@ -1,0 +1,73 @@
+Server Software:        nginx/1.0.15
+Server Hostname:        10.50.0.14
+Server Port:            80
+
+Document Path:          /1kb.dat
+Document Length:        1000 bytes
+
+Concurrency Level:      1
+Time taken for tests:   21.456 seconds
+Complete requests:      30000
+Failed requests:        0
+Write errors:           0
+Total transferred:      36810000 bytes
+HTML transferred:       30000000 bytes
+Requests per second:    1398.20 [#/sec] (mean)
+Time per request:       0.715 [ms] (mean)
+Time per request:       0.715 [ms] (mean, across all concurrent requests)
+Transfer rate:          1675.38 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.0      0       2
+Processing:     0    0   0.4      0      56
+Waiting:        0    0   0.4      0      56
+Total:          1    1   0.4      1      57
+
+Percentage of the requests served within a certain time (ms)
+  50%      1
+  66%      1
+  75%      1
+  80%      1
+  90%      1
+  95%      1
+  98%      1
+  99%      1
+ 100%     57 (longest request)
+
+Server Software:        nginx/1.0.15
+Server Hostname:        10.50.0.14
+Server Port:            80
+
+Document Path:          /1kb.dat
+Document Length:        1000 bytes
+
+Concurrency Level:      1
+Time taken for tests:   21.445 seconds
+Complete requests:      30000
+Failed requests:        0
+Write errors:           0
+Total transferred:      36810000 bytes
+HTML transferred:       30000000 bytes
+Requests per second:    1398.90 [#/sec] (mean)
+Time per request:       0.715 [ms] (mean)
+Time per request:       0.715 [ms] (mean, across all concurrent requests)
+Transfer rate:          1676.22 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.0      0       3
+Processing:     0    0   0.4      0      56
+Waiting:        0    0   0.4      0      56
+Total:          1    1   0.4      1      57
+
+Percentage of the requests served within a certain time (ms)
+  50%      1
+  66%      1
+  75%      1
+  80%      1
+  90%      1
+  95%      1
+  98%      1
+  99%      1
+ 100%     57 (longest request)

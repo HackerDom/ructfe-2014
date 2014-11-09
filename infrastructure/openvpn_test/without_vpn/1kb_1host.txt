@@ -1,0 +1,36 @@
+Server Software:        nginx/1.0.15
+Server Hostname:        tesla44
+Server Port:            80
+
+Document Path:          /1kb.dat
+Document Length:        1000 bytes
+
+Concurrency Level:      1
+Time taken for tests:   3.508 seconds
+Complete requests:      10000
+Failed requests:        0
+Write errors:           0
+Total transferred:      12270000 bytes
+HTML transferred:       10000000 bytes
+Requests per second:    2850.96 [#/sec] (mean)
+Time per request:       0.351 [ms] (mean)
+Time per request:       0.351 [ms] (mean, across all concurrent requests)
+Transfer rate:          3416.14 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.2      0       3
+Processing:     0    0   0.4      0       4
+Waiting:        0    0   0.4      0       4
+Total:          0    0   0.6      0       5
+
+Percentage of the requests served within a certain time (ms)
+  50%      0
+  66%      0
+  75%      0
+  80%      0
+  90%      0
+  95%      0
+  98%      3
+  99%      3
+ 100%      5 (longest request)

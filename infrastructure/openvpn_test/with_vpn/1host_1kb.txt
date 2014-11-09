@@ -1,0 +1,36 @@
+Server Software:        nginx/1.0.15
+Server Hostname:        10.50.0.14
+Server Port:            80
+
+Document Path:          /1kb.dat
+Document Length:        1000 bytes
+
+Concurrency Level:      1
+Time taken for tests:   76.747 seconds
+Complete requests:      100000
+Failed requests:        0
+Write errors:           0
+Total transferred:      122700000 bytes
+HTML transferred:       100000000 bytes
+Requests per second:    1302.98 [#/sec] (mean)
+Time per request:       0.767 [ms] (mean)
+Time per request:       0.767 [ms] (mean, across all concurrent requests)
+Transfer rate:          1561.29 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.3      0      11
+Processing:     0    0   0.5      0      31
+Waiting:        0    0   0.4      0      31
+Total:          1    1   0.8      1      31
+
+Percentage of the requests served within a certain time (ms)
+  50%      1
+  66%      1
+  75%      1
+  80%      1
+  90%      1
+  95%      1
+  98%      2
+  99%      6
+ 100%     31 (longest request)

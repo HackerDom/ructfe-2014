@@ -1,0 +1,44 @@
+# ab -n 2 -c 1 'http://10.50.0.14/1gb.dat'
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 10.50.0.14 (be patient).....done
+
+
+Server Software:        nginx/1.0.15
+Server Hostname:        10.50.0.14
+Server Port:            80
+
+Document Path:          /1gb.dat
+Document Length:        1000000000 bytes
+
+Concurrency Level:      1
+Time taken for tests:   28.420 seconds
+Complete requests:      2
+Failed requests:        0
+Write errors:           0
+Total transferred:      2000000466 bytes
+HTML transferred:       2000000000 bytes
+Requests per second:    0.07 [#/sec] (mean)
+Time per request:       14210.102 [ms] (mean)
+Time per request:       14210.102 [ms] (mean, across all concurrent requests)
+Transfer rate:          68723.14 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    1   1.2      2       2
+Processing: 13522 14209 970.5  14895   14895
+Waiting:        0    2   2.4      4       4
+Total:      13523 14210 971.7  14897   14897
+
+Percentage of the requests served within a certain time (ms)
+  50%  14897
+  66%  14897
+  75%  14897
+  80%  14897
+  90%  14897
+  95%  14897
+  98%  14897
+  99%  14897
+ 100%  14897 (longest request)

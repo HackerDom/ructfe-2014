@@ -1,0 +1,8 @@
+# size 20 gb
+
+Transfer rate:          20901.17 [Kbytes/sec] received
+Transfer rate:          18260.39 [Kbytes/sec] received
+Transfer rate:          21599.69 [Kbytes/sec] received
+Transfer rate:          17972.17 [Kbytes/sec] received
+Transfer rate:          21414.45 [Kbytes/sec] received
+Transfer rate:          17505.99 [Kbytes/sec] received

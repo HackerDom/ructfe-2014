@@ -1,0 +1,19 @@
+Defalut MTU:
+mutltitraxatel, w/o nat:
+TX: 290228 pkt/sec RX: 293970 pkt/sec
+432Mbit/sec
+
+mutltitraxatel, with nat:
+TX: 245423 pkt/sec RX: 253589 pkt/sec
+385Mbit/sec
+
+
+MTU 1500, fragment 1300, mssfix:
+mutltitraxatel, w/o nat:
+TX: 275620 pkt/sec RX: 282874 pkt/sec
+430Mbit/sec
+
+mutltitraxatel, with nat:
+TX: 238617 pkt/sec RX: 243270 pkt/sec
+393.62Mbit/sec
+

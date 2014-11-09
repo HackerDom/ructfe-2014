@@ -1,0 +1,1 @@
+Transfer rate:          19236.94 [Kbytes/sec] received

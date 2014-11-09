@@ -1,0 +1,136 @@
+tesla41 - openvpn server
+tesla[42-44] - openvpn clients
+tesla[31-39] - openvpn clients[11-19]
+tesla44 - http serv
+
+10.50.0.0
+10.50.0.1
+10.50
+
+pdsh> dd if=/dev/urandom of=/usr/share/nginx/html/1gb.dat bs=1000000000 count=1
+tesla31: 1000000000 bytes (1.0 GB) copied, 121.141 s, 8.3 MB/s
+tesla38: 1000000000 bytes (1.0 GB) copied, 121.164 s, 8.3 MB/s
+tesla39: 1000000000 bytes (1.0 GB) copied, 121.212 s, 8.2 MB/s
+tesla37: 1000000000 bytes (1.0 GB) copied, 121.215 s, 8.2 MB/s
+tesla35: 1000000000 bytes (1.0 GB) copied, 121.224 s, 8.2 MB/s
+tesla33: 1000000000 bytes (1.0 GB) copied, 121.249 s, 8.2 MB/s
+tesla34: 1000000000 bytes (1.0 GB) copied, 121.317 s, 8.2 MB/s
+tesla36: 1000000000 bytes (1.0 GB) copied, 121.389 s, 8.2 MB/s
+tesla32: 1000000000 bytes (1.0 GB) copied, 121.384 s, 8.2 MB/s
+
+cd /common/admin/tmp/vpntest/; screen -dmS openvpn openvpn client_conf_$(hostname | sed 's/tesla//').conf
+
+ab -c 2 -n 20 'http://10.100.32.2/1gb.dat'
+ab -c 2 -n 20 'http://10.100.34.2/1gb.dat'
+ab -c 2 -n 20 'http://10.100.36.2/1gb.dat'
+ab -c 2 -n 20 'http://10.100.38.2/1gb.dat'
+ab -c 2 -n 20 'http://10.100.1.2/1gb.dat'
+ab -c 2 -n 20 'http://10.100.3.2/1gb.dat'
+
+ab -c 200 -n 10000000 'http://10.100.32.2/1kb.dat'
+ab -c 200 -n 10000000 'http://10.100.34.2/1kb.dat'
+ab -c 200 -n 10000000 'http://10.100.36.2/1kb.dat'
+ab -c 200 -n 10000000 'http://10.100.38.2/1kb.dat'
+ab -c 200 -n 10000000 'http://10.100.1.2/1kb.dat'
+ab -c 200 -n 10000000 'http://10.100.3.2/1kb.dat'
+
+
+# python /common/admin/tmp/vpntest/pps_sum.py
+TX: 290239 pkt/sec RX: 302573 pkt/sec
+
+
+NAT:
+TX: 257252 pkt/sec RX: 269463 pkt/sec
+
+all
+[root@tesla41 ~]# python /common/admin/tmp/vpntest/pps_sum.py
+TX: 239012 pkt/sec RX: 247926 pkt/sec
+
+
+60 proc running
+python /common/admin/tmp/vpntest/pps_sum.py
+TX: 265955 pkt/sec RX: 278687 pkt/sec
+
+
+sysctl -a | grep connt
+net.netfilter.nf_conntrack_max = 10000000
+
+killall openvpn; sleep 3; cd /common/admin/tmp/vpntest/; for file in client_conf_`hostname`_*.conf; do openvpn $file & done
+
+killall openvpn; sleep 3; cd /common/admin/tmp/vpntest2/; for file in client_conf_`hostname`_*.conf; do openvpn $file & done
+
+/common/admin/tmp/vpntest/traxatel.sh &
+/common/admin/tmp/vpntest/multitraxatel.sh &
+/common/admin/tmp/vpntest/pps.sh eth0 &
+/common/admin/tmp/vpntest/pps.py
+python /common/admin/tmp/vpntest/pps_sum.py
+
+
+/common/admin/tmp/vpntest/traxatel_2.sh &
+
+for i in 
+
+iptables -A FORWARD -m hashlimit --hashlimit-name="byte_limit" --hashlimit-mode=srcip --hashlimit-srcmask=24 --hashlimit-upto 1000b/second -j ACCEPT
+
+/common/admin/tmp/vpntest/udpflood.pl 10.100.63.2
+
+Для udp-флуда: 34МБайта/сек, 8.75 - норм 21 - норм 28 - тоже норм
+Для для флуда в одной сети: 20.0 мегабайт/сек, и 17 тоже валит 
+							TX: 13985 pkt/sec RX: 25892 pkt/sec
+
+
+Деградация сети:
+165 packets transmitted, 31 received, 81% packet loss, time 164713ms
+rtt min/avg/max/mdev = 1.588/2.073/2.327/0.142 ms
+
+89 packets transmitted, 20 received, 77% packet loss, time 88660ms
+rtt min/avg/max/mdev = 1.627/5.146/11.577/4.040 ms
+
+
+TX: 989 pkt/sec RX: 35082 pkt/sec
+
+cd /common/admin/tmp/vpn_old
+
+killall openvpn; sleep 3; cd /common/admin/tmp/vpn_old/; for file in client_conf_`hostname`_*.conf; do openvpn $file & done
+
+1 host 1 vpn before nat:
+
+# python /common/admin/tmp/vpntest/pps_sum.py
+TX: 31413 pkt/sec RX: 40109 pkt/sec  6 мегабайт в секунду
+
+
+
+ab -c20 -n10000 http://10.100.5.2/1kb.dat
+
+
+
+---- Shaping ---
+for i in {0..255}; do tc qdisc replace dev tun$i root tbf rate 10kbit latency 50ms burst 1540; done
+for i in {0..255}; do tc qdisc replace dev tun$i root tbf rate 10kbit latency 50ms burst 1540; done
+
+for i in {0..255}; do tc qdisc del dev tun$i root; done
+
+iptables -A PREROUTING -t mangle -i tun168 -j TOS --set-tos Minimize-Delay
+
+
+screen openvpn /common/admin/tmp/vpn/client/0.conf
+screen openvpn /common/admin/tmp/vpn/client/1.conf
+screen openvpn /common/admin/tmp/vpn/client/2.conf
+screen openvpn /common/admin/tmp/vpn/client/3.conf
+screen openvpn /common/admin/tmp/vpn/client/4.conf
+screen openvpn /common/admin/tmp/vpn/client/5.conf
+screen openvpn /common/admin/tmp/vpn/client/6.conf
+screen openvpn /common/admin/tmp/vpn/client/7.conf
+screen openvpn /common/admin/tmp/vpn/client/8.conf
+screen openvpn /common/admin/tmp/vpn/client/9.conf
+screen openvpn /common/admin/tmp/vpn/client/10.conf
+screen openvpn /common/admin/tmp/vpn/client/11.conf
+
+
+renice -1 61386
+
+
+rp_filter should be 1!!
+
+struct key_ctx *ctx = &opt->key_ctx_bi->decrypt;
+if (ctx->hmac)

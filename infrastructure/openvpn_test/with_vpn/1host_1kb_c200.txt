@@ -1,0 +1,46 @@
+Concurrency Level:      200
+Time taken for tests:   19.838 seconds
+Complete requests:      100000
+Failed requests:        0
+Write errors:           0
+Total transferred:      122703859 bytes
+HTML transferred:       100000000 bytes
+Requests per second:    5040.84 [#/sec] (mean)
+Time per request:       39.676 [ms] (mean)
+Time per request:       0.198 [ms] (mean, across all concurrent requests)
+Transfer rate:          6040.34 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   11  93.3      4    3004
+Processing:     0   26 348.2      4   17923
+Waiting:        0   23 329.6      4   17923
+Total:          2   38 364.1      7   17927
+
+Percentage of the requests served within a certain time (ms)
+  50%      7
+  66%      8
+  75%      8
+  80%      8
+  90%      8
+  95%      8
+  98%    133
+  99%   1007
+ 100%  17927 (longest request)
+
+Requests per second:    5675.85 [#/sec] (mean)
+Requests per second:    5660.83 [#/sec] (mean)
+Requests per second:    5814.25 [#/sec] (mean)
+
+Requests per second:    11338.07 [#/sec] (mean) # keep alive
+Requests per second:    11441.28 [#/sec] (mean) # keep alive
+
+-- affinity --
+Requests per second:    6083.69 [#/sec] (mean)
+Requests per second:    5921.19 [#/sec] (mean)
+Requests per second:    5939.22 [#/sec] (mean)
+
+---w/o cipher
+Requests per second:    9642.33 [#/sec] (mean)
+Requests per second:    9715.95 [#/sec] (mean)
+Requests per second:    9638.64 [#/sec] (mean)

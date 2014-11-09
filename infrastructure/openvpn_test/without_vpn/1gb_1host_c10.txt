@@ -1,0 +1,43 @@
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking tesla44 (be patient).....done
+
+
+Server Software:        nginx/1.0.15
+Server Hostname:        tesla44
+Server Port:            80
+
+Document Path:          /1gb.dat
+Document Length:        1000000000 bytes
+
+Concurrency Level:      10
+Time taken for tests:   87.302 seconds
+Complete requests:      10
+Failed requests:        0
+Write errors:           0
+Total transferred:      10000002330 bytes
+HTML transferred:       10000000000 bytes
+Requests per second:    0.11 [#/sec] (mean)
+Time per request:       87302.412 [ms] (mean)
+Time per request:       8730.241 [ms] (mean, across all concurrent requests)
+Transfer rate:          111859.76 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.0      0       0
+Processing: 52708 71459 14201.6  79120   87302
+Waiting:        0    1   0.3      1       1
+Total:      52708 71459 14201.6  79121   87302
+
+Percentage of the requests served within a certain time (ms)
+  50%  79121
+  66%  79133
+  75%  83892
+  80%  86449
+  90%  87302
+  95%  87302
+  98%  87302
+  99%  87302
+ 100%  87302 (longest request)

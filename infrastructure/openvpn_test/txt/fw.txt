@@ -1,0 +1,12 @@
+iptables -t nat -A POSTROUTING -o tun0 -j SNAT --to-source 10.100.0.1
+
+for i in {0..255}; do iptables -t nat -A POSTROUTING -o tun$i -j SNAT --to-source 10.100.$i.1; done
+for i in {0..255}; do iptables -t nat -D POSTROUTING -o tun$i -j SNAT --to-source 10.100.$i.1; done
+
+
+for i in {0..255}; do iptables -t nat -A POSTROUTING -o tun$i -j SNAT --to-source 10.60.$i.1; done
+
+
+for i in {0..64}; do iptables -t nat -A POSTROUTING -o tun$i -j SNAT --to-source 10.60.$i.1; done
+
+

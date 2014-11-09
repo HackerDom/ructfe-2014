@@ -1,0 +1,10 @@
+#!/bin/bash
+
+a=0
+for i in conf_*.conf; do 
+ a=$((a+1))
+ openvpn $i & 
+ sleep 10
+ echo $a | tee -a test.txt
+ python /common/admin/tmp/vpntest/pps_sum.py | tee -a test.txt
+done

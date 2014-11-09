@@ -1,0 +1,94 @@
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking tesla44 (be patient)
+Completed 100000 requests
+Completed 200000 requests
+Completed 300000 requests
+Completed 400000 requests
+Completed 500000 requests
+Completed 600000 requests
+Completed 700000 requests
+Completed 800000 requests
+Completed 900000 requests
+Completed 1000000 requests
+Finished 1000000 requests
+
+
+Server Software:        nginx/1.0.15
+Server Hostname:        tesla44
+Server Port:            80
+
+Document Path:          /1kb.dat
+Document Length:        1000 bytes
+
+Concurrency Level:      200
+Time taken for tests:   135.305 seconds
+Complete requests:      1000000
+Failed requests:        0
+Write errors:           0
+Total transferred:      1227000000 bytes
+HTML transferred:       1000000000 bytes
+Requests per second:    7390.73 [#/sec] (mean)
+Time per request:       27.061 [ms] (mean)
+Time per request:       0.135 [ms] (mean, across all concurrent requests)
+Transfer rate:          8855.89 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   19 185.0      0   31000
+Processing:     1    8  37.1      5    6269
+Waiting:        1    8  37.1      5    6269
+Total:          4   27 192.6      5   31006
+
+Percentage of the requests served within a certain time (ms)
+  50%      5
+  66%      5
+  75%      5
+  80%      6
+  90%      6
+  95%      6
+  98%    137
+  99%   1005
+ 100%  31006 (longest request)
+
+
+-------- 16 * nginx
+
+Server Software:        nginx/1.0.15
+Server Hostname:        tesla44
+Server Port:            80
+
+Document Path:          /1kb.dat
+Document Length:        1000 bytes
+
+Concurrency Level:      200
+Time taken for tests:   78.607 seconds
+Complete requests:      1000000
+Failed requests:        0
+Write errors:           0
+Total transferred:      1227000000 bytes
+HTML transferred:       1000000000 bytes
+Requests per second:    12721.53 [#/sec] (mean)
+Time per request:       15.721 [ms] (mean)
+Time per request:       0.079 [ms] (mean, across all concurrent requests)
+Transfer rate:          15243.47 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0   11 125.2      0   15001
+Processing:     1    4  17.6      3    3086
+Waiting:        1    4  17.6      3    3086
+Total:          2   16 127.9      3   15004
+
+Percentage of the requests served within a certain time (ms)
+  50%      3
+  66%      3
+  75%      3
+  80%      3
+  90%      5
+  95%      6
+  98%      6
+  99%   1002
+ 100%  15004 (longest request)

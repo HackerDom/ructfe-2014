@@ -1,0 +1,74 @@
+Server Software:        nginx/1.0.15
+Server Hostname:        10.50.0.14
+Server Port:            80
+
+Document Path:          /1mb.dat
+Document Length:        1000000 bytes
+
+Concurrency Level:      1
+Time taken for tests:   91.444 seconds
+Complete requests:      1000
+Failed requests:        0
+Write errors:           0
+Total transferred:      1000230000 bytes
+HTML transferred:       1000000000 bytes
+Requests per second:    10.94 [#/sec] (mean)
+Time per request:       91.444 [ms] (mean)
+Time per request:       91.444 [ms] (mean, across all concurrent requests)
+Transfer rate:          10681.80 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    2   2.2      2      27
+Processing:    39   90 115.4     76    1161
+Waiting:        0    2   2.1      2      49
+Total:         40   91 117.2     78    1181
+
+Percentage of the requests served within a certain time (ms)
+  50%     78
+  66%     80
+  75%     81
+  80%     82
+  90%     87
+  95%     95
+  98%    294
+  99%    903
+ 100%   1181 (longest request)
+
+
+Server Software:        nginx/1.0.15
+Server Hostname:        10.50.0.14
+Server Port:            80
+
+Document Path:          /1mb.dat
+Document Length:        1000000 bytes
+
+Concurrency Level:      1
+Time taken for tests:   94.656 seconds
+Complete requests:      1000
+Failed requests:        0
+Write errors:           0
+Total transferred:      1000230000 bytes
+HTML transferred:       1000000000 bytes
+Requests per second:    10.56 [#/sec] (mean)
+Time per request:       94.656 [ms] (mean)
+Time per request:       94.656 [ms] (mean, across all concurrent requests)
+Transfer rate:          10319.29 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    2   3.9      2      45
+Processing:    38   92 130.7     77    1347
+Waiting:        0    2   4.0      2      42
+Total:         38   95 133.9     78    1381
+
+Percentage of the requests served within a certain time (ms)
+  50%     78
+  66%     80
+  75%     82
+  80%     83
+  90%     89
+  95%    102
+  98%    327
+  99%   1154
+ 100%   1381 (longest request)
