@@ -1,0 +1,46 @@
+0. deleted unneded packages
+1. UseDNS no в ssh.conf
+2. PermitRootLogin yes в ssh.conf
+3. /boot/grub/grub.cfg quiet option to kernel
+4. Userdel ubuntu, rm /home/ubunru
+5. Clear logs
+6. root passwd: hackerdom
+7. update-rc.d console-setup disable
+
+# ONETIME=YES COMMANDS
+ONETIME=YES /root/router_first_setup.sh
+sed -i '/ONETIME=YES/d' /root/.bashrc
+
+# uncomment next line to bring up the interface on system start(very recommended)
+#auto eth0
+
+# uncomment next line if you have dhcp
+#iface eth0 inet dhcp
+
+# uncomment next few lines for manual ip setup
+#iface eth0 inet static
+#address 1.2.3.4
+#netmask 255.255.255.0
+#gateway 1.2.3.254
+#dns-nameservers 8.8.8.8
+
+---
+test image:
+0. update-rc.d ssh disable
+1. Set timeout=2 and renamed menu entry in /boot/grub/grub.cfg
+2. apt-get install mingetty
+3. created /root/testimage_first_setup.sh
+4. exec /sbin/mingetty --autologin root --noclear tty1 in /etc/init/tty1.conf
+5. disabled motd and lastlog in /etc/pam.d/sshd and /etc/pam.d/login
+6. PrintLastLog off in /etc/ssh/sshd_config
+7. Changed hostname to router in /etc/hostname
+8. cleared root passwd in /etc/shadow
+9. rp_filter=1, secure_redirects=1 in /etc/sysctl.conf
+10. source /etc/network/interfaces.d/*.cfg in /etc/network/interfaces
+11. useradd service -m, cleared password
+12. copy service.py to /home/service/service.py
+13. copy service.conf to /etc/init/
+14. apt-get install nginx
+15. dd if=/dev/urandom of=/usr/share/nginx/html/1mb bs=1000000 count=1
+16. dd if=/dev/urandom of=/usr/share/nginx/html/1kb bs=1000 count=1
+17. add first time setup autolaunch in /root/.bashrc

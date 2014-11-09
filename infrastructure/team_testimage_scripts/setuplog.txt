@@ -1,0 +1,46 @@
+0. deleted unneded packages
+1. UseDNS no в ssh.conf
+2. PermitRootLogin yes в ssh.conf
+3. /boot/grub/grub.cfg quiet option to kernel
+4. Userdel ubuntu, rm /home/ubunru
+5. Clear logs
+6. root passwd: hackerdom
+7. update-rc.d console-setup disable
+
+# ONETIME=YES COMMANDS
+ONETIME=YES /root/router_first_setup.sh
+sed -i '/ONETIME=YES/d' /root/.bashrc
+
+# uncomment next line to bring up the interface on system start(very recommended)
+#auto eth0
+
+# uncomment next line if you have dhcp
+#iface eth0 inet dhcp
+
+# uncomment next few lines for manual ip setup
+#iface eth0 inet static
+#address 1.2.3.4
+#netmask 255.255.255.0
+#gateway 1.2.3.254
+#dns-nameservers 8.8.8.8
+
+
+---
+router:
+0. apt-get install openvpn
+1. Set timeout=2 and renamed menu entry in /boot/grub/grub.cfg
+2. apt-get install nload iftop iptraf bmon tcptrack pktstat
+3. apt-get install mingetty
+4. created /root/router_first_setup.sh
+5. exec /sbin/mingetty --autologin root --noclear tty1 in /etc/init/tty1.conf
+6. disabled motd and lastlog in /etc/pam.d/sshd and /etc/pam.d/login
+7. PrintLastLog off in /etc/ssh/sshd_config
+8. changed hostname to router in /etc/hostname
+9. cleared root passwd in /etc/shadow
+10. ip_forward=1, rp_filter=1, secure_redirects=1 in /etc/sysctl.conf
+11. ln -s /usr/bin/nload /usr/sbin/iftop /usr/sbin/iptraf /usr/bin/bmon /usr/bin/tcptrack /usr/sbin/pktstat /root/
+12. source /etc/network/interfaces.d/*.cfg in /etc/network/interfaces
+13. create /etc/network/interfaces.d/eth0.cfg with samples
+14. add first time setup autolaunch in /root/.bashrc
+15. apt-get install pwgen
+16. created /root/give_internet_to_eth1.sh
