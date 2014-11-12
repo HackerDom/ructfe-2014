@@ -6,5 +6,5 @@ from Cython.Build import cythonize
 
 setup(
     name='Hello world app',
-    ext_modules=cythonize("network.pyx"),
+    ext_modules=cythonize("cutils.pyx"),
 )

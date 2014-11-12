@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 from socket import SOCK_STREAM, AF_INET, socket, SO_REUSEADDR, SOL_SOCKET
+from utils import *
 import thread
 
 _author__ = 'm_messiah'
@@ -11,6 +12,10 @@ class Connection:
         self.conn = _conn
         self.addr = _addr
         self.alive = True
+        self.commands = {
+            "add": self.add_path,
+            "register": self.register,
+        }
 
     #def __getattr__(self, name):
     #    return getattr(self.conn, name)
@@ -37,23 +42,42 @@ class Connection:
                     self.close()
 
                 data = self.recvline()
-                response = ""
+                response = u""
                 if not data:
                     break
-                if "hello" in data:
-                    response = "Hi there!"
-                elif "wtf" in data:
-                    response = "Just another sockserver"
-                elif "bye" in data:
-                    response = "bye, bye!"
+                if u"quit" in data:
+                    response = u"bye, bye!"
                     self.alive = False
+                else:
+                    command = data.lower().split()
+                    try:
+                        response = unicode(
+                            self.commands[command[0]](*command[1:])
+                            if command[0] in self.commands
+                            else "Unknown command"
+                        )
+                    except ValueError:
+                        response = "Bad data"
+                    except IndexError:
+                        response = "Not enough data"
+                self.sendline(response.encode("utf-8"))
 
-                self.sendline(response)
-
-        except:
-            pass
+        except Exception as e:
+            print e
         finally:
             self.close()
+
+    def add_path(self, path, end=""):
+        steps = parsePath(createPath(path))
+        # Write to DB
+        return spark(steps) + "\t" + str(sum(steps)) + "\n" + str(steps) + end
+
+    def register(self, name):
+        def createToken(name):
+            return u"hello"
+        token = createToken(name)
+        # create db/dir/something else
+        return token
 
 
 class Server:
@@ -73,3 +97,7 @@ class Server:
     def handler(self, conn, addr):
         conn = Connection(conn, addr)
         conn.serve()
+
+if __name__ == "__main__":
+    S = Server("", 27001)
+    S.serve()
