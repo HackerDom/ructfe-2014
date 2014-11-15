@@ -10,6 +10,7 @@
               h3 {text-align: center; padding-bottom: 0px; }
               td {font-family:Arial, Helvetica, sans-serif; 
                     height: 50px; text-align: center;}
+              table {width: 98%;}
               .yesnocell {width: 150px; color: #bbbbbb;}
               .yescell {background-color: #00b500;}
               .nocell {background-color: #ff4040;}
@@ -37,34 +38,34 @@
             <td> {{team.id}} </td>
             <td class="namecell"> {{team.name}} </td>
             {% if team.router_ping is not none %}
-            <td class="yesnocell yescell"> {{team.router_ping}}ms </td>
+            <td title="{{team.router_ip}}" class="yesnocell yescell"> {{team.router_ping}}ms </td>
             {% else %}
-            <td class="yesnocell nocell">  </td>
+            <td title="{{team.router_ip}}" class="yesnocell nocell">  </td>
             {% endif %}
             {% if team.router_pingonce %}
-            <td class="yesnocell yescell">  </td>
+            <td title="{{team.router_ip}}" class="yesnocell yescell">  </td>
             {% else %}
-            <td class="yesnocell nocell">  </td>
+            <td title="{{team.router_ip}}" class="yesnocell nocell">  </td>
             {% endif %}
             {% if team.image_ping is not none %}
-            <td class="yesnocell yescell"> {{team.image_ping}}ms </td>
+            <td title="{{team.image_ip}}" class="yesnocell yescell"> {{team.image_ping}}ms </td>
             {% else %}
-            <td class="yesnocell nocell">  </td>
+            <td title="{{team.image_ip}}" class="yesnocell nocell">  </td>
             {% endif %}
             {% if team.image_pingonce %}
-            <td class="yesnocell yescell">  </td>
+            <td title="{{team.image_ip}}" class="yesnocell yescell">  </td>
             {% else %}
-            <td class="yesnocell nocell">  </td>
+            <td title="{{team.image_ip}}" class="yesnocell nocell">  </td>
             {% endif %}
             {% if team.service_up is not none %}
-            <td class="yesnocell yescell"> {{team.service_up}}ms </td>
+            <td title="{{team.image_ip}}:31337" class="yesnocell yescell"> {{team.service_up}}ms </td>
             {% else %}
-            <td class="yesnocell nocell">  </td>
+            <td title="{{team.image_ip}}:31337" class="yesnocell nocell">  </td>
             {% endif %}
             {% if team.service_uponce %}
-            <td class="yesnocell yescell">  </td>
+            <td title="{{team.image_ip}}:31337" class="yesnocell yescell">  </td>
             {% else %}
-            <td class="yesnocell nocell">  </td>
+            <td title="{{team.image_ip}}:31337" class="yesnocell nocell">  </td>
             {% endif %}
             </tr>
         {% endfor %}

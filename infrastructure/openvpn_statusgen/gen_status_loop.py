@@ -138,6 +138,8 @@ def loop():
 
         result.append({"id": team,
                        "name": team_name,
+                       "router_ip": team_to_router[team],
+                       "image_ip": team_to_image[team],
                        "router_ping": router_ping,
                        "router_pingonce": router_pingonce,
                        "image_ping": image_ping,
@@ -148,7 +150,7 @@ def loop():
     # generate html by result
     template = open(TEMPLATE_FILE).read()
     time_str = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
-    html = jinja2.Template(template).render(result=result, time=time_str)
+    html = jinja2.Template(template, autoescape=True).render(result=result, time=time_str)
     open(STATUS_HTML, "w").write(html)
 
 
