@@ -12,10 +12,10 @@ ONETIME=YES /root/router_first_setup.sh
 sed -i '/ONETIME=YES/d' /root/.bashrc
 
 # uncomment next line to bring up the interface on system start(very recommended)
-#auto eth0
+auto eth0
 
 # uncomment next line if you have dhcp
-#iface eth0 inet dhcp
+iface eth0 inet dhcp
 
 # uncomment next few lines for manual ip setup
 #iface eth0 inet static

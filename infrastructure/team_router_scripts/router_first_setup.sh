@@ -16,6 +16,8 @@ if ! ip link show eth1 &>/dev/null; then
 fi
 
 echo "Interface eth0 is your uplink, eth1 - is an internal interface"
+echo "Interface eth0 is preconfigured to use dhcp. You can change this in "
+echo "file /etc/network/interfaces.d/eth0.cfg"
 read -p "Lets generate eth1 config. Enter your team number: " TEAM
 
 echo "auto eth1" > /etc/network/interfaces.d/eth1.cfg
@@ -29,22 +31,18 @@ echo
 
 ifup eth1
 
-echo -n "Lets generate eth0 config. "
-read -p "Press enter to execute nano /etc/network/interfaces.d/eth0.cfg..."
-nano /etc/network/interfaces.d/eth0.cfg
-
-ifup eth0
-
 echo
 echo "Network configuration is over"
 echo
-read -p "Press enter to generate root password and to start ssh..."
+read -p "Press enter to generate root password..."
+
+BOLDON="\033[1m"
+BOLDOFF="\033[0m"
 
 PASS=$(pwgen -Bs 8 1)
 chpasswd <<< "root:${PASS}"
-echo "Your new root password is ${PASS}"
-
-/etc/init.d/ssh start
+echo -e "Your new root password is ${BOLDON}${PASS}${BOLDOFF}"
+echo -e "To connect to this host use ${BOLDON}ssh root@10.70.${TEAM}.1${BOLDOFF} command"
 
 echo
 echo "Further steps:"
