@@ -2,10 +2,12 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
+        <meta http-equiv='refresh' content='60'>
         <title>RuCTFE 2014 Network Status/</title>
         <style>
               /*body {background-color:lightgray}*/
               h1 {text-align: center; padding-bottom: 0px; }
+              h3 {text-align: center; padding-bottom: 0px; }
               td {font-family:Arial, Helvetica, sans-serif; 
                     height: 50px; text-align: center;}
               .yesnocell {width: 150px; color: #bbbbbb;}
@@ -17,6 +19,7 @@
     </head>
     <body>
         <h1> RuCTFE 2014 Network Status </h1>
+        <h3> Updated at: {{time}} </h3>
         <table>
             <tr>
             <th>#</th>

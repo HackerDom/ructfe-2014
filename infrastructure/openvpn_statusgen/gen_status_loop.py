@@ -122,7 +122,8 @@ def loop():
 
     # generate html by result
     template = open(TEMPLATE_FILE).read()
-    html = jinja2.Template(template).render(result=result)
+    time_str = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
+    html = jinja2.Template(template).render(result=result, time=time_str)
     open(STATUS_HTML, "w").write(html)
 
 
