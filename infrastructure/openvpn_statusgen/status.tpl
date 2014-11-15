@@ -28,6 +28,8 @@
             <th>Router was UP</th>
             <th>Image is UP</th>
             <th>Image was UP</th>
+            <th>Service is UP</th>
+            <th>Service was UP</th>
             </tr>
 
         {% for team in result %}
@@ -50,6 +52,16 @@
             <td class="yesnocell nocell">  </td>
             {% endif %}
             {% if team.image_pingonce %}
+            <td class="yesnocell yescell">  </td>
+            {% else %}
+            <td class="yesnocell nocell">  </td>
+            {% endif %}
+            {% if team.service_up is not none %}
+            <td class="yesnocell yescell"> {{team.service_up}}ms </td>
+            {% else %}
+            <td class="yesnocell nocell">  </td>
+            {% endif %}
+            {% if team.service_uponce %}
             <td class="yesnocell yescell">  </td>
             {% else %}
             <td class="yesnocell nocell">  </td>

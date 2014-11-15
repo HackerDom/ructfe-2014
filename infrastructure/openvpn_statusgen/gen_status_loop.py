@@ -11,6 +11,9 @@ from teams import teams
 
 ROUTER_PINGONCE_FILE = "router_ping_once.txt"
 IMAGE_PINGONCE_FILE = "image_ping_once.txt"
+SERVICE_UPONCE_FILE = "service_up_once.txt"
+
+CHECKER_FILE = "./team_tcp_checker.py"
 
 TEMPLATE_FILE = "status.tpl"
 STATUS_HTML = "/usr/share/nginx/html/HBcUe2F2/status.html"
@@ -21,13 +24,10 @@ ROUTER_IP = "10.60.N.2"
 IMAGE_IP = "10.70.N.100"
 
 
-def get_hosts_ping(hosts):
-    """ returns: host -> ping_time | None """
-    fping_base = ["fping", "-q", "-C1", "-t5000"]
-
+def get_ping_like_cmd_parsed_ret(args, hosts):
     ret = {}
 
-    router_ping_proc = subprocess.Popen(fping_base + hosts,
+    router_ping_proc = subprocess.Popen(args + hosts,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
     out, err = router_ping_proc.communicate()
@@ -51,16 +51,30 @@ def get_hosts_ping(hosts):
     return ret
 
 
+def get_services_up(hosts):
+    """ returns: host -> test_time | None """
+    return get_ping_like_cmd_parsed_ret([CHECKER_FILE], hosts)
+
+
+def get_hosts_ping(hosts):
+    """ returns: host -> ping_time | None """
+    fping_base = ["fping", "-q", "-C1", "-t5000"]
+    return get_ping_like_cmd_parsed_ret(fping_base, hosts)
+
+
 def loop():
     # create flags files if not exists
     open(ROUTER_PINGONCE_FILE, 'ab').close()
     open(IMAGE_PINGONCE_FILE,  'ab').close()
+    open(SERVICE_UPONCE_FILE,  'ab').close()
 
     routers_pingonce_data = open(ROUTER_PINGONCE_FILE, "r", 1).read()
     images_pingonce_data = open(IMAGE_PINGONCE_FILE, "r", 1).read()
+    service_uponce_data = open(SERVICE_UPONCE_FILE, "r", 1).read()
 
     routers_pingonce = set(re.findall(r"\d+", routers_pingonce_data))
     images_pingonce = set(re.findall(r"\d+", images_pingonce_data))
+    services_uponce = set(re.findall(r"\d+", service_uponce_data))
 
     # get list to ping
     team_to_router = {}
@@ -82,6 +96,7 @@ def loop():
     # ping teams
     router_pings = get_hosts_ping(list(team_to_router.values()))
     image_pings = get_hosts_ping(list(team_to_image.values()))
+    image_service_ups = get_services_up(list(team_to_image.values()))
 
     # generate result dict for each team
     result = []
@@ -92,25 +107,33 @@ def loop():
 
         router_ping = router_pings.get(team_router)
         router_pingonce = str(team) in routers_pingonce
-        image_ping = image_pings.get(team_router)
+        image_ping = image_pings.get(team_image)
         image_pingonce = str(team) in images_pingonce
-
-        print(image_pingonce, images_pingonce)
+        service_up = image_service_ups.get(team_image)
+        service_uponce = str(team) in services_uponce
 
         if router_ping is not None:
             if str(team) not in routers_pingonce:
-                router_pingonce = True
                 routers_pingonce.add(str(team))
+                router_pingonce = True
 
                 with open(ROUTER_PINGONCE_FILE, "a") as f:
                     f.write(str(team) + "\n")
 
         if image_ping is not None:
             if str(team) not in images_pingonce:
-                image_pingonce = True
                 images_pingonce.add(str(team))
+                image_pingonce = True
 
                 with open(IMAGE_PINGONCE_FILE, "a") as f:
+                    f.write(str(team) + "\n")
+
+        if service_up is not None:
+            if str(team) not in services_uponce:
+                services_uponce.add(str(team))
+                service_uponce = True
+
+                with open(SERVICE_UPONCE_FILE, "a") as f:
                     f.write(str(team) + "\n")
 
         result.append({"id": team,
@@ -118,7 +141,9 @@ def loop():
                        "router_ping": router_ping,
                        "router_pingonce": router_pingonce,
                        "image_ping": image_ping,
-                       "image_pingonce": image_pingonce})
+                       "image_pingonce": image_pingonce,
+                       "service_up": service_up,
+                       "service_uponce": service_uponce})
 
     # generate html by result
     template = open(TEMPLATE_FILE).read()

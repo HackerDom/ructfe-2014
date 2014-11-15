@@ -51,7 +51,9 @@ def handle_client(host, port):
             return
 
         end_time = time.time()
-        sys.stderr.write("%s : %.02g\n" % (host, end_time - start_time))
+        total_time_ms = (end_time - start_time) * 1000
+        sys.stderr.write("%s : %.02g\n" % (host, total_time_ms))
+        sys.stderr.flush()
     finally:
         writer.close()
 
