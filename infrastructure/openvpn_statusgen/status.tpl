@@ -26,10 +26,10 @@
             <th>#</th>
             <th>Name</th>
             <th>Router is UP</th>
-            <th>Router was UP</th>
             <th>Image is UP</th>
-            <th>Image was UP</th>
             <th>Service is UP</th>
+            <th>Router was UP</th>
+            <th>Image was UP</th>
             <th>Service was UP</th>
             </tr>
 
@@ -42,18 +42,8 @@
             {% else %}
             <td title="{{team.router_ip}}" class="yesnocell nocell">  </td>
             {% endif %}
-            {% if team.router_pingonce %}
-            <td title="{{team.router_ip}}" class="yesnocell yescell">  </td>
-            {% else %}
-            <td title="{{team.router_ip}}" class="yesnocell nocell">  </td>
-            {% endif %}
             {% if team.image_ping is not none %}
             <td title="{{team.image_ip}}" class="yesnocell yescell"> {{team.image_ping}}ms </td>
-            {% else %}
-            <td title="{{team.image_ip}}" class="yesnocell nocell">  </td>
-            {% endif %}
-            {% if team.image_pingonce %}
-            <td title="{{team.image_ip}}" class="yesnocell yescell">  </td>
             {% else %}
             <td title="{{team.image_ip}}" class="yesnocell nocell">  </td>
             {% endif %}
@@ -61,6 +51,16 @@
             <td title="{{team.image_ip}}:31337" class="yesnocell yescell"> {{team.service_up}}ms </td>
             {% else %}
             <td title="{{team.image_ip}}:31337" class="yesnocell nocell">  </td>
+            {% endif %}
+            {% if team.router_pingonce %}
+            <td title="{{team.router_ip}}" class="yesnocell yescell">  </td>
+            {% else %}
+            <td title="{{team.router_ip}}" class="yesnocell nocell">  </td>
+            {% endif %}
+            {% if team.image_pingonce %}
+            <td title="{{team.image_ip}}" class="yesnocell yescell">  </td>
+            {% else %}
+            <td title="{{team.image_ip}}" class="yesnocell nocell">  </td>
             {% endif %}
             {% if team.service_uponce %}
             <td title="{{team.image_ip}}:31337" class="yesnocell yescell">  </td>
