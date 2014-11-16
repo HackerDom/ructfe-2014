@@ -11,5 +11,4 @@ if [[ ! $1 =~ ^[0-9]+$ ]]; then
 fi
 
 # add the couple of rules
-iptables -t nat -A PREROUTING -m tcp -m comment --comment "antidos" -p tcp -i "tun${1}" --dport 80 -j DNAT --to-destination "10.60.${1}.1:10000"
-iptables -t nat -A PREROUTING -m tcp -m comment --comment "antidos" -p tcp -i "tun${1}" ! --dport 80 -j DNAT --to-destination "10.60.${1}.1:10001"
+iptables -t nat -A PREROUTING -m tcp -m comment --comment "antidos" -p tcp -i "tun${1}" -j DNAT --to-destination "10.60.${1}.1:10001"
