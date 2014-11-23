@@ -5,7 +5,8 @@ N = 64
 
 SERVER_DATA = """mode p2p
 port {0}
-dev tun{1}
+dev team{1}
+dev-type tun
 ifconfig 10.60.{1}.1 10.60.{1}.2
 route 10.70.{1}.0 255.255.255.0
 keepalive 10 60

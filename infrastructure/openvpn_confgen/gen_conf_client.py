@@ -3,10 +3,11 @@ import sys
 
 N = 64
 
-SERVER = "178.62.129.38"
+SERVER = "vpn.alexbers.com"
 
 CLIENT_DATA = """mode p2p
-dev tun
+dev game
+dev-type tun
 remote {0} {1}
 ifconfig 10.60.{2}.2 10.60.{2}.1
 route 10.60.0.0 255.255.0.0
