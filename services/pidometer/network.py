@@ -1,10 +1,26 @@
-#!/usr/bin/python
+#!/usr/bin/pythonw
 
 from socket import SOCK_STREAM, AF_INET, socket, SO_REUSEADDR, SOL_SOCKET
 from utils import *
 import thread
+import mcrypt
+
 
 _author__ = 'm_messiah'
+
+
+def add_path(path, end=""):
+    steps = parsePath(createPath(path))
+    # Write to DB
+    return spark(steps) + "\t" + str(sum(steps)) + "\n" + str(steps) + end
+
+
+def register(name):
+    def create_token(name_):
+        return u"hello_{}".format(name_)
+    token = create_token(name)
+    # create db/dir/something else
+    return token
 
 
 class Connection:
@@ -13,12 +29,9 @@ class Connection:
         self.addr = _addr
         self.alive = True
         self.commands = {
-            "add": self.add_path,
-            "register": self.register,
+            "add": add_path,
+            "register": register,
         }
-
-    #def __getattr__(self, name):
-    #    return getattr(self.conn, name)
 
     def recvline(self):
         return self.conn.recv(256)
@@ -42,7 +55,6 @@ class Connection:
                     self.close()
 
                 data = self.recvline()
-                response = u""
                 if not data:
                     break
                 if u"quit" in data:
@@ -67,17 +79,10 @@ class Connection:
         finally:
             self.close()
 
-    def add_path(self, path, end=""):
-        steps = parsePath(createPath(path))
-        # Write to DB
-        return spark(steps) + "\t" + str(sum(steps)) + "\n" + str(steps) + end
 
-    def register(self, name):
-        def createToken(name):
-            return u"hello"
-        token = createToken(name)
-        # create db/dir/something else
-        return token
+def handler(conn, addr):
+    conn = Connection(conn, addr)
+    conn.serve()
 
 
 class Server:
@@ -92,11 +97,8 @@ class Server:
         while True:
             self.socket.listen(100)
             conn, addr = self.socket.accept()
-            thread.start_new_thread(self.handler, (conn, addr))
+            thread.start_new_thread(handler, (conn, addr))
 
-    def handler(self, conn, addr):
-        conn = Connection(conn, addr)
-        conn.serve()
 
 if __name__ == "__main__":
     S = Server("", 27001)
