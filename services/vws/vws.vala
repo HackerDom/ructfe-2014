@@ -1,3 +1,5 @@
+using Gee;
+
 public class Main : Object {
 
   public static int main(string[] args) {
@@ -5,9 +7,9 @@ public class Main : Object {
       VWS.Options.parse(args);
       var ws = new VWS.Server();
       ws.start();
-      stderr.printf ("Server started at %d\n", VWS.Options.port);
+      stderr.printf("Server started at %d\n", VWS.Options.port);
     } catch (Error e) {
-      stderr.printf ("%s\n", e.message);
+      stderr.printf("%s\n", e.message);
     }
     return 0;
   }
@@ -41,17 +43,96 @@ namespace VWS {
 
     private async void process_request(SocketConnection connection) {
       try {
-        var dis = new DataInputStream(connection.input_stream);
-        var dos = new DataOutputStream(connection.output_stream);
-
-        while (true) {
-          string data = yield dis.read_line_async(Priority.HIGH_IDLE);
-          dos.put_string("Echo: %s\n".printf(data));
-        }
+        var tx = new Tx(
+          new DataInputStream(connection.input_stream),
+          new DataOutputStream(connection.output_stream)
+        );
+        yield tx.parse();
       } catch (Error e) {
         stderr.printf("Error while process socket: %s\n", e.message);
       }
     }
+  }
+
+  public class Tx : Object {
+    public Request  req;
+    public Response res;
+
+    private DataInputStream  dis;
+    private DataOutputStream dos;
+
+    public Tx(DataInputStream dis, DataOutputStream dos) {
+      this.dis = dis;
+      this.dos = dos;
+
+      req = new Request();
+    }
+
+    public async void parse() throws Error {
+      MatchInfo mi;
+      var start_line_re = new Regex("""
+        ^([a-zA-Z]+)                                            # Method
+        \s+([0-9a-zA-Z!#\$\%&'()*+,\-.\/:;=?\@[\\\]^_`\{|\}~]+) # URL
+        \s+HTTP\/(\d\.\d)$                                      # Version
+        """,
+        RegexCompileFlags.EXTENDED
+      );
+      var header_line_re     = new Regex("""^(\S[^:]*)\s*:\s*(.*)$""");
+      var ext_header_line_re = new Regex("""^\s+(.*)$""");
+
+      // Read start line
+      string line = yield dis.read_line_async(Priority.HIGH_IDLE);
+      if (start_line_re.match(line, 0, out mi)) {
+        this.req.method  = mi.fetch(1);
+        this.req.url     = mi.fetch(2);
+        this.req.version = mi.fetch(3);
+      } else {
+      }
+      dos.put_string("Echo: %s\n".printf(line));
+
+      // Read headers
+      string last_header_name = null;
+      while (true) {
+        line = yield dis.read_line_async(Priority.HIGH_IDLE);
+        if ((line ?? "") == "") break;
+
+        if (header_line_re.match(line, 0, out mi)) {
+          last_header_name = mi.fetch(1);
+          this.req.headers.set(last_header_name, mi.fetch(2));
+        } else if (
+          last_header_name != null &&
+          ext_header_line_re.match(line, 0, out mi)
+        ) {
+          var v = this.req.headers.get(last_header_name);
+          this.req.headers.set(last_header_name, v + mi.fetch(1));
+        }
+      }
+
+      foreach (var e in this.req.headers.entries) {
+        stderr.printf("H = '%s' : '%s'\n", e.key, e.value);
+      }
+
+      // Read body
+    }
+  }
+
+  public class Message : Object {
+    public string start_line { get; set; default = ""; }
+    public HashMap<string, string> headers;
+
+    public Message() {
+      headers = new HashMap<string, string>();
+    }
+  }
+
+  public class Request : Message {
+    public bool is_finished { get; set; default = false; }
+    public string method    { get; set; }
+    public string url       { get; set; }
+    public string version   { get; set; }
+  }
+
+  public class Response : Message {
   }
 
   public class Options : Object {
