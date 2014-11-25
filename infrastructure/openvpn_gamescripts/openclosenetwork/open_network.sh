@@ -5,9 +5,11 @@ cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
-for h in {0..255}; do
-    while iptables -t nat -C PREROUTING -i team${h} -p tcp -m tcp -m comment --comment closednetwork -j DNAT --to-destination 10.60.${h}.1:40002 &>/dev/null; do
-        iptables -t nat -D PREROUTING -i team${h} -p tcp -m tcp -m comment --comment closednetwork -j DNAT --to-destination 10.60.${h}.1:40002
+for num in {0..1023}; do
+    ip="10.$((80 + num / 256)).$((num % 256)).1"
+
+    while iptables -t nat -C PREROUTING -i team${num} -p tcp -m tcp -m comment --comment closednetwork -j DNAT --to-destination ${ip}:40002 &>/dev/null; do
+        iptables -t nat -D PREROUTING -i team${h} -p tcp -m tcp -m comment --comment closednetwork -j DNAT --to-destination ${ip}:40002
     done;
 done
 
