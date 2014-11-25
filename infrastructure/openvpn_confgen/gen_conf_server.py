@@ -1,14 +1,14 @@
 import os
 import sys
 
-N = 64
+N = 1024
 
 SERVER_DATA = """mode p2p
 port {0}
 dev team{1}
 dev-type tun
-ifconfig 10.60.{1}.1 10.60.{1}.2
-route 10.70.{1}.0 255.255.255.0
+ifconfig 10.{2}.{3}.2 10.{2}.{3}.1
+route 10.{4}.{3}.0 255.255.255.0
 keepalive 10 60
 ping-timer-rem
 persist-tun
@@ -19,7 +19,7 @@ fragment 1300
 mssfix
 
 <secret>
-{2}
+{5}
 </secret>
 """
 
@@ -38,8 +38,8 @@ except FileExistsError:
 for i in range(N):
     key = open("keys/%d.key" % i).read()
 
-    data = SERVER_DATA.format(30000+i, i, key)
+    data = SERVER_DATA.format(30000+i, i, 80 + i // 256, 
+                              i % 256, 60 + i // 256, key)
     open("server/%d.conf" % i, "w").write(data)
 
 print("Finished, check ./server dir")
-    
