@@ -10,7 +10,7 @@ dev game
 dev-type tun
 remote {0} {1}
 remote-random-hostname
-ifconfig 10.{2}.{3}.1 10.{2}.{3}.2
+ifconfig 10.{2}.{3}.2 10.{2}.{3}.1
 route 10.60.0.0 255.252.0.0
 route 10.80.0.0 255.252.0.0
 keepalive 10 30

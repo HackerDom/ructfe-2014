@@ -7,7 +7,7 @@ SERVER_DATA = """mode p2p
 port {0}
 dev team{1}
 dev-type tun
-ifconfig 10.{2}.{3}.2 10.{2}.{3}.1
+ifconfig 10.{2}.{3}.1 10.{2}.{3}.2
 route 10.{4}.{3}.0 255.255.255.0
 keepalive 10 60
 ping-timer-rem
