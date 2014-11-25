@@ -20,9 +20,11 @@ STATUS_HTML = "/usr/share/nginx/html/HBcUe2F2/status.html"
 
 PAUSE = 1
 
-ROUTER_IP = "10.60.N.2"
-IMAGE_IP = "10.70.N.100"
+def get_router_ip(team):
+    return "10.%s.%s.2" % (80 + team // 256, team % 256)
 
+def get_image_ip(team):
+    return "10.%s.%s.100" % (60 + team // 256, team % 256)
 
 def get_ping_like_cmd_parsed_ret(args, hosts):
     ret = {}
@@ -84,8 +86,8 @@ def loop():
     image_to_team = {}
 
     for team in teams:
-        team_router = ROUTER_IP.replace("N", str(team))
-        team_image = IMAGE_IP.replace("N", str(team))
+        team_router = get_router_ip(team)
+        team_image = get_image_ip(team)
 
         team_to_router[team] = team_router
         team_to_image[team] = team_image
