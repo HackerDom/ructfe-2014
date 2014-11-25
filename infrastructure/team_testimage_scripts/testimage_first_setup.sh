@@ -14,9 +14,9 @@ read -p "Lets generate eth0 config. Enter your team number: " TEAM
 
 echo "auto eth0" > /etc/network/interfaces.d/eth0.cfg
 echo "iface eth0 inet static" >> /etc/network/interfaces.d/eth0.cfg
-echo "address 10.70.${TEAM}.100" >>  /etc/network/interfaces.d/eth0.cfg
+echo "address 10.$((60 + TEAM / 256)).$((TEAM % 256)).100" >>  /etc/network/interfaces.d/eth0.cfg
 echo "netmask 255.255.255.0" >>  /etc/network/interfaces.d/eth0.cfg
-echo "gateway 10.70.${TEAM}.1" >>  /etc/network/interfaces.d/eth0.cfg
+echo "gateway 10.$((60 + TEAM / 256)).$((TEAM % 256)).1" >>  /etc/network/interfaces.d/eth0.cfg
 
 echo "Here is your new /etc/network/interfaces.d/eth0.cfg:"
 cat /etc/network/interfaces.d/eth0.cfg
