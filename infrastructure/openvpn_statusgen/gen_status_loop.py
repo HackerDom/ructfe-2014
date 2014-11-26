@@ -16,7 +16,7 @@ SERVICE_UPONCE_FILE = "service_up_once.txt"
 CHECKER_FILE = "./team_tcp_checker.py"
 
 TEMPLATE_FILE = "status.tpl"
-STATUS_HTML = "/usr/share/nginx/html/HBcUe2F2/status.html"
+STATUS_HTML = "/usr/share/nginx/html/status.html"
 
 PAUSE = 1
 
