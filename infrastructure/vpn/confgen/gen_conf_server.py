@@ -1,7 +1,7 @@
 import os
 import sys
 
-N = 1024
+N = 768
 
 SERVER_DATA = """mode p2p
 port {0}
