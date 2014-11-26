@@ -48,6 +48,9 @@ namespace VWS {
           new DataOutputStream(connection.output_stream)
         );
         yield tx.parse();
+        if (tx.req.method == "GET") {
+          stderr.printf("GET URL: %s\n", tx.req.url.path);
+        }
       } catch (Error e) {
         stderr.printf("Error while process socket: %s\n", e.message);
       }
@@ -84,11 +87,10 @@ namespace VWS {
       string line = yield dis.read_line_async(Priority.HIGH_IDLE);
       if (start_line_re.match(line, 0, out mi)) {
         this.req.method  = mi.fetch(1);
-        this.req.url     = mi.fetch(2);
         this.req.version = mi.fetch(3);
+        this.req.url     = new URL(mi.fetch(2));
       } else {
       }
-      dos.put_string("Echo: %s\n".printf(line));
 
       // Read headers
       string last_header_name = null;
@@ -108,11 +110,33 @@ namespace VWS {
         }
       }
 
-      foreach (var e in this.req.headers.entries) {
-        stderr.printf("H = '%s' : '%s'\n", e.key, e.value);
-      }
-
       // Read body
+    }
+  }
+
+  public class URL : Object {
+    public string scheme   { get; set; }
+    public string path     { get; set; }
+    public string query    { get; set; }
+    public string fragment { get; set; }
+
+    public URL(string url) {
+      MatchInfo mi;
+      try {
+        var url_re = new Regex("""
+          ^(([^:/?#]+):)?   # Scheme
+          (//([^/?#]*))?    # Auth
+          ([^?#]*)          # Path
+          (\?([^#]*))?      # Query
+          (\#(.*))?         # Fragment
+        """, RegexCompileFlags.EXTENDED);
+        if (url_re.match(url, 0, out mi)) {
+          this.scheme   = mi.fetch(2);
+          this.path     = mi.fetch(5);
+          this.query    = mi.fetch(7);
+          this.fragment = mi.fetch(9);
+        }
+      } catch (Error e) {}
     }
   }
 
@@ -128,7 +152,7 @@ namespace VWS {
   public class Request : Message {
     public bool is_finished { get; set; default = false; }
     public string method    { get; set; }
-    public string url       { get; set; }
+    public URL url          { get; set; }
     public string version   { get; set; }
   }
 

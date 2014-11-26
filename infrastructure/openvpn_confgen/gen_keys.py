@@ -2,7 +2,7 @@ import os
 import sys
 from subprocess import call
 
-N = 256
+N = 1024
 OPENVPN_PATH = "/usr/sbin/openvpn"
 
 if __name__ != "__main__":
@@ -26,4 +26,3 @@ for i in range(N):
 		break
 else:
 	print("All ok")
-	

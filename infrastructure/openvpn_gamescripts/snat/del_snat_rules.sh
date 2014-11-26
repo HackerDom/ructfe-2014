@@ -2,6 +2,8 @@
 # removes rules for teams snat
 # this script shouldn't be run normally :)
 
-for h in {0..255}; do 
-    iptables -t nat -D POSTROUTING -o team${h} -j SNAT --to-source 10.60.${h}.1
+for num in {0..1023}; do 
+    ip="10.$((80 + num / 256)).$((num % 256)).1"
+
+    iptables -t nat -D POSTROUTING -o team${num} -j SNAT --to-source ${ip}
 done

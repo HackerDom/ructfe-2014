@@ -1,17 +1,18 @@
 import os
 import sys
 
-N = 64
+N = 1024
 
-SERVER = "vpn.alexbers.com"
+SERVER = "vpn.e.ructf.org"
 
 CLIENT_DATA = """mode p2p
 dev game
 dev-type tun
 remote {0} {1}
-ifconfig 10.60.{2}.2 10.60.{2}.1
-route 10.60.0.0 255.255.0.0
-route 10.70.0.0 255.255.0.0
+remote-random-hostname
+ifconfig 10.{2}.{3}.2 10.{2}.{3}.1
+route 10.60.0.0 255.252.0.0
+route 10.80.0.0 255.252.0.0
 keepalive 10 30
 nobind
 verb 3
@@ -21,7 +22,7 @@ fragment 1300
 mssfix
 
 <secret>
-{3}
+{4}
 </secret>
 """
 
@@ -40,8 +41,7 @@ except FileExistsError:
 for i in range(N):
     key = open("keys/%d.key" % i).read()
 
-    data = CLIENT_DATA.format(SERVER, 30000+i, i, key)
+    data = CLIENT_DATA.format(SERVER, 30000+i, 80 + i // 256, i % 256, key)
     open("client/%d.conf" % i, "w").write(data)
 
 print("Finished, check ./client dir")
-    
