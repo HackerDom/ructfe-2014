@@ -22,7 +22,7 @@ read -p "Lets generate eth1 config. Enter your team number: " TEAM
 
 echo "auto eth1" > /etc/network/interfaces.d/eth1.cfg
 echo "iface eth1 inet static" >> /etc/network/interfaces.d/eth1.cfg
-echo "address 10.70.${TEAM}.1" >>  /etc/network/interfaces.d/eth1.cfg
+echo "address 10.$((60 + TEAM / 256)).$((TEAM % 256)).1" >>  /etc/network/interfaces.d/eth1.cfg
 echo "netmask 255.255.255.0" >>  /etc/network/interfaces.d/eth1.cfg
 
 echo "Here is your new /etc/network/interfaces.d/eth1.cfg:"
@@ -42,7 +42,7 @@ BOLDOFF="\033[0m"
 PASS=$(pwgen -Bs 8 1)
 chpasswd <<< "root:${PASS}"
 echo -e "Your new root password is ${BOLDON}${PASS}${BOLDOFF}"
-echo -e "To connect to this host use ${BOLDON}ssh root@10.70.${TEAM}.1${BOLDOFF} command"
+echo -e "To connect to this host use ${BOLDON}ssh root@10.$((60 + TEAM / 256)).$((TEAM % 256)).1${BOLDOFF} command"
 
 echo
 echo "Further steps:"

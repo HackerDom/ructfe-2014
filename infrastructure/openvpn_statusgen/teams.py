@@ -3,5 +3,5 @@ teams = {
 	1: "dream_team"
 }
 
-for i in range(64):
+for i in range(1024):
 	teams[i] = "test_team%d" % i
