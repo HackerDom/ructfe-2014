@@ -1,26 +1,61 @@
-#!/usr/bin/pythonw
+#!/usr/bin/python
 
 from socket import SOCK_STREAM, AF_INET, socket, SO_REUSEADDR, SOL_SOCKET
-from utils import *
 import thread
-import mcrypt
+from mcrypt import MCRYPT
+import base64 as base
+from cutils import to_human_day
+import redis
+from utils import *
 
 
 _author__ = 'm_messiah'
+db = redis.StrictRedis(host='r14-test4-1.urgu.org', port=6379, db=0)
+crypter = MCRYPT("gost", "ecb")
+# TODO: how to generate key?
+crypter.init("0" * 32)
 
 
-def add_path(path, end=""):
-    steps = parsePath(createPath(path))
-    # Write to DB
-    return spark(steps) + "\t" + str(sum(steps)) + "\n" + str(steps) + end
+def add_path(token, path, end=""):
+    try:
+        steps = parsePath(createPath(path))
+        db.lpush(token, path)
+        step_all = spark(steps) + "\t" + str(sum(steps))
+        db.lpush(get_name(token), step_all)
+        return step_all
+    except Exception as e:
+        db.lpop(token)
+        return "Invalid token" + str(e)
 
 
 def register(name):
-    def create_token(name_):
-        return u"hello_{}".format(name_)
-    token = create_token(name)
-    # create db/dir/something else
+    token = get_token(name)
+    # Security fix:
+    # if db.exists(token):
+    #     return "Name exists"
     return token
+
+
+def get_token(name_):
+    crypter.reinit()
+    return base.b16encode(crypter.encrypt(name_))
+
+
+def get_name(token):
+    crypter.reinit()
+    return crypter.decrypt(base.b16decode(token)).rstrip("\0")
+
+
+def view_user(name, day=0, count=0):
+    if not db.exists(name):
+        return "User not found"
+    if count == 0:
+        day, count = count, day
+    return u"\n".join(
+        [name + u" steps:"] +
+        [to_human_day(i) + u":\t\t" + v.decode("utf8")
+         for i, v in enumerate(db.lrange(name, day, count))]
+    )
 
 
 class Connection:
@@ -31,6 +66,7 @@ class Connection:
         self.commands = {
             "add": add_path,
             "register": register,
+            "view": view_user,
         }
 
     def recvline(self):
@@ -50,10 +86,7 @@ class Connection:
 
     def serve(self):
         try:
-            while True:
-                if not self.alive:
-                    self.close()
-
+            while self.alive:
                 data = self.recvline()
                 if not data:
                     break
@@ -61,18 +94,20 @@ class Connection:
                     response = u"bye, bye!"
                     self.alive = False
                 else:
-                    command = data.lower().split()
+                    command = data.split()
                     try:
                         response = unicode(
-                            self.commands[command[0]](*command[1:])
+                            self.commands[command[0].lower()](*command[1:])
                             if command[0] in self.commands
                             else "Unknown command"
                         )
-                    except ValueError:
-                        response = "Bad data"
+                    except ValueError as e:
+                        response = "Bad data" + str(e)
                     except IndexError:
                         response = "Not enough data"
                 self.sendline(response.encode("utf-8"))
+
+            self.close()
 
         except Exception as e:
             print e

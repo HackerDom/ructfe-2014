@@ -21,3 +21,14 @@ def distanceCoords(tuple start, tuple end):
     ad = atan2(y, x)
     dist = int(ad * 6372795)
     return dist
+
+
+def to_human_day(int day):
+    cdef tuple days
+    days = ("Today",
+            "Yesterday",
+            "Ereyesterday")
+    if day < 3:
+        return days[day]
+    else:
+        return str(day) + " days ago"
