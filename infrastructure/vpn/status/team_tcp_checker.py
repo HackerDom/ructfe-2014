@@ -6,7 +6,7 @@ import sys
 import signal
 import time
 
-TIMEOUT = 7
+TIMEOUT = 16
 
 
 def genstring(n):
@@ -52,7 +52,7 @@ def handle_client(host, port):
 
         end_time = time.time()
         total_time_ms = (end_time - start_time) * 1000
-        sys.stderr.write("%s : %.02g\n" % (host, total_time_ms))
+        sys.stderr.write("%s : %.02f\n" % (host, total_time_ms))
         sys.stderr.flush()
     except:
         pass
