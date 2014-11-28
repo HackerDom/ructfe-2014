@@ -3,9 +3,9 @@
 # change directory to the script location
 cd "$( dirname "${BASH_SOURCE[0]}")"
 
-team_num=${1?Usage: ./start_testservice.sh <team_num>}
+team_num=${1?Usage: ./start_netscanning.sh <team_num>}
 
-name=team_testservice
+name=team_netscanning
 full_name=${name}_${team_num}
 
 if docker stop ${full_name} &>/dev/null; then
@@ -15,7 +15,7 @@ fi
 
 cid=$(docker run --net=none --name ${full_name} --memory=2048m --cpu-shares=10 -d ructfe2014:${name})
 
-ip="10.$((60 + team_num / 256)).$((team_num % 256)).100/24"
+ip="10.$((60 + team_num / 256)).$((team_num % 256)).129/24"
 router_ip="10.$((60 + team_num / 256)).$((team_num % 256)).1"
 
 # add eth1 interface
