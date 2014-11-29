@@ -1,0 +1,91 @@
+apt-get install graphite-web
+apt-get install graphite-carbon
+apt-get install nginx nginx-extras
+apt-get install uwsgi uwsgi-plugin-python
+
+/etc/carbon/carbon.conf:
+MAX_UPDATES_PER_SECOND = 5000
+USE_WHITELIST = True
+MAX_CREATES_PER_MINUTE = 250
+
+/etc/carbon/storage-schemas.conf:
+[default_1min_for_1day]
+pattern = .*
+retentions = 10s:14d
+
+
+/etc/default/graphite-carbon:
+CARBON_CACHE_ENABLED=true
+
+
+# monitor:Gjrf;bUhfabrb3255
+/etc/nginx/htpasswd:
+monitor:$apr1$NjRTOhlL$k4x/1Boe2a3ncysUiu0Z0/
+
+/etc/nginx/sites-available/default:
+
+upstream django {
+    # Distribute requests to servers based on client IP. This keeps load
+    # balancing fair but consistent per-client. In this instance we're
+    # only using one uWGSI worker anyway.
+    server unix:/tmp/graphite.sock;
+}
+
+server {
+        listen 80 default_server;
+
+        location /static/ {
+                alias /usr/share/graphite-web/static/;
+        }
+
+        location / {
+                uwsgi_pass  django;
+                include     uwsgi_params;
+        }
+        auth_basic "Oops!";
+        auth_basic_user_file /etc/nginx/htpasswd;
+}
+
+/etc/uwsgi/apps-available/graphite.ini:
+[uwsgi]
+ 
+vacuum = true
+master = true
+processes = 16
+pidfile2 = /tmp/graphite.pid
+socket = /tmp/graphite.sock
+chmod-socket = 660
+gid = www-data
+uid = www-data
+chdir = /usr/share/graphite-web
+pymodule-alias = graphite.local_settings=/etc/graphite/local_settings.py
+module = wcgi:application
+buffer-size = 65536
+
+/etc/graphite/local_settings.py:
+SECRET_KEY = 'AjhfBds429Khsdfhdjkh'
+
+ln -s ../apps-available/graphite.ini /etc/uwsgi/apps-enabled/
+ln -s graphite.wsgi /usr/share/graphite-web/wcgi.py
+
+chown www-data:www-data /var/log/graphite/
+
+graphite-manage syncdb
+chown www-data:www-data /var/lib/graphite/graphite.db /var/lib/graphite/ /var/lib/graphite/search_index /var/lib/graphite
+
+wget http://grafanarel.s3.amazonaws.com/grafana-1.9.0-rc1.tar.gz
+
+# unpack graphana to /var/www/graphana
+
+/etc/nginx/sites-available/graphana:
+server {
+        listen 81 default_server;
+
+        root /var/www/grafana/;
+        index index.html;
+
+        auth_basic "Oops!";
+        auth_basic_user_file /etc/nginx/htpasswd;
+}
+
+ln -s ../sites-available/grafana /etc/nginx/sites-enabled
