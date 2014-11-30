@@ -48,8 +48,19 @@ namespace VWS {
           new DataOutputStream(connection.output_stream)
         );
         yield tx.parse();
+
         if (tx.req.method == "GET") {
           stderr.printf("GET URL: %s\n", tx.req.url.path);
+
+          var file = File.new_for_path("vws.vala");
+          var file_info = yield file.query_info_async("*",
+            FileQueryInfoFlags.NONE, Priority.HIGH_IDLE);
+          tx.res.headers.set(
+            "Content-Length", file_info.get_size().to_string());
+
+          yield tx.write_start_line();
+          yield tx.write_headers();
+          yield tx.serve(file);
         }
       } catch (Error e) {
         stderr.printf("Error while process socket: %s\n", e.message);
@@ -69,6 +80,12 @@ namespace VWS {
       this.dos = dos;
 
       req = new Request();
+      res = new Response();
+
+      // Initial headers
+      res.headers.set("Server", "VWS");
+      res.headers.set("Content-Type", "application/octet-stream");
+      res.headers.set("X-Powered-By", "Vala 0.26.0");
     }
 
     public async void parse() throws Error {
@@ -96,7 +113,7 @@ namespace VWS {
       string last_header_name = null;
       while (true) {
         line = yield dis.read_line_async(Priority.HIGH_IDLE);
-        if ((line ?? "") == "") break;
+        if (line == "" || line == "\r") break;
 
         if (header_line_re.match(line, 0, out mi)) {
           last_header_name = mi.fetch(1);
@@ -112,13 +129,40 @@ namespace VWS {
 
       // Read body
     }
+
+    public async void serve(File f) throws Error {
+      if (!f.query_exists() ||
+        f.query_file_type(FileQueryInfoFlags.NONE) != FileType.REGULAR ) {
+        // Not a file
+      }
+
+      var dis = new DataInputStream(f.read());
+      while (true) {
+        var bytes = yield dis.read_bytes_async(512, Priority.HIGH_IDLE);
+        yield this.dos.write_bytes_async(bytes, Priority.HIGH_IDLE);
+        if (bytes.length == 0) break;
+      }
+    }
+
+    public async void write_start_line() throws Error {
+      yield dos.write_async("HTTP/1.1 200 OK\n".data, Priority.HIGH_IDLE);
+    }
+
+    public async void write_headers() throws Error {
+      foreach (var entry in res.headers.entries) {
+        string name =  entry.key;
+        string value = entry.value;
+        yield dos.write_async(@"$name: $value\n".data, Priority.HIGH_IDLE);
+      }
+      yield dos.write_async("\n".data, Priority.HIGH_IDLE);
+    }
   }
 
   public class URL : Object {
-    public string scheme   { get; set; }
-    public string path     { get; set; }
-    public string query    { get; set; }
-    public string fragment { get; set; }
+    public string scheme   { get; set; default = "http"; }
+    public string path     { get; set; default = "/"; }
+    public string query    { get; set; default = ""; }
+    public string fragment { get; set; default = ""; }
 
     public URL(string url) {
       MatchInfo mi;
@@ -150,7 +194,6 @@ namespace VWS {
   }
 
   public class Request : Message {
-    public bool is_finished { get; set; default = false; }
     public string method    { get; set; }
     public URL url          { get; set; }
     public string version   { get; set; }
