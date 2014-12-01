@@ -42,3 +42,13 @@ def parsePath(path, step=1.0):
         return distances
     except:
         return 2
+
+
+def to_human_day(day):
+    days = ("Today",
+            "Yesterday",
+            "Ereyesterday")
+    if day < 3:
+        return days[day]
+    else:
+        return str(day) + " days ago"

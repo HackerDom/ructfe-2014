@@ -4,7 +4,6 @@ from socket import SOCK_STREAM, AF_INET, socket, SO_REUSEADDR, SOL_SOCKET
 import thread
 from mcrypt import MCRYPT
 import base64 as base
-from cutils import to_human_day
 import redis
 from utils import *
 
@@ -25,7 +24,7 @@ def add_path(token, path, end=""):
         return step_all
     except Exception as e:
         db.lpop(token)
-        return "Invalid token" + str(e)
+        return "Invalid token: " + str(e)
 
 
 def register(name):
@@ -110,7 +109,8 @@ class Connection:
             self.close()
 
         except Exception as e:
-            print e
+            import traceback
+            traceback.print_exc()
         finally:
             self.close()
 
