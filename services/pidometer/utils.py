@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-__author__ = 'muzafarov'
+__author__ = 'm_messiah'
 
-from cutils import distanceCoords
 
 def spark(ints):
     """Returns a spark string from given iterable of ints.

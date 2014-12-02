@@ -1,10 +1,9 @@
 #!/usr/bin/python
+# coding=utf-8
 __author__ = 'm_messiah'
 
-from distutils.core import setup
-from Cython.Build import cythonize
+from network import *
 
-setup(
-    name='Hello world app',
-    ext_modules=cythonize("cutils.pyx"),
-)
+if __name__ == '__main__':
+    S = Server("", 27001)
+    S.serve()
