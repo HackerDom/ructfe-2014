@@ -1,0 +1,17 @@
+root@ructf-srv01g.ructf.yandex.net : 00:25:90:e4:cd:f2
+root@ructf-srv02g.ructf.yandex.net : 00:25:90:e5:42:f2
+root@ructf-srv03g.ructf.yandex.net : 00:25:90:e5:44:ce
+root@ructf-srv04g.ructf.yandex.net : 00:25:90:e5:43:32
+root@ructf-srv05g.ructf.yandex.net : 00:25:90:e5:44:2a
+root@ructf-srv06g.ructf.yandex.net : 00:25:90:e5:49:88
+root@ructf-srv07g.ructf.yandex.net : 00:25:90:e4:cd:72
+root@ructf-srv08g.ructf.yandex.net : 00:25:90:e5:43:ae
+
+root@ructf-srv01h.ructf.yandex.net : 90:2b:34:cf:37:c0
+root@ructf-srv02h.ructf.yandex.net : 90:2b:34:cf:25:f4
+root@ructf-srv03h.ructf.yandex.net : 90:2b:34:cf:3b:b8
+root@ructf-srv04h.ructf.yandex.net : 90:2b:34:cf:23:1a
+root@ructf-srv05h.ructf.yandex.net : 90:2b:34:cf:2d:42
+root@ructf-srv06h.ructf.yandex.net : 90:2b:34:cf:2c:46
+root@ructf-srv07h.ructf.yandex.net : 90:2b:34:cf:29:86
+root@ructf-srv08h.ructf.yandex.net : 90:2b:34:cf:26:54
