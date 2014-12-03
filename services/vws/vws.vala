@@ -4,10 +4,9 @@ public class Main : Object {
 
   public static int main(string[] args) {
     try {
-      VWS.Options.parse(args);
+      new VWS.Options().parse(args);
       var ws = new VWS.Server();
       ws.start();
-      stderr.printf("Server started at %d\n", VWS.Options.port);
     } catch (Error e) {
       stderr.printf("%s\n", e.message);
     }
@@ -36,7 +35,6 @@ namespace VWS {
 
     private bool on_connection(SocketConnection connection) {
       connection.socket.timeout = VWS.Options.inactivity_timeout;
-      stdout.printf("Got incoming connection\n");
       process_request.begin(connection);
       return true;
     }
@@ -50,14 +48,12 @@ namespace VWS {
         yield tx.parse();
 
         if (tx.req.method == "GET") {
-          stderr.printf("GET URL: %s\n", tx.req.url.path);
-
-          var file = File.new_for_path("vws.vala");
+          var file = File.new_for_path(
+            VWS.Options.static_dir + tx.req.url.path);
           var file_info = yield file.query_info_async("*",
             FileQueryInfoFlags.NONE, Priority.HIGH_IDLE);
           tx.res.headers.set(
             "Content-Length", file_info.get_size().to_string());
-
           yield tx.write_start_line();
           yield tx.write_headers();
           yield tx.serve(file);
@@ -205,11 +201,14 @@ namespace VWS {
   public class Options : Object {
     public static uint16 port = 3000;
     public static uint16 inactivity_timeout = 60;
+    public static string static_dir = "./";
 
     private static const OptionEntry[] options = {
       {"port", 'p', 0, OptionArg.INT, ref port, "port (default 3000)", null},
       {"inactivity_timeout", 'i', 0, OptionArg.INT, ref inactivity_timeout,
         "inactivity timeout for connection (default 60s)", null},
+      {"static_dir", 'd', 0, OptionArg.FILENAME, ref static_dir,
+        "catalog for serving static files", null},
       {null}
     };
 
