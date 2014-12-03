@@ -2,7 +2,7 @@
 # coding=utf-8
 __author__ = 'm_messiah'
 
-from network import *
+from libnetwork import *
 
 if __name__ == '__main__':
     S = Server("", 27001)

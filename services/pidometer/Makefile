@@ -1,21 +1,18 @@
-.PHONY: all cutils network clean cython
+.PHONY: all network clean cython
+CC=gcc
 
-all: cutils network
+all: network server
 	rm -rf build
 
-cutils:
-	clang -fno-strict-aliasing -fno-common -dynamic -I/usr/local/include -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -I/usr/local/Cellar/python/2.7.8_2/Frameworks/Python.framework/Versions/2.7/include/python2.7 -c cutils.c -o build/cutils.o
-	clang -bundle -undefined dynamic_lookup -L/usr/local/lib build/cutils.o -o cutils.so
+server:
+	$(CC) server.c -lsocket -lnsl
 
-network:
-	clang -fno-strict-aliasing -fno-common -dynamic -I/usr/local/include -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -I/usr/local/Cellar/python/2.7.8_2/Frameworks/Python.framework/Versions/2.7/include/python2.7 -c network.c -o build/network.o
-	clang -bundle -undefined dynamic_lookup -L/usr/local/lib build/network.o -o network.so
+network: cython
+	$(CC) -shared -dynamic -O3 -Wall `python-config --cflags`  -c network.c -o libnetwork.so
 
 clean:
-	rm -f network.so
-	rm -f cutils.so
-	rm -rf build
+	rm -f libnetwork.so
 	rm -f *.pyc
 
 cython:
-	python build.py build_ext --inplace
+	cython -D network.pyx
