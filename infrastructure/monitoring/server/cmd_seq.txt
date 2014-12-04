@@ -49,29 +49,27 @@ server {
 /etc/uwsgi/apps-available/graphite.ini:
 [uwsgi]
  
-vacuum = true
 master = true
 processes = 16
-pidfile2 = /tmp/graphite.pid
+plugin = python
+enable-threads = true
+vacuum = true
+pidfile = /run/uwsgi/app/graphite/pid
 socket = /tmp/graphite.sock
-chmod-socket = 660
+uid = _graphite
 gid = www-data
-uid = www-data
-chdir = /usr/share/graphite-web
 pymodule-alias = graphite.local_settings=/etc/graphite/local_settings.py
-module = wcgi:application
-buffer-size = 65536
+wsgi-file = /usr/share/graphite-web/graphite.wsgi
 
 /etc/graphite/local_settings.py:
 SECRET_KEY = 'AjhfBds429Khsdfhdjkh'
 
 ln -s ../apps-available/graphite.ini /etc/uwsgi/apps-enabled/
-ln -s graphite.wsgi /usr/share/graphite-web/wcgi.py
 
-chown www-data:www-data /var/log/graphite/
+# # it may be already done:  chown _graphite:_graphite /var/log/graphite/
 
 graphite-manage syncdb
-chown www-data:www-data /var/lib/graphite/graphite.db /var/lib/graphite/ /var/lib/graphite/search_index /var/lib/graphite
+# it may be already done: chown _graphite:_graphite /var/lib/graphite/graphite.db /var/lib/graphite/ /var/lib/graphite/search_index /var/lib/graphite
 
 wget http://grafanarel.s3.amazonaws.com/grafana-1.9.0-rc1.tar.gz
 
