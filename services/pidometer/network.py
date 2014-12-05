@@ -1,8 +1,6 @@
-#!/usr/bin/python
+# coding=utf-8
 _author__ = 'm_messiah'
 
-from socket import SOCK_STREAM, AF_INET, socket, SO_REUSEADDR, SOL_SOCKET
-import thread
 from mcrypt import MCRYPT
 import base64 as base
 import redis
@@ -15,7 +13,7 @@ crypter = MCRYPT("gost", "ecb")
 crypter.init("0" * 32)
 
 
-def add_path(token, path, end=""):
+def add_path(token, path):
     try:
         steps = parsePath(createPath(path))
         db.lpush(token, path)
@@ -24,7 +22,7 @@ def add_path(token, path, end=""):
         return step_all
     except Exception as e:
         db.lpop(token)
-        return "Invalid token: " + str(e)
+        return u"Invalid token: " + str(e)
 
 
 def register(name):
@@ -48,6 +46,8 @@ def get_name(token):
 def view_user(name, day=0, count=0):
     if not db.exists(name):
         return "User not found"
+    day = int(day)
+    count = int(count)
     if count == 0:
         day, count = count, day
     return u"\n".join(
@@ -57,90 +57,8 @@ def view_user(name, day=0, count=0):
     )
 
 
-class Connection:
-    def __init__(self, _conn, _addr):
-        self.conn = _conn
-        self.addr = _addr
-        self.alive = True
-        self.commands = {
-            "add": add_path,
-            "register": register,
-            "view": view_user,
-        }
-
-    def recvline(self):
-        return self.conn.recv(256)
-
-    def sendline(self, line):
-        line += "\r\n"
-        self.conn.sendall(line)
-
-    def close(self):
-        try:
-            self.sendline("-" * 20)
-        except:
-            pass  # Connection already closed
-        finally:
-            self.conn.close()
-
-    def serve(self):
-        try:
-            while self.alive:
-                data = self.recvline()
-                if not data:
-                    break
-                if u"quit" in data:
-                    response = u"bye, bye!"
-                    self.alive = False
-                else:
-                    command = data.split()
-                    try:
-                        response = unicode(
-                            self.commands[command[0].lower()](*command[1:])
-                            if command[0] in self.commands
-                            else "Unknown command"
-                        )
-                    except ValueError as e:
-                        response = "Bad data" + str(e)
-                    except IndexError:
-                        response = "Not enough data"
-                self.sendline(response.encode("utf-8"))
-
-            self.close()
-
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-        finally:
-            self.close()
-
-
-def handler(conn, addr):
-    conn = Connection(conn, addr)
-    conn.serve()
-
-
-class Server:
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
-        self.socket = socket(AF_INET, SOCK_STREAM)
-        self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-
-    def serve(self):
-        self.socket.bind((self.host, self.port))
-        while True:
-            self.socket.listen(100)
-            conn, addr = self.socket.accept()
-            thread.start_new_thread(handler, (conn, addr))
-
-
-def distanceCoords(tuple start, tuple end):
-    cdef tuple r_start, r_end
-    cdef double cl1, cl2, sl1, sl2, delta, cdt, sdt
-    cdef double x, y, ad
-    cdef double rad = pi / 180.0
-    cdef long dist
+def distanceCoords(start, end):
+    rad = pi / 180.0
     r_start = (start[0] * rad, start[1] * rad)
     r_end = (end[0] * rad, end[1] * rad)
     cl1 = cos(r_start[0])
@@ -205,4 +123,4 @@ def to_human_day(day):
 
 
 if __name__ == "__main__":
-    print "This is Cython library"
+    print "This is library"
