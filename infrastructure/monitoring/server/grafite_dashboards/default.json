@@ -10,7 +10,7 @@
   "sharedCrosshair": true,
   "rows": [
     {
-      "title": "VPn averages",
+      "title": "VPN averages",
       "height": "25px",
       "editable": true,
       "collapse": false,
@@ -27,7 +27,7 @@
           "interval": null,
           "targets": [
             {
-              "target": "sum(servers.google-vpn.network.team*.rx_packets).select metric"
+              "target": "sum(servers.vpn-dev.network.team*.rx_packets).select metric"
             }
           ],
           "cacheTimeout": null,
@@ -66,7 +66,7 @@
           "interval": null,
           "targets": [
             {
-              "target": "sumSeries(servers.google-vpn.network.team*.rx_byte)"
+              "target": "sumSeries(servers.vpn-dev.network.team*.rx_byte)"
             }
           ],
           "cacheTimeout": null,
@@ -105,7 +105,7 @@
           "interval": null,
           "targets": [
             {
-              "target": "sumSeries(servers.google-vpn.network.team*.tx_packets)"
+              "target": "sumSeries(servers.vpn-dev.network.team*.tx_packets)"
             }
           ],
           "cacheTimeout": null,
@@ -144,7 +144,7 @@
           "interval": null,
           "targets": [
             {
-              "target": "sumSeries(servers.google-vpn.network.team*.tx_packets)"
+              "target": "sumSeries(servers.vpn-dev.network.team*.tx_packets)"
             }
           ],
           "cacheTimeout": null,
@@ -199,7 +199,7 @@
           "interval": null,
           "targets": [
             {
-              "target": "countSeries(averageAbove(servers.google-vpn.network.team*.rx_packets, 0.00001)).select metric"
+              "target": "countSeries(averageAbove(servers.vpn-dev.network.team*.rx_packets, 0.00001)).select metric"
             }
           ],
           "cacheTimeout": null,
