@@ -48,6 +48,9 @@ server {
                 index index.html;
         }
 
+        location = /favicon.ico {
+            alias    /var/www/grafana/favicon.ico;
+        }
         auth_basic "Oops!";
         auth_basic_user_file /etc/nginx/htpasswd;
 }
