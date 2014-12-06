@@ -36,4 +36,8 @@ $t->get_ok($url->path('/a/b/../../1.txt'))->status_is(200);
 $t->get_ok($url->path('/../../1.txt'))->status_is(200);
 $t->get_ok($url->path('/a/b/c/../../1.txt'))->status_is(404);
 
+# Test vuln
+$t->get_ok($url->path('/../vws.t'))->status_is(404);
+$t->get_ok($url->path('/%2E%2E/vws.t'))->status_is(200);
+
 done_testing();

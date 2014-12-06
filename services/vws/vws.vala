@@ -199,7 +199,7 @@ namespace VWS {
             }
           }
           foreach (var part in p) {
-            this.path += part + "/";
+            this.path += Uri.unescape_string(part) + "/";
           }
           this.path = this.path.substring(0, this.path.length -1);
         }
