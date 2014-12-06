@@ -52,7 +52,16 @@
             "lineColor": "rgb(31, 120, 193)",
             "fillColor": "rgba(31, 118, 189, 0.18)"
           },
-          "height": ""
+          "height": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected"
         },
         {
           "title": "",
@@ -66,7 +75,7 @@
           "interval": null,
           "targets": [
             {
-              "target": "sumSeries(servers.vpn-dev.network.team*.rx_byte)"
+              "target": "sumSeries(servers.vpn-dev.network.team*.rx_bit)"
             }
           ],
           "cacheTimeout": null,
@@ -91,7 +100,16 @@
             "lineColor": "rgb(31, 120, 193)",
             "fillColor": "rgba(31, 118, 189, 0.18)"
           },
-          "height": ""
+          "height": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected"
         },
         {
           "title": "",
@@ -130,7 +148,16 @@
             "lineColor": "rgb(31, 120, 193)",
             "fillColor": "rgba(31, 118, 189, 0.18)"
           },
-          "height": ""
+          "height": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected"
         },
         {
           "title": "",
@@ -169,7 +196,16 @@
             "lineColor": "rgb(31, 120, 193)",
             "fillColor": "rgba(31, 118, 189, 0.18)"
           },
-          "height": ""
+          "height": "",
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected"
         }
       ],
       "showTitle": true
@@ -223,7 +259,16 @@
             "full": false,
             "lineColor": "rgb(31, 120, 193)",
             "fillColor": "rgba(31, 118, 189, 0.18)"
-          }
+          },
+          "nullText": null,
+          "valueMaps": [
+            {
+              "value": "null",
+              "op": "=",
+              "text": "N/A"
+            }
+          ],
+          "nullPointMode": "connected"
         }
       ]
     },
@@ -441,7 +486,7 @@
           "x-axis": true,
           "y-axis": true,
           "y_formats": [
-            "bytes",
+            "bps",
             "none"
           ],
           "grid": {
@@ -480,10 +525,10 @@
           },
           "targets": [
             {
-              "target": "aliasSub(groupByNode(servers.*.network.eth*.tx_byte,1,\"sumSeries\"),\"$\",\".tx\").select metric"
+              "target": "aliasSub(groupByNode(servers.*.network.eth*.tx_bit,1,\"sumSeries\"),\"$\",\".tx\").select metric"
             },
             {
-              "target": "aliasSub(groupByNode(servers.*.network.eth*.rx_byte,1,\"sumSeries\"),\"$\",\".rx\").select metric"
+              "target": "aliasSub(groupByNode(servers.*.network.eth*.rx_bit,1,\"sumSeries\"),\"$\",\".rx\").select metric"
             }
           ],
           "aliasColors": {},

@@ -251,10 +251,10 @@
           },
           "targets": [
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.tx_byte), 'vpn-dev.tx')"
+              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.tx_bit), 'vpn-dev.tx')"
             },
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.rx_byte), 'vpn-dev.rx')"
+              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.rx_bit), 'vpn-dev.rx')"
             }
           ],
           "aliasColors": {},
