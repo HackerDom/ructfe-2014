@@ -131,6 +131,7 @@ namespace VWS {
         this.res.code = 404;
         return;
       }
+
       var finfo = yield f.query_info_async("*",
         FileQueryInfoFlags.NONE, Priority.HIGH_IDLE);
       this.res.headers.set("Content-Length", finfo.get_size().to_string());
@@ -154,7 +155,7 @@ namespace VWS {
 
     public async void write_headers() throws Error {
       foreach (var entry in res.headers.entries) {
-        string name =  entry.key;
+        string name  = entry.key;
         string value = entry.value;
         yield dos.write_async(@"$name: $value\n".data, Priority.HIGH_IDLE);
       }
@@ -178,11 +179,29 @@ namespace VWS {
           (\?([^#]*))?      # Query
           (\#(.*))?         # Fragment
         """, RegexCompileFlags.EXTENDED);
+
         if (url_re.match(url, 0, out mi)) {
           this.scheme   = mi.fetch(2);
-          this.path     = mi.fetch(5);
           this.query    = mi.fetch(7);
           this.fragment = mi.fetch(9);
+
+          var parts = mi.fetch(5).split("/");
+          LinkedList<string> p = new LinkedList<string>();
+
+          foreach (var part in parts) {
+            if (part == "") continue;
+            if (part == ".." && p.size == 0) continue;
+
+            if (part == "..") {
+              p.poll_tail();
+            } else {
+              p.offer_tail(part);
+            }
+          }
+          foreach (var part in p) {
+            this.path += part + "/";
+          }
+          this.path = this.path.substring(0, this.path.length -1);
         }
       } catch (Error e) {}
     }

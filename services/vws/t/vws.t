@@ -31,4 +31,9 @@ $t->get_ok($url->path('/-1.txt'))
   ->header_is(Server => 'VWS')
   ->header_is('X-Powered-By' => 'Vala 0.26.0');
 
+$t->get_ok($url->path('/1.txt/../1.txt'))->status_is(200);
+$t->get_ok($url->path('/a/b/../../1.txt'))->status_is(200);
+$t->get_ok($url->path('/../../1.txt'))->status_is(200);
+$t->get_ok($url->path('/a/b/c/../../1.txt'))->status_is(404);
+
 done_testing();
