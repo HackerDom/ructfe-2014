@@ -189,18 +189,12 @@ namespace VWS {
           LinkedList<string> p = new LinkedList<string>();
 
           foreach (var part in parts) {
-            if (part == "") continue;
-            if (part == ".." && p.size == 0) continue;
-
-            if (part == "..") {
-              p.poll_tail();
-            } else {
-              p.offer_tail(part);
-            }
+            if (part == "" || (part == ".." && p.size == 0)) continue;
+            if (part == "..") p.poll_tail();
+            else p.offer_tail(part);
           }
-          foreach (var part in p) {
+          foreach (var part in p)
             this.path += Uri.unescape_string(part) + "/";
-          }
           this.path = this.path.substring(0, this.path.length -1);
         }
       } catch (Error e) {}
