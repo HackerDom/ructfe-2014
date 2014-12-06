@@ -11,12 +11,13 @@ use strict;
 my ($port, $vws);
 BEGIN {
   $port = Mojo::IOLoop::Server->generate_port;
-  $vws = start ["$Bin/../vws", '-p', $port, '-i', '1', '-d', "$Bin/static"]
+  $vws = start ["$Bin/../vws", '-p', $port, '-i', '1', '-d', "$Bin/static"];
+  sleep 1;
 }
 END { $vws->signal('SIGTERM') }
 
 my $url = Mojo::URL->new("http://localhost:$port/");
-my $t   = Test::Mojo->new();
+my $t   = Test::Mojo->new->tap(sub { $_->ua->max_connections(0) });
 
 $t->get_ok($url->path('/1.txt'))
   ->status_is(200)
