@@ -48,12 +48,11 @@ namespace VWS {
         yield tx.parse();
 
         if (tx.req.method == "GET") {
+
           var file = File.new_for_path(
             VWS.Options.static_dir + tx.req.url.path);
-          var file_info = yield file.query_info_async("*",
-            FileQueryInfoFlags.NONE, Priority.HIGH_IDLE);
-          tx.res.headers.set(
-            "Content-Length", file_info.get_size().to_string());
+          yield tx.fix_headers(file);
+
           yield tx.write_start_line();
           yield tx.write_headers();
           yield tx.serve(file);
@@ -126,11 +125,19 @@ namespace VWS {
       // Read body
     }
 
-    public async void serve(File f) throws Error {
+    public async void fix_headers(File f) throws Error {
       if (!f.query_exists() ||
         f.query_file_type(FileQueryInfoFlags.NONE) != FileType.REGULAR ) {
-        // Not a file
+        this.res.code = 404;
+        return;
       }
+      var finfo = yield f.query_info_async("*",
+        FileQueryInfoFlags.NONE, Priority.HIGH_IDLE);
+      this.res.headers.set("Content-Length", finfo.get_size().to_string());
+    }
+
+    public async void serve(File f) throws Error {
+      if (!this.res.headers.has_key("Content-Length")) return;
 
       var dis = new DataInputStream(f.read());
       while (true) {
@@ -141,7 +148,8 @@ namespace VWS {
     }
 
     public async void write_start_line() throws Error {
-      yield dos.write_async("HTTP/1.1 200 OK\n".data, Priority.HIGH_IDLE);
+      var code = this.res.code.to_string();
+      yield dos.write_async(@"HTTP/1.1 $code OK\n".data, Priority.HIGH_IDLE);
     }
 
     public async void write_headers() throws Error {
@@ -196,6 +204,7 @@ namespace VWS {
   }
 
   public class Response : Message {
+    public uint16 code { get; set; default = 200; }
   }
 
   public class Options : Object {

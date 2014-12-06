@@ -19,9 +19,15 @@ my $url = Mojo::URL->new("http://localhost:$port/");
 my $t   = Test::Mojo->new();
 
 $t->get_ok($url->path('/1.txt'))
+  ->status_is(200)
   ->header_is(Server => 'VWS')
   ->header_is('X-Powered-By' => 'Vala 0.26.0')
   ->header_is('Content-Length' => 10)
   ->content_is("test data\n");
+
+$t->get_ok($url->path('/-1.txt'))
+  ->status_is(404)
+  ->header_is(Server => 'VWS')
+  ->header_is('X-Powered-By' => 'Vala 0.26.0');
 
 done_testing();
