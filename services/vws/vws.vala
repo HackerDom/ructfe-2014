@@ -172,7 +172,8 @@ namespace VWS {
       var count = 0;
 
       while (count < len) {
-        var bytes = yield this.dis.read_bytes_async(512, Priority.HIGH_IDLE);
+        var size = len - count < 512 ? len - count : 512;
+        var bytes = yield this.dis.read_bytes_async(size, Priority.HIGH_IDLE);
         yield dos.write_bytes_async(bytes, Priority.HIGH_IDLE);
         count += bytes.length;
       }
