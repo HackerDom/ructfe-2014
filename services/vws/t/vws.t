@@ -2,6 +2,7 @@ use FindBin '$Bin';
 use IPC::Run 'start';
 use Mojo::IOLoop::Server;
 use Mojo::URL;
+use Mojo::Util 'hmac_sha1_sum';
 use Test::Mojo;
 use Test::More;
 
@@ -32,6 +33,12 @@ $t->get_ok($url->path('/-1.txt'))
   ->status_is(404)
   ->header_is(Server => 'VWS')
   ->header_is('X-Powered-By' => 'Vala 0.26.0');
+
+# Sign
+my $sign_data = 'qwerasdf1234';
+$t->get_ok($url->path('/test') => {'X-RuCTFE' => $sign_data})
+  ->status_is(404)
+  ->header_is('X-RuCTFE' => hmac_sha1_sum($sign_data => 'RuCTFE_2014'));
 
 # PUT
 my $data = "test\ndata\nfor\n\nput\n";

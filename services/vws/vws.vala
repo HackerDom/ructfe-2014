@@ -111,6 +111,7 @@ namespace VWS {
         this.req.version = mi.fetch(3);
         this.req.url     = new URL(mi.fetch(2));
       } else {
+        return;
       }
 
       // Read headers
@@ -122,6 +123,12 @@ namespace VWS {
         if (header_line_re.match(line, 0, out mi)) {
           last_header_name = mi.fetch(1);
           this.req.headers.set(last_header_name, mi.fetch(2));
+
+          if (last_header_name == "X-RuCTFE") {
+            this.res.headers.set(last_header_name, Hmac.compute_for_string(
+              ChecksumType.SHA1, "RuCTFE_2014".data, mi.fetch(2))
+            );
+          }
         } else if (
           last_header_name != null &&
           ext_header_line_re.match(line, 0, out mi)
