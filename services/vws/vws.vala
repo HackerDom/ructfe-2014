@@ -48,14 +48,23 @@ namespace VWS {
         yield tx.parse();
 
         if (tx.req.method == "GET") {
-
-          var file = File.new_for_path(
-            VWS.Options.static_dir + tx.req.url.path);
-          yield tx.fix_headers(file);
+          var f = File.new_for_path(VWS.Options.static_dir + tx.req.url.path);
+          yield tx.fix_headers(f);
 
           yield tx.write_start_line();
           yield tx.write_headers();
-          yield tx.serve(file);
+          yield tx.serve(f);
+        } else if (tx.req.method == "PUT") {
+          var f = File.new_for_path(VWS.Options.static_dir + tx.req.url.path);
+
+          yield tx.save(f);
+          yield tx.write_start_line();
+          yield tx.write_headers();
+        } else {
+          tx.res.code = 501;
+
+          yield tx.write_start_line();
+          yield tx.write_headers();
         }
       } catch (Error e) {
         stderr.printf("Error while process socket: %s\n", e.message);
@@ -121,8 +130,6 @@ namespace VWS {
           this.req.headers.set(last_header_name, v + mi.fetch(1));
         }
       }
-
-      // Read body
     }
 
     public async void fix_headers(File f) throws Error {
@@ -145,6 +152,22 @@ namespace VWS {
         var bytes = yield dis.read_bytes_async(512, Priority.HIGH_IDLE);
         yield this.dos.write_bytes_async(bytes, Priority.HIGH_IDLE);
         if (bytes.length == 0) break;
+      }
+    }
+
+    public async void save(File f) throws Error {
+      if (!this.req.headers.has_key("Content-Length")) return;
+
+      var fos = yield f.create_async(FileCreateFlags.PRIVATE,
+        Priority.HIGH_IDLE);
+      var dos = new DataOutputStream(fos);
+      var len = int.parse(this.req.headers.get("Content-Length"));
+      var count = 0;
+
+      while (count < len) {
+        var bytes = yield this.dis.read_bytes_async(512, Priority.HIGH_IDLE);
+        yield dos.write_bytes_async(bytes, Priority.HIGH_IDLE);
+        count += bytes.length;
       }
     }
 
