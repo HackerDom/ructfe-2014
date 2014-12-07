@@ -1,0 +1,2 @@
+DROP DATABASE ructfe2014;
+DROP ROLE ructfe2014;
