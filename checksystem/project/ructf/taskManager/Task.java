@@ -2,6 +2,7 @@ package ructf.taskManager;
 
 import java.util.UUID;
 
+import ructf.dbObjects.Service;
 import ructf.dbObjects.Team;
 import ructf.main.IdFlagPair;
 import ructf.utils.Base64Coder;
@@ -12,6 +13,8 @@ public class Task {
 	public UUID id;	// TODO: сделать приватные сеттеры
 	
 	public int serviceId;
+	public int serviceVulnboxSuffix;
+	
 	public Team team;
 	
 	public IdFlagPair newIdFlag;
@@ -22,10 +25,11 @@ public class Task {
 	//TODO костыль
 	public int status;
 	
-	public Task(int serviceId, int round, Team team, IdFlagPair newIdFlag, IdFlagPair randomIdFlag) {		
+	public Task(int serviceId, int serviceVulnboxSuffix, int round, Team team, IdFlagPair newIdFlag, IdFlagPair randomIdFlag) {		
 		this.id = UUID.randomUUID();
 		this.round = round;
 		this.serviceId = serviceId;
+		this.serviceVulnboxSuffix = serviceVulnboxSuffix;
 		this.team = team;
 		this.newIdFlag = newIdFlag;
 		this.randomIdFlag = randomIdFlag;		
@@ -35,7 +39,7 @@ public class Task {
 	//TODO Использовать готовый класс для JSON
 	
 	public String toString() {
-		return String.format("%s,%d,%s,%s,%s,%s,%s,%s", id, serviceId, team.getVulnBox(),
+		return String.format("%s,%d,%s,%s,%s,%s,%s,%s", id, serviceId, PatchVulnBoxWithSuffix(team.getVulnBox(), serviceVulnboxSuffix),
 				newIdFlag != null ? Base64Coder.encodeString(newIdFlag.getFlagId()) : "",
 				newIdFlag != null ? newIdFlag.getFlagData() : "",
 				randomIdFlag != null ? Base64Coder.encodeString(randomIdFlag.getFlagId()) : "",
@@ -43,7 +47,11 @@ public class Task {
 				round);
 	}
 	
-	public String SerializeToJSON(String state){
+	private String PatchVulnBoxWithSuffix(String vulnBox, int suffix) {
+		return vulnBox.substring(0, vulnBox.lastIndexOf('.')) + "." + suffix;
+	}
+	
+	public String SerializeToJSON(String state) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("\t\t{\r\n");
 		sb.append(String.format("\t\t\t\"state\": \"%s\"\r\n", state));

@@ -26,6 +26,7 @@ CREATE TABLE services (
 	checker		VARCHAR(256)		NOT NULL,
 	delay_flag_get	BOOLEAN			NOT NULL DEFAULT FALSE,
 	is_not_task	BOOLEAN			NOT NULL DEFAULT TRUE
+	vulnbox_suffix	INTEGER			NOT NULL DEFAULT 2 CHECK (vulnbox_suffix BETWEEN 0 AND 255)
 );
 
 CREATE TABLE tasks (

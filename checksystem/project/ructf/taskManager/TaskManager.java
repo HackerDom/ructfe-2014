@@ -209,7 +209,7 @@ public class TaskManager extends Thread{
 						IdFlagPair newIdFlag = new IdFlagPair(flagManager.CreateId(), flagManager.CreateFlag());
 						IdFlagPair randomIdFlag = flagManager.GetRandomAliveFlag(teamId, serviceId);						
 						
-						Task task = new Task(serviceId, round, team, newIdFlag, randomIdFlag);
+						Task task = new Task(serviceId, service.getVulnboxSuffix(), round, team, newIdFlag, randomIdFlag);
 						tasks.add(task);
 					}
 				}
