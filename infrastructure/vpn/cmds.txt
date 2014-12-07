@@ -1,0 +1,25 @@
+apt-get install htop nginx openvpn python3-jinja2 fping
+useradd -s /bin/false -m teamcheck
+useradd -s /bin/false -m networkclosed
+useradd -s /bin/false -m antiddos
+
+ln -s /home/teamcheck/status.html /usr/share/nginx/html/
+# copy teamcheck files
+# copy teamcheck init
+# copy vpn configs
+
+/etc/nginx/sites-available/default:
+		index status.html index.html index.htm;
+
+        auth_basic "Oops!";
+        auth_basic_user_file /etc/nginx/htpasswd;
+
+/etc/nginx/passwd:
+dev:$apr1$NjRTOhlL$k4x/1Boe2a3ncysUiu0Z0/
+
+
+service antiddos start
+service networkclosed start
+
+
+gamescripts/openclosenetwork/close_network.sh
