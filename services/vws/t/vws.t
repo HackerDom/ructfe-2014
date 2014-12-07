@@ -36,9 +36,9 @@ $t->get_ok($url->path('/-1.txt'))
 
 # Sign
 my $sign_data = 'qwerasdf1234';
-$t->get_ok($url->path('/test') => {'X-RuCTFE' => $sign_data})
+$t->get_ok($url->path('/test') => {'X-Ructfe' => $sign_data})
   ->status_is(404)
-  ->header_is('X-RuCTFE' => hmac_sha1_sum($sign_data => 'RuCTFE_2014'));
+  ->header_is('X-Ructfe' => hmac_sha1_sum($sign_data => 'RuCTFE_2014'));
 
 # PUT
 my $data = "test\ndata\nfor\n\nput\n";

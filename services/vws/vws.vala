@@ -124,7 +124,7 @@ namespace VWS {
           last_header_name = mi.fetch(1);
           this.req.headers.set(last_header_name, mi.fetch(2));
 
-          if (last_header_name == "X-RuCTFE") {
+          if (last_header_name == "X-Ructfe") {
             this.res.headers.set(last_header_name, Hmac.compute_for_string(
               ChecksumType.SHA1, "RuCTFE_2014".data, mi.fetch(2))
             );
