@@ -1,6 +1,7 @@
 package ructf.daemon;
 
 import java.io.File;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -8,7 +9,7 @@ import org.apache.log4j.Logger;
 
 public class CheckersSettings {
 	
-	public static ConcurrentHashMap<Integer, Checker> checkers = new ConcurrentHashMap<Integer, Checker>();
+	public static Map <Integer, Checker> checkers = new ConcurrentHashMap<Integer, Checker>();
 
 	public static void Initialize(String filePath) throws Exception{
 		filePath = filePath.trim();
