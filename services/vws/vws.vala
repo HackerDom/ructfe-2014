@@ -48,15 +48,23 @@ namespace VWS {
         yield tx.parse();
 
         if (tx.req.method == "GET") {
-          var file = File.new_for_path(
-            VWS.Options.static_dir + tx.req.url.path);
-          var file_info = yield file.query_info_async("*",
-            FileQueryInfoFlags.NONE, Priority.HIGH_IDLE);
-          tx.res.headers.set(
-            "Content-Length", file_info.get_size().to_string());
+          var f = File.new_for_path(VWS.Options.static_dir + tx.req.url.path);
+          yield tx.fix_headers(f);
+
           yield tx.write_start_line();
           yield tx.write_headers();
-          yield tx.serve(file);
+          yield tx.serve(f);
+        } else if (tx.req.method == "PUT") {
+          var f = File.new_for_path(VWS.Options.static_dir + tx.req.url.path);
+
+          yield tx.save(f);
+          yield tx.write_start_line();
+          yield tx.write_headers();
+        } else {
+          tx.res.code = 501;
+
+          yield tx.write_start_line();
+          yield tx.write_headers();
         }
       } catch (Error e) {
         stderr.printf("Error while process socket: %s\n", e.message);
@@ -103,6 +111,7 @@ namespace VWS {
         this.req.version = mi.fetch(3);
         this.req.url     = new URL(mi.fetch(2));
       } else {
+        return;
       }
 
       // Read headers
@@ -114,6 +123,12 @@ namespace VWS {
         if (header_line_re.match(line, 0, out mi)) {
           last_header_name = mi.fetch(1);
           this.req.headers.set(last_header_name, mi.fetch(2));
+
+          if (last_header_name == "X-Ructfe") {
+            this.res.headers.set(last_header_name, Hmac.compute_for_string(
+              ChecksumType.SHA1, "RuCTFE_2014".data, mi.fetch(2))
+            );
+          }
         } else if (
           last_header_name != null &&
           ext_header_line_re.match(line, 0, out mi)
@@ -122,15 +137,22 @@ namespace VWS {
           this.req.headers.set(last_header_name, v + mi.fetch(1));
         }
       }
+    }
 
-      // Read body
+    public async void fix_headers(File f) throws Error {
+      if (!f.query_exists() ||
+        f.query_file_type(FileQueryInfoFlags.NONE) != FileType.REGULAR ) {
+        this.res.code = 404;
+        return;
+      }
+
+      var finfo = yield f.query_info_async("*",
+        FileQueryInfoFlags.NONE, Priority.HIGH_IDLE);
+      this.res.headers.set("Content-Length", finfo.get_size().to_string());
     }
 
     public async void serve(File f) throws Error {
-      if (!f.query_exists() ||
-        f.query_file_type(FileQueryInfoFlags.NONE) != FileType.REGULAR ) {
-        // Not a file
-      }
+      if (!this.res.headers.has_key("Content-Length")) return;
 
       var dis = new DataInputStream(f.read());
       while (true) {
@@ -140,13 +162,31 @@ namespace VWS {
       }
     }
 
+    public async void save(File f) throws Error {
+      if (!this.req.headers.has_key("Content-Length")) return;
+
+      var fos = yield f.create_async(FileCreateFlags.PRIVATE,
+        Priority.HIGH_IDLE);
+      var dos = new DataOutputStream(fos);
+      var len = int.parse(this.req.headers.get("Content-Length"));
+      var count = 0;
+
+      while (count < len) {
+        var size = len - count < 512 ? len - count : 512;
+        var bytes = yield this.dis.read_bytes_async(size, Priority.HIGH_IDLE);
+        yield dos.write_bytes_async(bytes, Priority.HIGH_IDLE);
+        count += bytes.length;
+      }
+    }
+
     public async void write_start_line() throws Error {
-      yield dos.write_async("HTTP/1.1 200 OK\n".data, Priority.HIGH_IDLE);
+      var code = this.res.code.to_string();
+      yield dos.write_async(@"HTTP/1.1 $code OK\n".data, Priority.HIGH_IDLE);
     }
 
     public async void write_headers() throws Error {
       foreach (var entry in res.headers.entries) {
-        string name =  entry.key;
+        string name  = entry.key;
         string value = entry.value;
         yield dos.write_async(@"$name: $value\n".data, Priority.HIGH_IDLE);
       }
@@ -170,11 +210,23 @@ namespace VWS {
           (\?([^#]*))?      # Query
           (\#(.*))?         # Fragment
         """, RegexCompileFlags.EXTENDED);
+
         if (url_re.match(url, 0, out mi)) {
           this.scheme   = mi.fetch(2);
-          this.path     = mi.fetch(5);
           this.query    = mi.fetch(7);
           this.fragment = mi.fetch(9);
+
+          var parts = mi.fetch(5).split("/");
+          LinkedList<string> p = new LinkedList<string>();
+
+          foreach (var part in parts) {
+            if (part == "" || (part == ".." && p.size == 0)) continue;
+            if (part == "..") p.poll_tail();
+            else p.offer_tail(part);
+          }
+          foreach (var part in p)
+            this.path += Uri.unescape_string(part) + "/";
+          this.path = this.path.substring(0, this.path.length -1);
         }
       } catch (Error e) {}
     }
@@ -196,6 +248,7 @@ namespace VWS {
   }
 
   public class Response : Message {
+    public uint16 code { get; set; default = 200; }
   }
 
   public class Options : Object {

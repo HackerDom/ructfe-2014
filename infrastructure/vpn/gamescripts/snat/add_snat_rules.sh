@@ -18,3 +18,6 @@ for num in {0..767}; do
 
     iptables -t nat -A POSTROUTING -o team${num} -j SNAT --to-source ${ip}
 done
+
+sysctl net.nf_conntrack_max=30000000
+echo "sysctl net.nf_conntrack_max=30000000"
