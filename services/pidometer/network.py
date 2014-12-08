@@ -19,10 +19,10 @@ def add_path(token, path):
         db.lpush(token, path)
         step_all = spark(steps) + "\t" + str(sum(steps))
         db.lpush(get_name(token), step_all)
-        return step_all
+        return step_all + "\n"
     except Exception as e:
         db.lpop(token)
-        return u"Invalid token: " + str(e)
+        return "Invalid token: " + str(e) + "\n"
 
 
 def register(name):
@@ -30,7 +30,7 @@ def register(name):
     # Security fix:
     # if db.exists(token):
     #     return "Name exists"
-    return token
+    return token + "\n"
 
 
 def get_token(name_):
@@ -43,18 +43,24 @@ def get_name(token):
     return crypter.decrypt(base.b16decode(token)).rstrip("\0")
 
 
-def view_user(name, day=0, count=0):
+def view_user(name, day, count):
     if not db.exists(name):
         return "User not found"
-    day = int(day)
-    count = int(count)
-    if count == 0:
-        day, count = count, day
-    return u"\n".join(
-        [name + u" steps:"] +
-        [to_human_day(i) + u":\t\t" + v.decode("utf8")
+    if day:
+        day = int(day)
+    else:
+        day = 0
+    if count:
+        count = int(count)
+    else:
+        count = day
+        day = 0
+
+    return "\n".join(
+        [name + " steps:"] +
+        [to_human_day(i) + ":\t\t" + str(v)
          for i, v in enumerate(db.lrange(name, day, count))]
-    )
+    ) + "\n"
 
 
 def distanceCoords(start, end):
@@ -76,13 +82,22 @@ def distanceCoords(start, end):
 
 
 def spark(ints):
-    ticks = u' ▁▂▃▄▅▆▇█'
-    step = (max(ints) / float(len(ticks) - 1)) or 1
-    return u''.join(ticks[int(round(i / step))] for i in ints)
+    result = []
+    maxim = max(ints)
+    minim = min(ints)
+    diff = maxim - minim + 1.0
+    if diff < 1:
+        diff = 1
+
+    for i in ints:
+        result.append('\xe2')
+        result.append('\x96')
+        result.append(chr(ord('\x81') + int(round((i - minim + 1) / diff * 7))))
+    return "".join(result)
 
 
 def ctoi(c):
-    return u"abcdefghijklmnopqrstuvwxyz1234567890".index(c) + 24
+    return "abcdefghijklmnopqrstuvwxyz1234567890".index(c) + 24
 
 
 def createPath(flag):

@@ -4,8 +4,15 @@
 ## Требования ##
 
 +   Redis как служба (redis.conf, redis.smf)
-+   easy_install redis hiredis mcrypto
++   easy_install redis hiredis python-mcrypt
 +   cython
++   install csw and mcrypt_dev
++   CPPFLAGS="-I/opt/csw/include"
+    LDFLAGS="-L/opt/csw/lib -R/opt/csw/lib"
+    PKG_CONFIG_PATH="/opt/csw/lib/pkgconfig"
++   PYTHONPATH=. ./Server
+
+
 
 
 ## Идеи ##
