@@ -4,6 +4,9 @@ useradd -s /bin/false -m networkclosed
 useradd -s /bin/false -m antiddos
 
 ln -s /home/teamcheck/status.html /usr/share/nginx/html/
+chmod 444 /home/teamcheck/favicon.ico
+ln -s /home/teamcheck/favicon.ico /usr/share/nginx/html/
+
 # copy teamcheck files
 # copy teamcheck init
 # copy vpn configs
