@@ -8,6 +8,7 @@
               /*body {background-color:lightgray}*/
               h1 {text-align: center; padding-bottom: 0px; }
               h3 {text-align: center; padding-bottom: 0px; }
+              h4 {text-align: center; padding-bottom: 0px; }
               td {font-family:Arial, Helvetica, sans-serif; 
                     height: 50px; text-align: center;}
               table {width: 98%;}
@@ -21,6 +22,11 @@
     <body>
         <h1> RuCTFE 2014 Network Status </h1>
         <h3> Updated at: {{time}} </h3>
+        {% if netopened %}
+        <h4> Network is opened </h4>
+        {% else %}
+        <h4> Network is closed </h4>
+        {% endif %}
         <table>
             <tr>
             <th>#</th>

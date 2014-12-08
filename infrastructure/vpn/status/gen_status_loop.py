@@ -16,7 +16,7 @@ SERVICE_UPONCE_FILE = "service_up_once.txt"
 CHECKER_FILE = "./team_tcp_checker.py"
 
 TEMPLATE_FILE = "status.tpl"
-STATUS_HTML = "/usr/share/nginx/html/status.html"
+STATUS_HTML = "status.html"
 
 PAUSE = 1
 
@@ -51,6 +51,10 @@ def get_ping_like_cmd_parsed_ret(args, hosts):
                 print("Surprising output: %s" % err.decode())
 
     return ret
+
+
+def is_net_opened():
+    return open("/proc/sys/net/ipv4/ip_forward").read()[0] == "1"
 
 
 def get_services_up(hosts):
@@ -152,7 +156,8 @@ def loop():
     # generate html by result
     template = open(TEMPLATE_FILE).read()
     time_str = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
-    html = jinja2.Template(template, autoescape=True).render(result=result, time=time_str)
+    html = jinja2.Template(template, autoescape=True).render(
+        result=result, time=time_str, netopened=is_net_opened())
     open(STATUS_HTML, "w").write(html)
 
 
