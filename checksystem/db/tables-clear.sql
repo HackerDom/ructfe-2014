@@ -1,6 +1,6 @@
 DELETE FROM sla;
 DELETE FROM score;
-DELETE FROM news;
+DELETE FROM rounds_cache;
 DELETE FROM rounds;
 DELETE FROM checker_run_log;
 DELETE FROM access_checks;
@@ -14,8 +14,6 @@ DELETE FROM flags;
 DELETE FROM tasks;
 DELETE FROM services;
 DELETE FROM teams;
-DELETE FROM score;
-DELETE FROM sla;
 DELETE FROM stolen_task_flags;
 DELETE FROM task_flags;
 
