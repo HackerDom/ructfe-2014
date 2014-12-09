@@ -159,18 +159,21 @@ class ServiceChecker:
 
 
 def main():
-    if len(sys.argv) < 3:
-        sys.exit("Usage: mode ip [id flag]")
-    if len(sys.argv) == 5:
-        (mode, ip, id_, flag) = sys.argv[1:5]
-    else:
-        (mode, ip) = sys.argv[1:3]
-        id_, flag = None, None
+    if len(sys.argv) < 2:
+        sys.exit("Usage: mode ip id flag")
+
+    mode = sys.argv[1]
+    ip = sys.argv[2]
+    id_ = sys.argv[3] if len(sys.argv) > 3 else ''
+    flag = sys.argv[4] if len(sys.argv) > 3 else ''
+
     chk = ServiceChecker(ip)
     try:
         {'check': chk.check, 'put': chk.put, 'get': chk.get}[mode](id_, flag)
-    except Exception as e:
-        ServiceChecker._done(ExitCode.ERROR, "exitcode={}".format(e))
+    except urllib.error.HTTPError as e:
+        ServiceChecker._done(ExitCode.ERROR, "exitcode={}".format(e.getcode()))
+    except urllib.error.URLError as e:
+        ServiceChecker._done(ExitCode.ERROR, ServiceChecker.NO_CONNECT)
 
 
 if __name__ == '__main__':

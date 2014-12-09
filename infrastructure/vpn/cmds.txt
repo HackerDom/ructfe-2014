@@ -1,4 +1,4 @@
-apt-get install htop nginx openvpn python3-jinja2 fping
+apt-get install htop nginx openvpn python3-jinja2 fping python3-requests
 useradd -s /bin/false -m teamcheck
 useradd -s /bin/false -m networkclosed
 useradd -s /bin/false -m antiddos
