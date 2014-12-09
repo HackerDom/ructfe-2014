@@ -42,11 +42,17 @@ def get(hostname, id, flag):
         sock.connect((hostname, 2707))
         sock.sendall("view {0} 10".format(id))
         data = sock.recv(1024)
-        sock.close()
         if flag in data:
+            sock.close()
             return 101
         else:
-            return 102
+            sock.sendall("view {0} 50".format(id))
+            data = sock.recv(10240)
+            sock.close()
+            if flag in data:
+                return 101
+            else:
+                return 102
     except socket.error:
         return 104
 

@@ -9,7 +9,6 @@ from math import sin, cos, pi, sqrt, pow, atan2
 
 db = redis.StrictRedis(host='r14-test4-1.urgu.org', port=6379, db=0)
 crypter = MCRYPT("gost", "ecb")
-# TODO: how to generate key?
 crypter.init("0" * 32)
 
 

@@ -3,16 +3,22 @@
   
 ## Требования ##
 
++   Настроенная среда
+
+    ```bash
+    pkgadd -d http://get.opencsw.org/now
+    /opt/csw/bin/pkgutil -U
+    /opt/csw/bin/pkgutil -i libmcrypt4 mcrypt_dev redis
+    pkg install SUNWhea SUNWarc SUNWlibm SUNWlibms SUNWdfbh  SUNWlibC SUNWzlib gcc-43 wget gnu-make
+    export CPPFLAGS="-I/opt/csw/include"
+    export LDFLAGS="-L/opt/csw/lib -R/opt/csw/lib"
+    export PKG_CONFIG_PATH="/opt/csw/lib/pkgconfig"
+    
+    easy_install redis hiredis python-mcrypt
+    ```
+    
 +   Redis как служба (redis.conf, redis.smf)
-+   easy_install redis hiredis python-mcrypt
-+   cython
-+   install csw and mcrypt_dev
-+   CPPFLAGS="-I/opt/csw/include"
-    LDFLAGS="-L/opt/csw/lib -R/opt/csw/lib"
-    PKG_CONFIG_PATH="/opt/csw/lib/pkgconfig"
 +   PYTHONPATH=. ./Server
-
-
 
 
 ## Идеи ##
@@ -39,14 +45,14 @@
 
 Тестовый флаг:
 
-7al10jy3oyn5w5rn4z74nqyb7yfpy4b=
+    7al10jy3oyn5w5rn4z74nqyb7yfpy4b=
 
 
 Сейчас сервис очень дырявый, буду постепенно закрываться:
 
 [x] Редис по всем адресам (думаю оставить)
-[]  Редис без авторизации (хз, стоит ли)
+[x]  Редис без авторизации (хз, стоит ли)
 [x] Register возвращает токен (оставить закоментированным)
-[]  В принципе, можно понять как делаются токены, и вычислить их (сложно)
-[]  Си почти не используется (надо переписать что-то)
+[x]  В принципе, можно понять как делаются токены, и вычислить их (сложно)
+[x]  Си почти не используется (надо переписать что-то)
 
