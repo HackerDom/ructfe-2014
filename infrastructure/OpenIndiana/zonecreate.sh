@@ -1,10 +1,8 @@
 #!/bin/bash
 
-#zonename=$1
-zonename="khozov"
-#ipaddr=$2
-ipaddr=8
-mkdir /export/$zonepath
+zonename=$1
+ipaddr=$2
+mkdir -p /export/$zonepath
 chown root:root /export/$zonepath
 chmod 700 /export/$zonepath
 
