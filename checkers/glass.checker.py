@@ -159,13 +159,10 @@ class ServiceChecker:
 
 
 def main():
-    if len(sys.argv) < 2:
+    if len(sys.argv) not in [3, 5]:
         sys.exit("Usage: mode ip id flag")
 
-    mode = sys.argv[1]
-    ip = sys.argv[2]
-    id_ = sys.argv[3] if len(sys.argv) > 3 else ''
-    flag = sys.argv[4] if len(sys.argv) > 3 else ''
+    mode, ip, id_, flag = (sys.argv[1:] + ['']*4)[0:4]
 
     chk = ServiceChecker(ip)
     try:
