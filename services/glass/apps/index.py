@@ -1,11 +1,30 @@
 import os
 import re
+import xml.sax
 
 from core import resolve, render, redirect, parse_qs
 
 
-__author__ = 'pahaz'
 _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_.-]')
+
+
+class ContentHandler(xml.sax.ContentHandler):
+    def __init__(self):
+        xml.sax.ContentHandler.__init__(self)
+        self.obj = {}
+
+    def startElement(self, name, attrs):
+        self.data = ""
+
+    def endElement(self, name):
+        self.obj[name] = self.data
+        self.data = ""
+
+    def characters(self, content):
+        self.data += content
+
+    def __getitem__(self, name):
+        return self.obj.get(name, '')
 
 
 def secure_filename(filename):
@@ -55,7 +74,10 @@ def get(req):
     if not os.path.exists(path):
         return render('error.html', {'message': "Not Exists!"})
 
-    with open(path, 'r') as f:
-        content = f.read()
+    handler = ContentHandler()
+    xml.sax.parse(path, handler)
+    context = dict(name=handler['name'],
+                   descr=handler['description'],
+                   data=handler['data'])
 
-    return 200, content
+    return render('xml.html', context)

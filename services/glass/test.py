@@ -83,12 +83,17 @@ class TestAppIndex(unittest.TestCase):
 
     def test_get(self):
         path = os.path.join('data', 'f2.txt')
-        if not os.path.exists(path):
-            write_content(path, "secretiki")
+        write_content(path, """<?xml version="1.0" encoding="utf-8"?>
+<picture>
+    <name>Name picture</name>
+    <description>Picture description</description>
+    <data>Picture data;'</data>
+</picture>
+""")
 
         s, h, body = go("GET", '/get', query='name=f2.txt')
         self.assertNotIn("span style='color: red'", body)
-        self.assertIn("secretiki", body)
+        self.assertIn("<h1>Picture 'Name picture'</h1>", body)
         os.remove(path)
 
 
