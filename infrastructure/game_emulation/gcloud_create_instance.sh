@@ -26,7 +26,7 @@ for i in {$from..$to}; do
 	/home/ubuntu/game_emulation/start_testservice.sh \$i
 done
 
-for i in {$from..$((from + 8 - 1))}; do
+for i in {$from..$((from + 2 - 1))}; do
 	/home/ubuntu/game_emulation/start_netscanning.sh \$i
 done
 
