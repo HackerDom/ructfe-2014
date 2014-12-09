@@ -12,6 +12,8 @@ ln -s /home/teamcheck/favicon.ico /usr/share/nginx/html/
 # copy teamcheck init
 # copy vpn configs
 
+chmod 600 /etc/openvpn/*.conf
+
 /etc/nginx/sites-available/default:
 		index status.html index.html index.htm;
 

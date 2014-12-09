@@ -5,10 +5,10 @@ cd "$( dirname "${BASH_SOURCE[0]}")"
 
 project=${1?usage: ./gcloud_create_teams <project>}
 
-./gcloud_create_instance.sh $project europe-west1-b 0 64 &
-./gcloud_create_instance.sh $project europe-west1-b 64 128 &
-./gcloud_create_instance.sh $project europe-west1-b 128 192 &
-./gcloud_create_instance.sh $project europe-west1-b 192 256 &
+./gcloud_create_instance.sh $project europe-west1-c 0 64 &
+./gcloud_create_instance.sh $project europe-west1-c 64 128 &
+./gcloud_create_instance.sh $project europe-west1-c 128 192 &
+./gcloud_create_instance.sh $project europe-west1-c 192 256 &
 
 ./gcloud_create_instance.sh $project asia-east1-b 256 320 &
 ./gcloud_create_instance.sh $project asia-east1-b 320 384 &
