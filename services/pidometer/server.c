@@ -34,6 +34,7 @@ int main(int argc, char **argv) {
   char                  *token, *cmd, line[MAXLINE];
   PyObject              *pName, *pModule, *addPath, *regUser, *viewData, *pArgs, *pValue, *pFunc;
 
+  fprintf(stderr, "%d", getpid());
   Py_Initialize();
   signal(SIGINT, intHandler);
   pName = PyString_FromString("network");
