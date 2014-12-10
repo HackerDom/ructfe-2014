@@ -10,11 +10,10 @@ s1  1/min/min       1/min/min
 s2  1/min/100KB     1/min/100KB
 s3  1/100KB/min     1/100KB/min
 s4  10*10/min/min   10*10/min/min
-s4  100/min/min     10/min/min
 s5  1/1MB/1MB       1/min/min
 s6  5/10KB*N/min    5/1KB*N/min
 s7  5/min/10KB*N    5/min/1KB*N
-s8  1/1KB/1KB       30/1KB/1KB
+s8  100/1KB/1KB     30/1KB/1KB
 
 ip: 10.{60..62}.{0..255}.100 + <service number>
 port: 1111 * <service number> 
