@@ -18,7 +18,7 @@ def add_path(token, path):
         db.lpush(token, path)
         step_all = spark(steps) + "\t" + str(sum(steps))
         db.lpush(get_name(token), step_all)
-        return step_all + "\n"
+        return "stored:" + step_all + "\n"
     except Exception as e:
         db.lpop(token)
         return "Invalid token: " + str(e) + "\n"

@@ -2,11 +2,17 @@
 #  coding=utf-8
 __author__ = 'm_messiah'
 import socket
-from sys import argv, exit
+from sys import argv, exit, stderr
+import os
 
 
 def check(hostname):
     try:
+        response = os.system("ping -c 1 -t 3 " + hostname + " > /dev/null 2>&1")
+        if response != 0:
+            print "Host unreachable"
+            return 104
+
         sock = socket.socket()
         sock.connect((hostname, 2707))
         sock.sendall("Question\n")
@@ -15,9 +21,10 @@ def check(hostname):
         if "42" in data:
             return 101
         else:
-            print "Bad answer"
+            print "Bad Answer"
             return 103
-    except socket.error:
+    except socket.error as e:
+        print "Port unreachable"
         return 104
 
 
@@ -29,11 +36,15 @@ def put(hostname, id, flag):
         token = sock.recv(128).strip()
         sock.sendall("add {0} {1}".format(token, flag))
         data = sock.recv(1024)
-        sock.close()
-        print token
-        return 101
+        if "stored:" in data:
+            sock.close()
+            print token
+            return 101
+        else:
+            stderr.write("Bad answer: {0}".format(data))
+            return 103
     except socket.error:
-        return 104
+        return check(hostname)
 
 
 def get(hostname, id, flag):
@@ -54,7 +65,7 @@ def get(hostname, id, flag):
             else:
                 return 102
     except socket.error:
-        return 104
+        return check(hostname)
 
 
 if __name__ == '__main__':
