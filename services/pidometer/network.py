@@ -96,12 +96,12 @@ def spark(ints):
 
 
 def ctoi(c):
-    return "abcdefghijklmnopqrstuvwxyz1234567890".index(c) + 24
+    return "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".index(c) + 24
 
 
 def createPath(flag):
     # Flag is: ^\w{31}=
-    # So, abcdefghijklmnopqrstuvwxyz12345= is a flag,
+    # So, ABCDEFGHIJKLMNOPQRSTUVWXYZ01234= is a flag,
     # and 'abc' is a lattitude (a.bc),
     # 'efg' is a longitude (e.fg)
     # and every next char pair is a delta of (lat,long) for a 2 hours.

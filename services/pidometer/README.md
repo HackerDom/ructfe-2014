@@ -45,8 +45,7 @@
 
 Тестовый флаг:
 
-    7al10jy3oyn5w5rn4z74nqyb7yfpy4b=
-
+    BKL51GFZFIUWV86FWWGFZTOTI1DQXFV=
 
 Сейчас сервис очень дырявый, буду постепенно закрываться:
 
