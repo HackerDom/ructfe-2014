@@ -8,6 +8,7 @@ import re
 
 PORT = 6666
 TIMEOUT = 30
+CONNECT_TIMEOUT = 5
 
 REPEATS = 1
 NOP_COUNT = -1
@@ -37,7 +38,8 @@ def pad_and_send(s, msg, flags_num=0):
 
 def check(host):
     try:
-        socket.create_connection((host, PORT), TIMEOUT)
+        socket.create_connection((host, PORT), CONNECT_TIMEOUT)
+        s.settimeout(TIMEOUT)
     except Exception:
         return DOWN
     else:
@@ -46,7 +48,8 @@ def check(host):
 
 def put(host, flag_id, flag):
     try:
-        s = socket.create_connection((host, PORT), TIMEOUT)
+        s = socket.create_connection((host, PORT), CONNECT_TIMEOUT)
+        s.settimeout(TIMEOUT)
     except Exception:
         return DOWN
 
@@ -72,7 +75,8 @@ def put(host, flag_id, flag):
 
 def get(host, flag_id, flag):
     try:
-        s = socket.create_connection((host, PORT), TIMEOUT)
+        s = socket.create_connection((host, PORT), CONNECT_TIMEOUT)
+        s.settimeout(TIMEOUT)
     except Exception:
         return DOWN
 
