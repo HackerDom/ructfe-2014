@@ -39,7 +39,6 @@ def pad_and_send(s, msg, flags_num=0):
 def check(host):
     try:
         socket.create_connection((host, PORT), CONNECT_TIMEOUT)
-        s.settimeout(TIMEOUT)
     except Exception:
         return DOWN
     else:
