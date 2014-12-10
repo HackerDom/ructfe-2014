@@ -10,10 +10,10 @@ PORT = 6666
 TIMEOUT = 30
 
 REPEATS = 1
-NOP_COUNT = 5
+NOP_COUNT = -1
 
-MSG_OUT_SIZE = 10000
-MSG_OUT_SIZE_DT = 10000
+MSG_OUT_SIZE = 50000
+MSG_OUT_SIZE_DT = 0
 
 OK, CORRUPT, MUMBLE, DOWN, CHECKER_ERROR = 101, 102, 103, 104, 110
 
@@ -54,6 +54,7 @@ def put(host, flag_id, flag):
         hello_re = rb"\+ I've got (\d+) flags"
         flags_num = int(re.match(hello_re, readline(s).strip()).group(1))
 
+        NOP_COUNT = flags_num
         for i in range(NOP_COUNT):
             pad_and_send(s, "nop", flags_num)
             readline(s)
@@ -79,6 +80,7 @@ def get(host, flag_id, flag):
         hello_re = rb"\+ I've got (\d+) flags"
         flags_num = int(re.match(hello_re, readline(s).strip()).group(1))
 
+        NOP_COUNT = flags_num
         for i in range(NOP_COUNT):
             pad_and_send(s, "nop", flags_num)
             readline(s)
