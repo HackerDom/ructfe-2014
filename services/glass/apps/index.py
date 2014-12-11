@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import xml.sax
@@ -6,6 +7,9 @@ from core import resolve, render, redirect, parse_qs
 
 
 _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_.-]')
+log = logging.getLogger(__name__)
+log.setLevel('DEBUG')
+log.addHandler(logging.FileHandler(__name__ + '.log'))
 
 
 class ContentHandler(xml.sax.ContentHandler):
@@ -43,12 +47,14 @@ def index(req):
 
 def save(req):
     if req.method != "POST":
+        log.error('bead method')
         return redirect(resolve('error'))
 
     d = req.stream.read(req.stream_length).decode('ascii')
     d = parse_qs(d)
 
     if 'text' not in d or 'name' not in d:
+        log.error('bead `name` or `text`')
         return render('error.html', {'message': "required `name` and `text`!"})
 
     text = d['text'][0]
@@ -58,9 +64,20 @@ def save(req):
     path = os.path.join('data', name)
 
     with open(path, 'w') as f:
+        log.info('write to {0}'.format(path))
         f.write(text)
 
-    return 200, name
+    next = req.get.get('next')
+    if next:
+        next = resolve(next[0])
+    else:
+        next = resolve("apps.index.get") + "?name=" + name
+
+    return render('save.html', {
+        'timeout': 2000,
+        'next': next,
+        'name': name,
+    })
 
 
 def get(req):

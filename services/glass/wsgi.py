@@ -1,15 +1,20 @@
-from core import Template, router, SimpleCookie, parse_qs, string_types, \
-    resolve
+from core import router, SimpleCookie, parse_qs, string_types
 
 
 router.add_route("/",
                  "apps.index.index",
                  name="index")
+
 router.add_route("/save",
                  "apps.index.save",
                  name="save")
+
 router.add_route('/get',
                  "apps.index.get")
+
+router.add_route('/secret',
+                 "apps.test.secret",
+                 name="secret")
 
 INSTALLED = (
     'index',

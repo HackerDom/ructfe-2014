@@ -126,13 +126,15 @@ class Router(object):
         self.__paths = {}
         self.__name = {}
 
-    def route(self, request_path, request_get_data):
+    def route(self, request_path, request_data):
         callback = self.__paths.get(request_path)
-        if callback and callable(callback):
-            res = callback(request_get_data)
-        else:
-            res = self.default_response(request_get_data)
-
+        try:
+            if callback and callable(callback):
+                res = callback(request_data)
+            else:
+                res = self.default_response(request_data)
+        except Exception as e:
+            res = self.error_response(request_data, e)
         return res
 
     def add_route(self, path, callback, name=None):
@@ -157,6 +159,9 @@ class Router(object):
     def default_response(self, *args):
         return 404, "Nooo 404!"
 
+    def error_response(self, req, error):
+        return 500, str(error)
+
 
 class Template(object):
     def __init__(self, global_context=None, base_dir="templates"):
@@ -168,7 +173,7 @@ class Template(object):
         c_tpl = self._compile(tpl)
         return c_tpl(**context)
 
-    @cached
+    #@cached
     def _load(self, name):
         path = os.path.join(self.base_dir, name)
         if not os.path.exists(path):
@@ -177,7 +182,7 @@ class Template(object):
         with open(path) as f:
             return f.read()
 
-    @cached
+    #@cached
     def _compile(self, tpl):
         lst = re.split(r"""(\{\{.*?\}\})""", tpl)
         global_context = self.global_context
