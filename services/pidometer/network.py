@@ -1,4 +1,4 @@
-# coding=utf-8
+#!/usr/bin/python
 _author__ = 'm_messiah'
 
 from mcrypt import MCRYPT
@@ -15,21 +15,32 @@ crypter.init("0" * 32)
 def add_path(token, path):
     try:
         steps = parsePath(createPath(path))
+        if len(steps) == 0:
+            return "Invalid path data\n"
+        name = get_name(token)
         db.lpush(token, path)
         step_all = spark(steps) + "\t" + str(sum(steps))
-        db.lpush(get_name(token), step_all)
+        db.lpush(name, step_all)
+        db.zadd("users", sum(steps), name)
         return "stored:" + step_all + "\n"
+
     except Exception as e:
         db.lpop(token)
-        return "Invalid token: " + str(e) + "\n"
+        return "Something wrong: " + str(e) + "\n"
+
+
+def last_users(lim):
+    try:
+        users = db.zrange("users", int(lim) * -1, -1, withscores=True)
+        return "Last activity:\n\n" + "\n".join(
+            "{0} -> {1} steps".format(u, s) for u, s in users
+        )
+    except Exception as e:
+        return "Can't get list of users (" + str(e) + ")\n"
 
 
 def register(name):
-    token = get_token(name)
-    # Security fix:
-    # if db.exists(token):
-    #     return "Name exists"
-    return token + "\n"
+    return "Token: " + get_token(name) + "\n"
 
 
 def get_token(name_):
@@ -44,17 +55,9 @@ def get_name(token):
 
 def view_user(name, day, count):
     if not db.exists(name):
-        return "User not found"
-    if day:
-        day = int(day)
-    else:
-        day = 0
-    if count:
-        count = int(count)
-    else:
-        count = day
-        day = 0
-
+        return "User not found\n"
+    day = int(day) if day else 0
+    count, day = (int(count), day) if count else (day, 0)
     return "\n".join(
         [name + " steps:"] +
         [to_human_day(i) + ":\t\t" + str(v)
@@ -82,11 +85,8 @@ def distanceCoords(start, end):
 
 def spark(ints):
     result = []
-    maxim = max(ints)
     minim = min(ints)
-    diff = maxim - minim + 1.0
-    if diff < 1:
-        diff = 1
+    diff = max(ints) - minim + 1.0
 
     for i in ints:
         result.append('\xe2')
@@ -96,44 +96,32 @@ def spark(ints):
 
 
 def ctoi(c):
-    return "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".index(c) + 24
+    return "abcdefghijklmnopqrstuvwxABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".index(c)
 
 
-def createPath(flag):
-    # Flag is: ^\w{31}=
-    # So, ABCDEFGHIJKLMNOPQRSTUVWXYZ01234= is a flag,
-    # and 'abc' is a lattitude (a.bc),
-    # 'efg' is a longitude (e.fg)
-    # and every next char pair is a delta of (lat,long) for a 2 hours.
-    flag = flag[:31]
-    coords = [(float("{0}.{1}{2}".format(*map(ctoi, flag[:3]))),
-               float("{0}.{1}{2}".format(*map(ctoi, flag[4:7]))))]
+def createPath(path):
+    if len(path) < 31:
+        return []
+    coords = [(float("{0}.{1}{2}".format(*map(ctoi, path[:3]))),
+               float("{0}.{1}{2}".format(*map(ctoi, path[4:7]))))]
     for i in range(7, 31, 2):
-        coords.append((coords[-1][0] + ctoi(flag[i]) / 1000.,
-                       coords[-1][1] + ctoi(flag[i + 1]) / 1000.))
+        coords.append((coords[-1][0] + ctoi(path[i]) / 1000.,
+                       coords[-1][1] + ctoi(path[i + 1]) / 1000.))
     return coords
 
 
 def parsePath(path, step=1.0):
     # We have a GPS, so it is good to calculate steps, through steplength.
     try:
-        if len(path) < 13:
-            return 1
-        distances = [distanceCoords(path[i-1], path[i]) / step
-                     for i in range(1, 13)]
-        return distances
-    except:
-        return 2
+        return [distanceCoords(path[i-1], path[i]) / step
+                for i in range(1, 13)] if len(path) == 13 else []
+    except Exception as e:
+        print e
+        return []
 
 
 def to_human_day(day):
-    days = ("Today",
-            "Yesterday",
-            "Ereyesterday")
-    if day < 3:
-        return days[day]
-    else:
-        return str(day) + " days ago"
+    return ("Today", "Yesterday", "Ereyesterday")[day] if day < 3 else str(day) + " days ago"
 
 
 if __name__ == "__main__":

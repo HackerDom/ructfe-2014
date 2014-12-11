@@ -15,14 +15,18 @@ def check(hostname):
 
         sock = socket.socket()
         sock.connect((hostname, 2707))
+        welcome = sock.recv(72)
+        if "Pidometer" not in welcome:
+            print "Welcome message not found"
+            sock.close()
+            return 103
         sock.sendall("Question\n")
         data = sock.recv(20)
         sock.close()
-        if "42" in data:
-            return 101
-        else:
+        if "42" not in data:
             print "Bad Answer"
             return 103
+        return 101
     except socket.error as e:
         print "Port unreachable"
         return 104
@@ -32,8 +36,14 @@ def put(hostname, id, flag):
     try:
         sock = socket.socket()
         sock.connect((hostname, 2707))
+        welcome = sock.recv(72)
+        if "Pidometer" not in welcome:
+            print "Welcome message not found"
+            sock.close()
+            return 103
+
         sock.sendall("register {0}".format(id))
-        token = sock.recv(128).strip()
+        token = sock.recv(128).split()[1].strip()
         sock.sendall("add {0} {1}".format(token, flag))
         data = sock.recv(1024)
         if "stored:" in data:
@@ -45,12 +55,20 @@ def put(hostname, id, flag):
             return 103
     except socket.error:
         return check(hostname)
+    except:
+        return 103
 
 
 def get(hostname, id, flag):
     try:
         sock = socket.socket()
         sock.connect((hostname, 2707))
+        welcome = sock.recv(72)
+        if "Pidometer" not in welcome:
+            print "Welcome message not found"
+            sock.close()
+            return 103
+
         sock.sendall("view {0} 10".format(id))
         data = sock.recv(1024)
         if flag in data:
