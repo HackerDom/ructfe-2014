@@ -7,7 +7,7 @@ import time
 import traceback
 import os
 
-from teams import teams
+from teams import get_teams
 
 ROUTER_PINGONCE_FILE = "router_ping_once.txt"
 IMAGE_PINGONCE_FILE = "image_ping_once.txt"
@@ -69,6 +69,8 @@ def get_hosts_ping(hosts):
 
 
 def loop():
+    teams = get_teams()
+
     # create flags files if not exists
     open(ROUTER_PINGONCE_FILE, 'ab').close()
     open(IMAGE_PINGONCE_FILE,  'ab').close()

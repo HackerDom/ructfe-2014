@@ -83,7 +83,7 @@ def handle_client(reader, writer):
 
 def main():
     loop = asyncio.get_event_loop()
-    f = asyncio.start_server(accept_client, host=None, port=PORT)
+    f = asyncio.start_server(accept_client, host=None, port=PORT, limit=131072)
     loop.run_until_complete(f)
     loop.run_forever()
 

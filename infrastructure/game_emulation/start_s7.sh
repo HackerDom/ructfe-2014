@@ -5,7 +5,7 @@ cd "$( dirname "${BASH_SOURCE[0]}")"
 
 team_num=${1?Usage: ./start_s7.sh <team_num>}
 
-name=team_s1
+name=team_s7
 full_name=${name}_${team_num}
 
 if docker stop ${full_name} &>/dev/null; then

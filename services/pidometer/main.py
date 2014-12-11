@@ -1,16 +1,17 @@
 #!/usr/bin/python
-# coding=utf-8
 __author__ = 'm_messiah'
 
 from network import *
+from random import randint
 
 if __name__ == '__main__':
+    a = chr(randint(65, 90))
     print ">register messiah"
-    print "<" + register(u"messiah")
-    print ">add 87B21AC53239244D 7al10jy3oyn5w5rn4z74nqyb7yfpy4b="
-    print "<" + add_path(u"87B21AC53239244D",
-                         u"7al10jy3oyn5w5rn4z74nqyb7yfpy4b=")
+    print "<" + register("messiah"),
+    print ">add 87B21AC53239244D BKL51GFZFIUWV86FWWGFZTOTI1DQXF{0}=".format(a)
+    print "<" + add_path("87B21AC53239244D",
+                         "BKL51GFZFIUWV86FWWGFZTOTI1DQXF{0}=".format(a)),
     print ">view messiah"
-    print "<" + view_user(u"messiah")
+    print "<" + view_user("messiah", None, None),
     print ">view 87B21AC53239244D"
-    print "<" + view_user(u"87B21AC53239244D")
+    print "<" + view_user("87B21AC53239244D", None, None),

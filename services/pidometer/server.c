@@ -32,32 +32,35 @@ int main(int argc, char **argv) {
   struct pollfd         client[OPEN_MAX];
   struct sockaddr_in    cliaddr, servaddr;
   char                  *token, *cmd, line[MAXLINE];
-  PyObject              *pName, *pModule, *addPath, *regUser, *viewData, *pArgs, *pValue, *pFunc;
+  PyObject              *pName, *pModule, *addPath, *regUser, *viewData, *lastUsers, *pArgs, *pValue, *pFunc;
 
+  fprintf(stderr, "%d", getpid());
   Py_Initialize();
   signal(SIGINT, intHandler);
   pName = PyString_FromString("network");
   pModule = PyImport_Import(pName);
   Py_DECREF(pName);
   if (pModule != NULL) {
-    addPath  = PyObject_GetAttrString(pModule, "add_path");
-    regUser  = PyObject_GetAttrString(pModule, "register");
-    viewData = PyObject_GetAttrString(pModule, "view_user");
-    if (addPath && PyCallable_Check(addPath) &&
-        regUser && PyCallable_Check(regUser) &&
-        viewData && PyCallable_Check(viewData)) {
+    addPath  =  PyObject_GetAttrString(pModule, "add_path");
+    regUser  =  PyObject_GetAttrString(pModule, "register");
+    viewData =  PyObject_GetAttrString(pModule, "view_user");
+    lastUsers = PyObject_GetAttrString(pModule, "last_users");
+    if (addPath   && PyCallable_Check(addPath)  &&
+        regUser   && PyCallable_Check(regUser)  &&
+        viewData  && PyCallable_Check(viewData) &&
+        lastUsers && PyCallable_Check(lastUsers)) {
 
             listenfd = socket(AF_INET, SOCK_STREAM, 0);
             bzero(&servaddr, sizeof(servaddr));
-            servaddr.sin_family    = AF_INET;
+            servaddr.sin_family      = AF_INET;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-            servaddr.sin_port    = htons(SERV_PORT);
+            servaddr.sin_port        = htons(SERV_PORT);
 
             bind(listenfd, (struct sockaddr*) &servaddr, sizeof(servaddr));
 
             listen(listenfd, LISTENQ);
 
-            client[0].fd = listenfd;
+            client[0].fd     = listenfd;
             client[0].events = POLLRDNORM;
             for (i = 1; i < OPEN_MAX; i++) client[i].fd = -1;
             maxi = 0;
@@ -69,6 +72,7 @@ int main(int argc, char **argv) {
                     for (i = 1; i < OPEN_MAX; i++)
                         if (client[i].fd < 0) {
                             client[i].fd = connfd;
+                            sendto(connfd, "Welcome to Pidometer: most powerfull tracker for your fitness, maths!\n", 70, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                             break;
                         }
                     if (i == OPEN_MAX)
@@ -80,40 +84,40 @@ int main(int argc, char **argv) {
                 }
 
                 for (i = 1; i <= maxi; i++) {
-                    if ( (sockfd = client[i].fd) < 0)
-                        continue;
+                    if ((sockfd = client[i].fd) < 0) continue;
                     if (client[i].revents & (POLLRDNORM | POLLERR)) {
                         memset(line, 0, MAXLINE);
                         if ( (n = recvfrom(sockfd, line, MAXLINE, 0, (struct sockaddr *) &cliaddr, &clilen)) < 0) {
                             if (errno == ECONNRESET) {
                                 close(sockfd);
                                 client[i].fd = -1;
-                            } else
-                                printf("readline error\n");
+                            } else printf("readline error\n");
                         } else if (n == 0) {
                             close(sockfd);
                             client[i].fd = -1;
                         } else if (n > 1) {
-                            if (strstr(line, "quit") != NULL)
-                            {
+                            if (strstr(line, "quit") != NULL) {
                                 sendto(sockfd, "bye, bye!\n", 10, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                                 close(sockfd);
                                 client[i].fd = -1;
                             } else {
                                 cmd = strtok(line, " \r\n");
-                                if (strcmp(cmd, "add") == 0){
+                                if (strcmp(cmd, "add") == 0) {
                                     pFunc = addPath;
                                     n = 2;
                                 } else if (strcmp(cmd, "register") == 0) {
                                     pFunc = regUser;
                                     n = 1;
-                                } else if (strcmp(cmd, "view") == 0) {
+                                } else if (strcmp(cmd, "view")     == 0) {
                                     pFunc = viewData;
                                     n = 3;
+                                } else if (strcmp(cmd, "activity") == 0) {
+                                    pFunc = lastUsers;
+                                    n = 1;
                                 } else if (strcmp(cmd, "Question") == 0) {
                                     sendto(sockfd, "42\n", 3, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                                     continue;
-                                }else {
+                                } else {
                                     sendto(sockfd, "Bad input\n", 10, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                                     continue;
                                 }
@@ -131,17 +135,14 @@ int main(int argc, char **argv) {
                                     break;
                                 }
 
-                                for (k = j; k < n; k++)
-                                    PyTuple_SetItem(pArgs, k, Py_None);
+                                for (k = j; k < n; k++) PyTuple_SetItem(pArgs, k, Py_None);
 
                                 pValue = PyObject_CallObject(pFunc, pArgs);
                                 Py_DECREF(pArgs);
                                 if (pValue) {
-                                    char *s = PyString_AsString(pValue);
-                                    sendto(sockfd, s, strlen(s), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
-                                } else {
-                                    sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
-                                }
+                                       char *s = PyString_AsString(pValue);
+                                       sendto(sockfd, s, strlen(s), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
+                                } else sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                             }
                         }
                         if (--nready <= 0) break;

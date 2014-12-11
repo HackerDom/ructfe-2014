@@ -2,22 +2,33 @@
 #  coding=utf-8
 __author__ = 'm_messiah'
 import socket
-from sys import argv, exit
+from sys import argv, exit, stderr
+import os
 
 
 def check(hostname):
     try:
+        response = os.system("ping -c 1 -t 3 " + hostname + " > /dev/null 2>&1")
+        if response != 0:
+            print "Host unreachable"
+            return 104
+
         sock = socket.socket()
         sock.connect((hostname, 2707))
+        welcome = sock.recv(72)
+        if "Pidometer" not in welcome:
+            print "Welcome message not found"
+            sock.close()
+            return 103
         sock.sendall("Question\n")
         data = sock.recv(20)
         sock.close()
-        if "42" in data:
-            return 101
-        else:
-            print "Bad answer"
+        if "42" not in data:
+            print "Bad Answer"
             return 103
-    except socket.error:
+        return 101
+    except socket.error as e:
+        print "Port unreachable"
         return 104
 
 
@@ -25,21 +36,39 @@ def put(hostname, id, flag):
     try:
         sock = socket.socket()
         sock.connect((hostname, 2707))
+        welcome = sock.recv(72)
+        if "Pidometer" not in welcome:
+            print "Welcome message not found"
+            sock.close()
+            return 103
+
         sock.sendall("register {0}".format(id))
-        token = sock.recv(128).strip()
+        token = sock.recv(128).split()[1].strip()
         sock.sendall("add {0} {1}".format(token, flag))
         data = sock.recv(1024)
-        sock.close()
-        print token
-        return 101
+        if "stored:" in data:
+            sock.close()
+            print token
+            return 101
+        else:
+            stderr.write("Bad answer: {0}".format(data))
+            return 103
     except socket.error:
-        return 104
+        return check(hostname)
+    except:
+        return 103
 
 
 def get(hostname, id, flag):
     try:
         sock = socket.socket()
         sock.connect((hostname, 2707))
+        welcome = sock.recv(72)
+        if "Pidometer" not in welcome:
+            print "Welcome message not found"
+            sock.close()
+            return 103
+
         sock.sendall("view {0} 10".format(id))
         data = sock.recv(1024)
         if flag in data:
@@ -54,7 +83,7 @@ def get(hostname, id, flag):
             else:
                 return 102
     except socket.error:
-        return 104
+        return check(hostname)
 
 
 if __name__ == '__main__':
