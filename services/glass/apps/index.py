@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import xml.sax
+import sys
 
 from core import resolve, render, redirect, parse_qs
 
@@ -9,7 +10,7 @@ from core import resolve, render, redirect, parse_qs
 _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_.-]')
 log = logging.getLogger(__name__)
 log.setLevel('DEBUG')
-log.addHandler(logging.FileHandler(__name__ + '.log'))
+log.addHandler(logging.StreamHandler())
 
 
 class ContentHandler(xml.sax.ContentHandler):
