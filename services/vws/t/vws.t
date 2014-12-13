@@ -1,4 +1,5 @@
 use FindBin '$Bin';
+use File::Path 'remove_tree';
 use IPC::Run 'start';
 use Mojo::IOLoop::Server;
 use Mojo::URL;
@@ -12,11 +13,14 @@ use strict;
 my ($port, $vws);
 BEGIN {
   $port = Mojo::IOLoop::Server->generate_port;
-  $vws = start ["$Bin/../vws", '-p', $port, '-i', '1', '-d', "$Bin/static", '-b', 5];
-  unlink "$Bin/static/data";
-  sleep 1;
+  $vws = start ["$Bin/../vws", '-p', $port, '-i', '1', '-d', "$Bin/static/", '-b', 1];
+  sleep 2;
 }
-END { $vws->signal('SIGTERM'); unlink "$Bin/static/data"; }
+END {
+  $vws->signal('SIGTERM');
+  unlink "$Bin/static/data", "$Bin/static/b.sh";
+  remove_tree "$Bin/static/b";
+}
 
 my $url = Mojo::URL->new("http://localhost:$port/");
 my $t   = Test::Mojo->new->tap(sub { $_->ua->max_connections(0) });
