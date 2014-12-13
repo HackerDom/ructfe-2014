@@ -25,7 +25,7 @@ do
 zonename=${services[$i]}
 zonecfg -z $zonename <<EOF
 select net physical=e1000g0
-set address=${ipadd}$((i + 5))/24
+set address=${ipadd}$((i + 6))/24
 end
 verify
 commit

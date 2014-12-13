@@ -17,7 +17,7 @@
 #define OPEN_MAX 255
 #endif
 #define LISTENQ 1024
-#define SERV_PORT 2707
+#define SERV_PORT 27
 
 int keepRunning = 1;
 

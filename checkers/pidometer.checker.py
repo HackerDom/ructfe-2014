@@ -5,6 +5,7 @@ import socket
 from sys import argv, exit, stderr
 import os
 
+PORT=27
 
 def check(hostname):
     try:
@@ -14,7 +15,7 @@ def check(hostname):
             return 104
 
         sock = socket.socket()
-        sock.connect((hostname, 2707))
+        sock.connect((hostname, PORT))
         welcome = sock.recv(72)
         if "Pidometer" not in welcome:
             print "Welcome message not found"
@@ -35,7 +36,7 @@ def check(hostname):
 def put(hostname, id, flag):
     try:
         sock = socket.socket()
-        sock.connect((hostname, 2707))
+        sock.connect((hostname, PORT))
         welcome = sock.recv(72)
         if "Pidometer" not in welcome:
             print "Welcome message not found"
@@ -62,7 +63,7 @@ def put(hostname, id, flag):
 def get(hostname, id, flag):
     try:
         sock = socket.socket()
-        sock.connect((hostname, 2707))
+        sock.connect((hostname, PORT))
         welcome = sock.recv(72)
         if "Pidometer" not in welcome:
             print "Welcome message not found"
