@@ -1,0 +1,15 @@
+# copy public keys on checker system hosts
+
+useradd -s /bin/bash -m backuper
+
+mkdir -p /var/checksystem_backup/a /var/checksystem_backup/b
+chown backuper:backuper /var/checksystem_backup /var/checksystem_backup/a /var/checksystem_backup/b
+chmod 700 /var/checksystem_backup /var/checksystem_backup/a /var/checksystem_backup/b
+
+su backuper
+mkdir .ssh
+# copy private key to .ssh/id_rsa and checksystem_backup.sh
+chmod 400 .ssh/id_rsa
+
+crontab -e
+*/5 * * * * /home/backuper/checksystem_backup.sh
