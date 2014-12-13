@@ -7,7 +7,7 @@ import redis
 from math import sin, cos, pi, sqrt, pow, atan2
 
 
-db = redis.StrictRedis(host='r14-test4-1.urgu.org', port=6379, db=0)
+db = redis.StrictRedis(host='localhost', port=6379, db=0)
 crypter = MCRYPT("gost", "ecb")
 crypter.init("0" * 32)
 
@@ -31,10 +31,11 @@ def add_path(token, path):
 
 def last_users(lim):
     try:
-        users = db.zrange("users", int(lim) * -1, -1, withscores=True)
+        lim = int(lim) if lim else 1
+        users = db.zrange("users", lim * -1, -1, withscores=True)
         return "Last activity:\n\n" + "\n".join(
             "{0} -> {1} steps".format(u, s) for u, s in users
-        )
+        ) + "\n"
     except Exception as e:
         return "Can't get list of users (" + str(e) + ")\n"
 

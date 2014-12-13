@@ -26,7 +26,7 @@ void intHandler(int dummy){
 }
 
 int main(int argc, char **argv) {
-  int                   i, maxi, listenfd, connfd, sockfd, j, k, nready;
+  int                   i, maxi, listenfd, connfd, sockfd, j, k, nready, one=1;
   ssize_t               n;
   socklen_t             clilen;
   struct pollfd         client[OPEN_MAX];
@@ -51,6 +51,7 @@ int main(int argc, char **argv) {
         lastUsers && PyCallable_Check(lastUsers)) {
 
             listenfd = socket(AF_INET, SOCK_STREAM, 0);
+            setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family      = AF_INET;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
