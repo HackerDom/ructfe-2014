@@ -16,7 +16,7 @@
 
 #define BACKLOG_LEN 128
 #define BUFFER_LEN 64
-#define SOCKETS_COUNT 4 + BACKLOG_LEN
+#define SOCKETS_COUNT 1 + BACKLOG_LEN
 
 #define TRUE 1
 #define FALSE 0
@@ -45,6 +45,17 @@ check_alphabet(char *str)
     return TRUE;
 }
 
+struct node
+{
+    struct node *A_child;
+    struct node *T_child;
+    struct node *G_child;
+    struct node *C_child;
+    char *comment;
+};
+
+struct node *root;
+
 int
 try_match(const char * dna)
 {
@@ -54,15 +65,51 @@ try_match(const char * dna)
 char *
 try_add_pattern(const char *pattern, const char * comment)
 {
-    return NULL;
+    int p_len = strlen(pattern);
+    int c_len = strlen(comment);
+    struct node *cur = root;
+
+    for(int i = 0; i < p_len; i++)
+    {
+        if(pattern[i] == 'A')
+        {
+            if(cur->A_child == NULL)
+                cur->A_child = malloc(sizeof(struct node));
+            cur = cur->A_child;
+        }
+        else if(pattern[i] == 'T')
+        {
+            if(cur->T_child == NULL)
+                cur->T_child = malloc(sizeof(struct node));
+            cur = cur->T_child;
+        }
+        else if(pattern[i] == 'G')
+        {
+            if(cur->G_child == NULL)
+                cur->G_child = malloc(sizeof(struct node));
+            cur = cur->G_child;
+        }
+        else
+        {
+            if(cur->C_child == NULL)
+                cur->C_child = malloc(sizeof(struct node));
+            cur = cur->C_child;
+        }
+    }
+    if(cur->comment == NULL)
+    {
+        cur->comment = malloc(c_len + 1);
+        strcpy(cur->comment, comment);
+    }
+    return cur->comment;
 }
 
 void
 run(int listen_port)
 {
-    const char error_msg[] = "Invalid request, must be a '\n'-terminated line no longer than 64 chars";
-    const char error_msg1[] = "Invalid DNA string, must contain character from [ATGC] alphabet and have non-zero length";
-    const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format";
+    const char error_msg[] = "Invalid request, must be a '\n'-terminated line no longer than 64 chars\n";
+    const char error_msg1[] = "Invalid DNA string, must contain character from [ATGC] alphabet and have non-zero length\n";
+    const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";
     char * msg;
 
     int len, rc, one = 1;
@@ -76,8 +123,9 @@ run(int listen_port)
     int positions[SOCKETS_COUNT];
     char *buffer;
 
-    // char buffer[1024];
     int nfds = 1, current_size = 0, i, j;
+
+    root = malloc(sizeof(struct node));
 
     listen_sd = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_sd < 0)
@@ -194,10 +242,9 @@ run(int listen_port)
                         break;
                     }
 
-                    len = rc;
-                    printf("    %d bytes received\n", len);
+                    printf("    %d bytes received\n", rc);
 
-                    int len = strnlen(buffer, BUFFER_LEN);
+                    len = strnlen(buffer, BUFFER_LEN);
                     char *eol_pos = memchr(buffer, '\n', len);
 
                     if(eol_pos == NULL && len == BUFFER_LEN)
@@ -233,9 +280,9 @@ run(int listen_port)
                                 exit(-1);
                             case 0:
                                 if(try_match(buffer))
-                                    msg = "MATCHED!";
+                                    msg = "MATCHED!\n";
                                 else
-                                    msg = "NO MATCH";
+                                    msg = "NO MATCH\n";
 
                                 //TODO copypaste
                                 rc = send(fds[i].fd, msg, strlen(msg), 0);
@@ -304,6 +351,8 @@ run(int listen_port)
                 {
                     close(fds[i].fd);
                     fds[i].fd = -1;
+                    positions[i] = 0;                    
+                    memset(buffers[i], 0, sizeof(buffers[i]));
                     compress_array = TRUE;
                 }
             }
