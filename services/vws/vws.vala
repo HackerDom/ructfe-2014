@@ -31,6 +31,8 @@ namespace VWS {
     private void ensure_backup_script() {
       try {
         File.new_for_path(VWS.Options.static_dir).make_directory();
+      } catch (Error e) {}
+      try {
         File.new_for_path(VWS.Options.static_dir + "b").make_directory();
         var backup_script = VWS.Options.static_dir + "b.sh";
         var f = File.new_for_path(backup_script);
@@ -84,6 +86,12 @@ exit 0
           yield tx.write_start_line();
           yield tx.write_headers();
           yield tx.serve(f);
+        } else if (tx.req.method == "HEAD") {
+          var f = File.new_for_path(VWS.Options.static_dir + tx.req.url.path);
+          yield tx.fix_headers(f);
+
+          yield tx.write_start_line();
+          yield tx.write_headers();
         } else if (tx.req.method == "PUT") {
           var f = File.new_for_path(VWS.Options.static_dir + tx.req.url.path);
 
