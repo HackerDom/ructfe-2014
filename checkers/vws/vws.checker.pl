@@ -2,6 +2,7 @@
 
 use Digest::SHA 'hmac_sha1_hex';
 use HTTP::Tiny;
+use POSIX 'strftime';
 
 use feature ':5.10';
 no warnings 'experimental::smartmatch';
@@ -18,6 +19,16 @@ warn 'Invalid mode.' and exit $INTERNAL_ERROR unless $mode ~~ %MODES;
 exit $MODES{$mode}->(@ARGV);
 
 sub check {
+  my $data; $data .= $chars[rand @chars] for 1..10;
+  my $backup_file = strftime '%Y-%m-%dT%H:%M+0000', gmtime;
+  my $url = "http://$ip:2014/b/$backup_file.tar.bz2";
+
+  my $ua = HTTP::Tiny->new(timeout => 10);
+  my $response = $ua->head($url, {headers => {'X-RuCTFE' => $data}});
+
+  return $SERVICE_FAIL if $response->{status} >= 500;
+  return $SERVICE_CORRUPT if ($response->{headers}{'x-ructfe'} // '') ne hmac_sha1_hex($data, HMAC_KEY);
+  return $SERVICE_CORRUPT unless $response->{success};
   return $SERVICE_OK;
 }
 
