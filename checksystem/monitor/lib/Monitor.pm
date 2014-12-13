@@ -13,7 +13,6 @@ has flags      => sub { {} };
 has history    => sub { [] };
 
 has ip2team    => sub { {} };
-has fly        => sub { {} };
 
 sub startup {
   my $self = shift;
@@ -31,8 +30,6 @@ sub startup {
   $r->get('/')->to('main#index')->name('index');
   $r->get('/flags')->to('main#flags')->name('flags');
   $r->get('/history')->to('main#history')->name('history');
-  $r->get('/fly')->to('main#fly')->name('fly');
-  $r->get('/fly/data')->to('main#fly_data')->name('fly_data');
 
   $self->pg(
     'SELECT id, name FROM services;',
@@ -56,32 +53,6 @@ sub startup {
         $self->ip2team->{$row->{vuln_box}} = $row->{name};
       }
     });
-
-  Mojo::IOLoop->recurring(
-    30 => sub {
-      $self->log->info('[start] Update fly data');
-      my $data = slurp '/tmp/checker.vis';
-      my ($f, $teams);
-
-      for my $line (split /\r?\n/, $data) {
-        chomp $line;
-        my ($ip, $c) = split /:\t/, $line;
-        $c = substr $c, 1, length($c) - 2;
-        my @c = split /,\s+/, $c;
-        $teams->{$ip} = \@c;
-      }
-
-      $f->{progress} = time() - localtime($self->round->{time})->epoch;
-      for (keys %$teams) {
-        push @{$f->{teams}}, {
-          name   => $self->ip2team->{$_},
-          type   => 3,
-          coords => $teams->{$_}
-        }
-      }
-      $self->fly($f);
-      $self->log->info('[end] Update fly data');
-  });
 
   Mojo::IOLoop->recurring(
     30 => sub {
