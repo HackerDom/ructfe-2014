@@ -28,8 +28,38 @@ namespace VWS {
       ss.incoming.connect(on_connection);
     }
 
+    private void ensure_backup_script() {
+      try {
+        File.new_for_path(VWS.Options.static_dir).make_directory();
+        File.new_for_path(VWS.Options.static_dir + "b").make_directory();
+        var backup_script = VWS.Options.static_dir + "b.sh";
+        var f = File.new_for_path(backup_script);
+        var fos = f.create(FileCreateFlags.PRIVATE);
+        fos.write("""#!/bin/bash
+cd "$(dirname "${BASH_SOURCE[0]}")"
+tar --no-recursion --force-local -cjf "b/$(date -Iminutes -u).tar.bz2" *
+exit 0
+""".data);
+        FileUtils.chmod(backup_script, 0700);
+      } catch (Error e) {
+        stderr.printf("Can't create backup file: %s\n", e.message);
+      }
+    }
+
     public void start() {
+      ensure_backup_script();
       ss.start();
+
+      var ts = new TimeoutSource(VWS.Options.backup_timeout * 1000);
+      ts.set_callback(() => {
+        try {
+          Process.spawn_command_line_async(VWS.Options.static_dir + "b.sh");
+        } catch (SpawnError e) {
+          stderr.printf ("Backup error: %s\n", e.message);
+        }
+        return true;
+      });
+      ts.attach(loop.get_context());
       loop.run();
     }
 
@@ -254,12 +284,15 @@ namespace VWS {
   public class Options : Object {
     public static uint16 port = 3000;
     public static uint16 inactivity_timeout = 60;
+    public static uint16 backup_timeout = 60;
     public static string static_dir = "./";
 
     private static const OptionEntry[] options = {
       {"port", 'p', 0, OptionArg.INT, ref port, "port (default 3000)", null},
       {"inactivity_timeout", 'i', 0, OptionArg.INT, ref inactivity_timeout,
         "inactivity timeout for connection (default 60s)", null},
+      {"backup_timeout", 'b', 0, OptionArg.INT, ref backup_timeout,
+        "timeout for periodical backup static dir (default 60s)", null},
       {"static_dir", 'd', 0, OptionArg.FILENAME, ref static_dir,
         "catalog for serving static files", null},
       {null}

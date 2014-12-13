@@ -12,7 +12,7 @@ use strict;
 my ($port, $vws);
 BEGIN {
   $port = Mojo::IOLoop::Server->generate_port;
-  $vws = start ["$Bin/../vws", '-p', $port, '-i', '1', '-d', "$Bin/static"];
+  $vws = start ["$Bin/../vws", '-p', $port, '-i', '1', '-d', "$Bin/static", '-b', 5];
   unlink "$Bin/static/data";
   sleep 1;
 }
