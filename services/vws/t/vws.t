@@ -16,7 +16,7 @@ BEGIN {
   unlink "$Bin/static/data";
   sleep 1;
 }
-END { $vws->signal('SIGTERM') }
+END { $vws->signal('SIGTERM'); unlink "$Bin/static/data"; }
 
 my $url = Mojo::URL->new("http://localhost:$port/");
 my $t   = Test::Mojo->new->tap(sub { $_->ua->max_connections(0) });
