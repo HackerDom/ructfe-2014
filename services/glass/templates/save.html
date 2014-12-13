@@ -6,7 +6,7 @@
 </head>
 <body>
     <h1>Secret: <a href="{{ resolve('apps.index.get') }}?name={{name}}">{{name}}</a></h1>
-    <script>
+    <script type="application/javascript">
         function redirect(){
             document.location.href='{{ next }}';
         }
