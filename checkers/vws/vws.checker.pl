@@ -27,6 +27,8 @@ sub get {
 
   my $ua = HTTP::Tiny->new(timeout => 10);
   my $response = $ua->get("http://$ip:2014/$id", {headers => {'X-RuCTFE' => $data}});
+
+  return $SERVICE_FAIL if $response->{status} >= 500;
   return $SERVICE_CORRUPT unless $response->{success};
   return $SERVICE_CORRUPT if ($response->{headers}{'x-ructfe'} // '') ne hmac_sha1_hex($data, HMAC_KEY);
   return $response->{content} eq $flag ? $SERVICE_OK : $FLAG_GET_ERROR;
@@ -38,6 +40,8 @@ sub put {
 
   my $ua = HTTP::Tiny->new(timeout => 10);
   my $response = $ua->put("http://$ip:2014/$id", {content => $flag, headers => {'X-RuCTFE' => $data}});
+
+  return $SERVICE_FAIL if $response->{status} >= 500;
   return $SERVICE_CORRUPT unless $response->{success};
   return $SERVICE_CORRUPT if ($response->{headers}{'x-ructfe'} // '') ne hmac_sha1_hex($data, HMAC_KEY);
   return $SERVICE_OK;
