@@ -1,9 +1,10 @@
-use FindBin '$Bin';
 use File::Path 'remove_tree';
+use FindBin '$Bin';
 use IPC::Run 'start';
 use Mojo::IOLoop::Server;
 use Mojo::URL;
 use Mojo::Util 'hmac_sha1_sum';
+use POSIX 'strftime';
 use Test::Mojo;
 use Test::More;
 
@@ -33,6 +34,12 @@ $t->get_ok($url->path('/1.txt'))
   ->header_is('Content-Length' => 10)
   ->content_is("test data\n");
 
+$t->head_ok($url->path('/1.txt'))
+  ->status_is(200)
+  ->header_is(Server => 'VWS')
+  ->header_is('X-Powered-By' => 'Vala 0.26.0')
+  ->header_is('Content-Length' => 10);
+
 $t->get_ok($url->path('/-1.txt'))
   ->status_is(404)
   ->header_is(Server => 'VWS')
@@ -58,6 +65,12 @@ $t->get_ok($url->path('/1.txt/../1.txt'))->status_is(200);
 $t->get_ok($url->path('/a/b/../../1.txt'))->status_is(200);
 $t->get_ok($url->path('/../../1.txt'))->status_is(200);
 $t->get_ok($url->path('/a/b/c/../../1.txt'))->status_is(404);
+
+# Backups
+my $backup_file = strftime '%Y-%m-%dT%H:%M+0000', gmtime;
+$t->head_ok($url->path("/b/$backup_file.tar.bz2"))->status_is(200);
+$backup_file = strftime '%Y-%m-%dT%H:%M+0000', gmtime(time - 60);
+$t->head_ok($url->path("/b/$backup_file.tar.bz2"))->status_is(404);
 
 # Test vuln
 $t->get_ok($url->path('/../vws.t'))->status_is(404);
