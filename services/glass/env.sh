@@ -22,18 +22,17 @@ EOF1
 ln -s /etc/opt/csw/init.d/cswnginx /etc/rc3.d/S20nginx
 
 /opt/csw/bin/wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
-/opt/csw/bin/python3 get-pip.py
+/opt/csw/bin/python3 get-pip.py && rm -f get-pip.py
 /opt/csw/bin/pip3 install gunicorn
-# gunicorn wsgi:application --bind 0.0.0.0:8001 &> gunicorn.log
 
 cat > /etc/init.d/glass <<EOF
 #!/bin/sh
 case \$1 in
 'start')
-cd /root/glass/ && /opt/csw/bin/gunicorn wsgi:application --bind 0.0.0.0:8001 > gunicorn.log 2>&1 &
+cd /root/glass/ && /opt/csw/bin/gunicorn wsgi:application -p gunicorn.pid --bind 0.0.0.0:8001 > gunicorn.log 2>&1 &
 ;;
 'stop')
-kill \`/usr/bin/cat /var/run/glass.pid\`
+kill \`/usr/bin/cat /root/glass/gunicorn.pid\`
 ;;
 *)
 echo "Usage: \$0 start|stop" >&2
