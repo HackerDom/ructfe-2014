@@ -6,4 +6,4 @@ RUN apt-get -y upgrade
 
 ADD exploit_farm /root/
 
-CMD ["/root/exploit_farm/start.sh"]
+CMD ["/root/start.sh"]
