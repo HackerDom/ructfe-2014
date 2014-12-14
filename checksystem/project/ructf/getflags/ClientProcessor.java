@@ -109,34 +109,34 @@ public class ClientProcessor extends Thread
 				
 				if (flagStr.length() != Constants.flagLength) {
 					out.println("Denied: bad flag length. Must be: " + Constants.flagLength);
-					// logger.debug("Denied: bad length");
+//					logger.debug("Denied: bad length");
 					continue;
 				}
 				logger.debug(String.format("Got flag: %s (%d)", flagStr, totalFlags));
 				
 				
 				
-				try{
-					flagManager.InsertTaskStolenFlag(teamId.getId(), flagStr);
-					goodFlags++;
-					logger.debug(String.format("Accepted taskFlag %s", flagStr));
-					out.println("Accepted");
-					continue;
-				}
-				catch(NoSuchTaskFlagException ne){
-					logger.debug("Denied: no such task flag");
-					out.println("Denied: no such flag");
-					continue;
-				}
-				catch (DuplicateTaskFlagForTeam de) {
-					logger.debug("Denied: task flag resubmit");
-					out.println("Denied: you already submitted this flag");
-					continue;
-				}
-				catch (SQLException e) {
-					logger.error("InsertTaskStolenFlag failed", e);
-					out.println("Please try again later");
-				}
+//				try{
+//					flagManager.InsertTaskStolenFlag(teamId.getId(), flagStr);
+//					goodFlags++;
+//					logger.debug(String.format("Accepted taskFlag %s", flagStr));
+//					out.println("Accepted");
+//					continue;
+//				}
+//				catch(NoSuchTaskFlagException ne){
+//					logger.debug("Denied: no such task flag");
+//					out.println("Denied: no such flag");
+//					continue;
+//				}
+//				catch (DuplicateTaskFlagForTeam de) {
+//					logger.debug("Denied: task flag resubmit");
+//					out.println("Denied: you already submitted this flag");
+//					continue;
+//				}
+//				catch (SQLException e) {
+//					logger.error("InsertTaskStolenFlag failed", e);
+//					out.println("Please try again later");
+//				}
 				
 				
 				
@@ -148,20 +148,20 @@ public class ClientProcessor extends Thread
 				}
 				
 				if (stolenFlag.getOwnerTeamId() == teamId.getId()) {
-					out.println("Denied: flag is your own");
 					logger.debug("Denied: own flag");
+					out.println("Denied: flag is your own");					
 					continue;
 				}
 				
 				if (stolenFlag.wasStolenByTeam(teamId.getId())) {
-					out.println("Denied: you already submitted this flag");
 					logger.debug("Denied: resubmit");
+					out.println("Denied: you already submitted this flag");					
 					continue;
 				}
 				
 				if (stolenFlag.getAgeSeconds() >= Constants.flagExpireInterval ) {
-					out.println("Denied: flag is too old");
 					logger.debug("Denied: too old");
+					out.println("Denied: flag is too old");					
 					continue;
 				}
 				
@@ -169,15 +169,17 @@ public class ClientProcessor extends Thread
 				ServiceStatus serviceStatus = new ServiceStatus(teamId.getId(), serviceId, dbConnection);
 				if (serviceStatus.getStatus() != CheckerExitCode.OK.toInt()) {
 					String servName = serviceStatus.getServiceName();
-					out.println(String.format("Denied: your appropriate service (%s) is not UP", servName));
 					logger.debug("Denied: service not up: " + servName);
+					out.println(String.format("Denied: your appropriate service (%s) is not UP", servName));					
 					continue;
 				}
 				
-				goodFlags++;
-				logger.debug(String.format("Accepted flag %s", flagStr));
 				if (flagManager.InsertStolenFlag(teamId.getId(), stolenFlag))
+				{
+					goodFlags++;
+					logger.debug(String.format("Accepted flag %s", flagStr));
 					out.println("Accepted");
+				}
 				else {
 					logger.error("InsertStolenFlag failed");
 					out.println("Please try again later");
