@@ -43,7 +43,7 @@
     <td class="team-pos"><%= ++$pos %></td>
     <td>
       % my $name = url_escape url_escape $score->{team}{name};
-      <img src="<%= url_for('/logo/' . $name) %>" width="64" height="64" class="img-rounded">
+      <!-- <img src="<%= url_for('/logo/' . $name) %>" width="64" height="64" class="img-rounded"> -->
     </td>
     <td class="team-name"><span title="<%= $score->{team}{vuln_box} %>"><%= $score->{team}{name} %></span></td>
     <td class="team-score"><%= sprintf '%.2f', $score->{score} %></td>
@@ -196,42 +196,6 @@ $(document).ready(function() {
       });
     });
   });
-  $.get("<%= url_for('history') %>", function(history) {
-    $('#history').highcharts({
-      chart: {
-        zoomType: 'x'
-      },
-      title: { text: '' },
-      xAxis: {
-        title: { text: '' },
-      },
-      yAxis: {
-        title: { text: '' },
-        min: 0
-      },
-      tooltip: {},
-      plotOptions: {
-        line: {
-          animation: false,
-          marker: {
-            enabled: false
-          }
-        },
-        series: {
-          turboThreshold: 0
-        }
-      },
-      legend: {
-        layout: 'vertical',
-        align: 'right',
-        verticalAlign: 'middle',
-        borderWidth: 0
-      },
-      series: history,
-      credits: {
-        enabled: false
-      }
-    });
   });
 });
 </script>

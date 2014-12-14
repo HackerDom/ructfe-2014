@@ -6,15 +6,15 @@ sub index {
 }
 
 sub flags {
-  my $self = shift;
+  my $c = shift;
 
-  $self->render(json => $self->app->flags);
+  $c->render(json => $c->app->flags);
 }
 
 sub history {
-  my $self = shift;
+  my $c = shift;
 
-  $self->render(json => $self->app->history);
+  $c->render(json => $c->app->history);
 }
 
 1;

@@ -11,15 +11,14 @@ has scoreboard => sub { [] };
 has round      => sub { {} };
 has status     => sub { {} };
 has flags      => sub { {} };
-has history    => sub { [] };
-
-has ip2team => sub { {} };
+has ip2team    => sub { {} };
 
 sub startup {
   my $app = shift;
 
   my $mode = $app->mode;
   $app->plugin('Config', file => "monitor.$mode.conf");
+  $app->secrets(['qJ9e_d3Snf']);
 
   $app->helper(
     pg => sub {
@@ -29,7 +28,6 @@ sub startup {
   my $r = $app->routes;
   $r->get('/')->to('main#index')->name('index');
   $r->get('/flags')->to('main#flags')->name('flags');
-  $r->get('/history')->to('main#history')->name('history');
 
   $app->log->info('Fetch services at startup');
   $app->pg->db->query(
@@ -46,7 +44,7 @@ sub startup {
     'SELECT id, name, vuln_box FROM teams',
     sub {
       my ($db, $err, $res) = @_;
-      return $app->log->error("Error while select services: $err") if $err;
+      return $app->log->error("Error while select teams: $err") if $err;
 
       $res->hashes->map(
         sub {
@@ -137,30 +135,6 @@ sub startup {
               $app->flags->{$_->{team_id}}{$_->{service_id}} =
                 {count => $_->{flags}, name => $_->{service}};
             });
-        });
-    });
-
-  Mojo::IOLoop->recurring(
-    120 => sub {
-      $app->log->info('Update history');
-      $app->pg->db->query(
-        'SELECT * FROM points_history
-        ORDER BY team_id, round' => sub {
-          my ($db, $err, $res) = @_;
-          return $app->log->error("Error while select services: $err") if $err;
-
-          my ($h, $nh);
-          $res->hashes->map(
-            sub {
-              if (($_->{round} > $app->round->{n} - 40) or ($_->{round} % 15 == 0)) {
-                push @{$h->{$_->{name}}}, {x => $_->{round}, y => 0 + $_->{points}};
-              }
-            });
-
-          for (keys %$h) {
-            push @$nh, {name => $_, data => $h->{$_}};
-          }
-          $app->history($nh);
         });
     });
 }
