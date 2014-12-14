@@ -50,7 +50,6 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="<%= url_for('index') %>">Скорборд</a></li>
-            <li><a href="<%= url_for('fly') %>">Полёты</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="#">
