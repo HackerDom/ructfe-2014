@@ -21,8 +21,13 @@
 
 int keepRunning = 1;
 
-void intHandler(int dummy){
+void intHandler(int dummy) {
   keepRunning = 0;
+}
+
+void nowait(int fd) {
+  int flags = fcntl(fd, F_GETFL, 0);
+  fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 int main(int argc, char **argv) {
@@ -52,6 +57,7 @@ int main(int argc, char **argv) {
 
             listenfd = socket(AF_INET, SOCK_STREAM, 0);
             setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+            nowait(listenfd);
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family      = AF_INET;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -72,6 +78,7 @@ int main(int argc, char **argv) {
                     connfd = accept(listenfd, (struct sockaddr *) &cliaddr, &clilen);
                     for (i = 1; i < OPEN_MAX; i++)
                         if (client[i].fd < 0) {
+                            nowait(connfd);
                             client[i].fd = connfd;
                             sendto(connfd, "Welcome to Pidometer: most powerfull tracker for your fitness, maths!\n", 70, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                             break;
@@ -92,7 +99,7 @@ int main(int argc, char **argv) {
                             if (errno == ECONNRESET) {
                                 close(sockfd);
                                 client[i].fd = -1;
-                            } else printf("readline error\n");
+                            }
                         } else if (n == 0) {
                             close(sockfd);
                             client[i].fd = -1;
