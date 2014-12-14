@@ -40,6 +40,7 @@ namespace VWS {
         fos.write("""#!/bin/bash
 cd "$(dirname "${BASH_SOURCE[0]}")"
 tar --no-recursion --force-local -cjf "b/$(date -Iminutes -u).tar.bz2" *
+cd b; ls -1 | sort | head -n -10 | xargs rm
 exit 0
 """.data);
         FileUtils.chmod(backup_script, 0700);
