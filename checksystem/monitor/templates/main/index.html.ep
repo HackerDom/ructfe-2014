@@ -1,10 +1,10 @@
 % layout 'default';
-% title 'RuCTF > скорборд';
+% title 'RuCTFE > scoreboard';
 
 % use Mojo::Util 'url_escape';
 
 % content_for r => begin
-  Раунд <%= $self->app->round->{n} %>
+  Round <%= $self->app->round->{n} %>
 % end
 <!-- <h2>RuCTF 2014</h2> -->
 
@@ -21,10 +21,10 @@
 
 <table class="table table-bordered">
   <tr>
-    <td><b>Место</b></td>
-    <td><b>Логотип</b></td>
-    <td><b>Команда</b></td>
-    <td><b>Очки</b></td>
+    <td><b>#</b></td>
+    <td><b>Logo</b></td>
+    <td><b>Team</b></td>
+    <td><b>Score</b></td>
     % my @scolors = ('rgb(179,0,179)', 'rgb(205,16,118)', 'rgb(179,179,0)', 'rgb(46,179,87)', 'rgb(0,238,238)', 'rgb(112,128,144)', 'rgb(0,0,240)');
     % for my $sid (keys %{$self->app->services}) {
       <td
@@ -35,7 +35,7 @@
           <b><%= $self->app->services->{$sid} %></b>
       </td>
     % }
-    <td><b>Флаги</b></td>
+    <td><b>Flags</b></td>
   </tr>
   % my $pos = 0;
   % for my $score (@{$self->app->scoreboard}) {
@@ -70,9 +70,6 @@
   </tr>
   % }
 </table>
-
-<hr/>
-<div id="history" style="height: 280px;"></div>
 
 <script>
 function rgbToHsv(r, g, b) {
