@@ -6,7 +6,6 @@
 % content_for r => begin
   Round <%= $self->app->round->{n} %>
 % end
-<!-- <h2>RuCTF 2014</h2> -->
 
 <div class="legend-item"><span  id="s101" style="background-color: rgb(0, 220, 0);" class="color-box">&nbsp;</span><span>&nbsp;UP</span></div>
 
@@ -127,8 +126,9 @@ $(document).ready(function() {
     s110: [69, 35, 0]
   };
 
-  for (s in [1,2,3,4,5,6,7]) {
-    var ss = parseInt(s) + 1;
+  var services = [<%= join ', ', keys %{app->services} %>];
+  for (s in services) {
+    var ss = services[s];
     var scores = [];
     $('td[data-service="' + ss + '"]').each(function (idx, el) {
       scores.push(parseFloat($(el).attr('data-score')));
@@ -192,7 +192,6 @@ $(document).ready(function() {
       }
       });
     });
-  });
   });
 });
 </script>
