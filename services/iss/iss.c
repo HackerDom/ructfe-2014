@@ -21,12 +21,24 @@
 #define TRUE 1
 #define FALSE 0
 
+#define MAX_PENALTY 2
+
 void make_non_blocking(int fd)
 {
     int flags = fcntl(fd, F_GETFL, 0);
     if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
     {
-        perror("fcntl() failed");
+        perror("fcntl() on set O_NONBLOCK failed");
+        exit(-1);
+    }
+}
+
+void make_blocking(int fd)
+{
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) < 0)
+    {
+        perror("fcntl() on remove O_NONBLOCK failed");
         exit(-1);
     }
 }
@@ -57,9 +69,51 @@ struct node
 struct node *root;
 
 int
-try_match(const char * dna)
+try_match_rec(struct node *cur, const char *dna, int penalty)
 {
-    return 0;
+    if(penalty > MAX_PENALTY)
+        return FALSE;
+
+    if(dna[0] == 0 && cur->comment != NULL)
+        return TRUE;
+
+    if(cur->A_child != NULL)
+    {
+        if(dna[0] != 0 && try_match_rec(cur->A_child, dna + 1, dna[0] == 'A' ? penalty : penalty + 1))
+            return TRUE;
+        if(try_match_rec(cur->A_child, dna, penalty + 1))
+            return TRUE;
+    }
+    if(cur->T_child != NULL)
+    {
+        if(dna[0] != 0 && try_match_rec(cur->T_child, dna + 1, dna[0] == 'T' ? penalty : penalty + 1))
+            return TRUE;
+        if(try_match_rec(cur->T_child, dna, penalty + 1))
+            return TRUE;
+    }
+    if(cur->G_child != NULL)
+    {
+        if(dna[0] != 0 && try_match_rec(cur->G_child, dna + 1, dna[0] == 'G' ? penalty : penalty + 1))
+            return TRUE;
+        if(try_match_rec(cur->G_child, dna, penalty + 1))
+            return TRUE;
+    }
+    if(cur->C_child != NULL)
+    {
+        if(dna[0] != 0 && try_match_rec(cur->C_child, dna + 1, dna[0] == 'C' ? penalty : penalty + 1))
+            return TRUE;
+        if(try_match_rec(cur->C_child, dna, penalty + 1))
+            return TRUE;
+    }
+
+    return dna[0] != 0 && try_match_rec(cur, dna + 1, penalty + 1);
+}
+
+int
+try_match(const char *dna)
+{
+    int len = strlen(dna);
+    return try_match_rec(root, dna, 0);
 }
 
 char *
@@ -273,26 +327,27 @@ run(int listen_port)
                     {
                         if(check_alphabet(buffer))
                         {
-                            pid_t pid;
-                            switch(pid=fork()) {
-                            case -1:
+                            pid_t pid = fork();
+                            if(pid == -1)
+                            {
                                 perror("fork()");
                                 exit(-1);
-                            case 0:
+                            }
+                            else if (pid == 0)
+                            {
                                 if(try_match(buffer))
                                     msg = "MATCHED!\n";
                                 else
                                     msg = "NO MATCH\n";
 
-                                //TODO copypaste
+                                make_blocking(fds[i].fd);
                                 rc = send(fds[i].fd, msg, strlen(msg), 0);
                                 if (rc < 0)
-                                {
                                     perror("    send() failed");
-                                    close_conn = TRUE;
-                                    break;
-                                }
-                            default:
+                                exit(0);
+                            }
+                            else
+                            {
                                 close_conn = TRUE;
                                 break;
                             }
@@ -345,13 +400,11 @@ run(int listen_port)
                     }
                 } while(TRUE);
 
-                // printf("Exited recv loop\n");
-
                 if (close_conn)
                 {
                     close(fds[i].fd);
                     fds[i].fd = -1;
-                    positions[i] = 0;                    
+                    positions[i] = 0;
                     memset(buffers[i], 0, sizeof(buffers[i]));
                     compress_array = TRUE;
                 }
