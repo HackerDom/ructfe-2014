@@ -1,14 +1,15 @@
 #!/bin/bash
 
-pkgadd -d http://get.opencsw.org/now
-/opt/csw/bin/pkgutil -U
-pkg install SUNWhea SUNWarc SUNWlibm SUNWlibms SUNWdfbh  SUNWlibC SUNWzlib gcc-43 wget gnu-make SUNWpython26-setuptools netcat
-pkgutil -y -i libmcrypt4 mcrypt_dev redis
-ln -s /usr/gcc/4.3/bin/gcc /usr/bin/gcc
+pkgadd -d http://get.opencsw.org/now all
+/opt/csw/bin/pkgutil -U -y
+pkg install SUNWhea SUNWarc SUNWlibm SUNWlibms SUNWdfbh  SUNWlibC SUNWzlib gcc-43 gnu-make SUNWpython26-setuptools netcat
+/opt/csw/bin/pkgutil -y -i libmcrypt4 mcrypt_dev redis
+ln -sf /usr/gcc/4.3/bin/gcc /usr/bin/gcc
 
 echo "export CPPFLAGS=\"-I/opt/csw/include\"" >> /root/.profile
 echo "export LDFLAGS=\"-L/opt/csw/lib -R/opt/csw/lib\"" >> /root/.profile
 echo "export PKG_CONFIG_PATH=\"/opt/csw/lib/pkgconfig\"" >> /root/.profile
+source /root/.profile
 
 easy_install redis python-mcrypt
 
@@ -42,7 +43,7 @@ esac
 exit 0
 EOF1
 chmod +x /etc/init.d/redis
-ln -s /etc/init.d/redis /etc/rc3.d/S20redis
+ln -sf /etc/init.d/redis /etc/rc3.d/S20redis
 
 cat > /etc/init.d/pidometer <<EOF2
 #!/bin/sh
@@ -61,7 +62,8 @@ esac
 exit 0
 EOF2
 chmod +x /etc/init.d/pidometer
-ln -s /etc/init.d/pidometer /etc/rc3.d/S30pidometer
+ln -sf /etc/init.d/pidometer /etc/rc3.d/S30pidometer
 
+cd /root/pidometer && make server
 
 # reboot
