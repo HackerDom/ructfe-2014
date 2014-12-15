@@ -37,10 +37,10 @@ namespace VWS {
         var backup_script = VWS.Options.static_dir + "b.sh";
         var f = File.new_for_path(backup_script);
         var fos = f.create(FileCreateFlags.PRIVATE);
-        fos.write("""#!/bin/bash
+        fos.write("""#!/usr/bin/bash
 cd "$(dirname "${BASH_SOURCE[0]}")"
-tar --no-recursion --force-local -cjf "b/$(date -Iminutes -u).tar.bz2" *
-cd b; ls -1 | sort | head -n -10 | xargs rm
+/usr/bin/gtar --no-recursion --force-local -cjf "b/$(/usr/gnu/bin/date -Iminutes -u).tar.bz2" *
+cd b; /usr/gnu/bin/ls -1 | /usr/gnu/bin/sort | /usr/gnu/bin/head -n -10 | /usr/bin/xargs /usr/gnu/bin/rm
 exit 0
 """.data);
         FileUtils.chmod(backup_script, 0700);
