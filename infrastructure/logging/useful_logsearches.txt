@@ -1,0 +1,3 @@
+"Failed to successfully process task" - round timeout
+source:ructf.daemon AND (check put get) AND message:"10.62.85.108" - check team
+"New round" - new rounds

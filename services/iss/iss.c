@@ -156,22 +156,21 @@ try_add_pattern(const char *pattern, const char * comment)
     {
         cur->comment = malloc(c_len + 1);
         strcpy(cur->comment, comment);
-        fwrite(cur->comment, c_len, 1, file);
-        fwrite("\n", 1, 1, file);
     }
     return cur->comment;
 }
 
-void
+int
 init_state(FILE* fp)
 {
     char *buffer = malloc(BUFFER_LEN);
     size_t pos = 0;
     ssize_t read;
 
-    while ((read = fread(buffer + pos, 1, 1, fp)) != -1)
+    int lines = 0;
+
+    while ((read = fread(buffer + pos, 1, 1, fp)) > 0)
     {
-        pos++;
         if(buffer[pos] == '\n')
         {
             buffer[pos] = 0;
@@ -179,18 +178,20 @@ init_state(FILE* fp)
 
             if(comment == NULL)
             {
-                perror("Corrupted state");
+                fprintf(stderr, "Corrupted state!");
                 exit(-1);
             }
-            buffer[comment] = 0;
+            comment[0] = 0;
             comment++;
 
             try_add_pattern(buffer, comment);
-
-            pos = 0;            
-        }       
-        
+            pos = 0;
+            lines++;
+        }
+        else
+            pos++;
     }
+    return lines;
 }
 
 void
@@ -222,8 +223,11 @@ run(int listen_port)
         perror("can't open state file for writing");
         exit(-1);
     }
-    init_state(file);
-    make_non_blocking(fileno(file));    
+    fseek(file, 0, SEEK_SET);
+    printf("Loaded %d lines from state file\n", init_state(file));
+
+    make_non_blocking(fileno(file));
+    setvbuf(file, NULL, _IONBF, 0);
 
     listen_sd = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_sd < 0)
@@ -415,10 +419,15 @@ run(int listen_port)
 
                         if(check_alphabet(buffer))
                         {
-                            comment = try_add_pattern(buffer, comment);
-                            rc = send(fds[i].fd, comment, strlen(comment), 0);
+                            char *result_comment = try_add_pattern(buffer, comment);
+
+                            comment[-1] = ' ';
+                            fwrite(buffer, len, 1, file);
+                            fwrite("\n", 1, 1, file);
+
+                            rc = send(fds[i].fd, result_comment, strlen(result_comment), 0);
                             if(rc >= 0)
-                                rc = send(fds[i].fd, "\n", 1, 0);                            
+                                rc = send(fds[i].fd, "\n", 1, 0);
 
                             //TODO copypaste
                             if (rc < 0)
