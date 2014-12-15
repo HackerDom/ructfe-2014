@@ -6,6 +6,8 @@
 #include <wattcp.h>
 #include <elib.h>
 #include <dos.h>
+
+
 #ifdef __BORLANDC__
 #include <mem.h>
 #endif
@@ -55,6 +57,18 @@ char *pkt_line = "PKT DRVR";
 int pkt_init( void );
 extern void _pktentry();                          /* see asmpkt.asm */
 extern void _pktasminit( void far *, int, int );  /* see asmpkt.asm */
+
+#ifdef __BORLANDC__
+#if __BORLANDC__ < 0x0200
+static int fmemcmp( char far *x, char far *y, int len )
+{
+    while ( len-- > 0 )
+        if ( *x++ != *y++ ) return( 1 );
+    return( 0 );
+}
+#endif
+#endif
+
 
 static int pkt_init( void )       /* 94.11.27 -- made static */
 {

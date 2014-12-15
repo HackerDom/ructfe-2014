@@ -120,7 +120,7 @@ int ip_timer_expired( sock_type *s )
 
 longword MsecClock( void )
 {
-    return( (*realclock) * 055L);
+    return( (*realclock) * 55L);
 }
 
 static long make_timeout( word timeout )
@@ -1248,7 +1248,6 @@ static void tcp_handler( in_Header *ip )
     long diffticks, ldiff;      /* must be signed */
     long scheduleto;
 
-
     if ( (longword)(intel( ip->destination ) - my_ip_addr) > multihomes )
         return;
 
@@ -1263,39 +1262,59 @@ static void tcp_handler( in_Header *ip )
     flags = intel16( tp->flags );
 
 #ifdef DEBUG
-    if (debug_on > 1) {
-            mono[160]++;
-            colour[160]++;
-            mono[162] = colour[162] = (flags & tcp_FlagSYN) ? 'S' : ' ';
-            mono[164] = colour[164] = (flags & tcp_FlagACK) ? 'A' : ' ';
-            mono[166] = colour[166] = (flags & tcp_FlagFIN) ? 'F' : ' ';
-            mono[168] = colour[168] = (flags & tcp_FlagRST) ? 'R' : ' ';
-        }
+    if (debug_on > 1)
+	{
+		mono[160]++;
+		colour[160]++;
+		mono[162] = colour[162] = (flags & tcp_FlagSYN) ? 'S' : ' ';
+		mono[164] = colour[164] = (flags & tcp_FlagACK) ? 'A' : ' ';
+		mono[166] = colour[166] = (flags & tcp_FlagFIN) ? 'F' : ' ';
+		mono[168] = colour[168] = (flags & tcp_FlagRST) ? 'R' : ' ';
+	}
 #endif
     /* demux to active sockets */
     for ( s = tcp_allsocs; s; s = s->next )
     {
 #ifdef DEBUG
-                if ( s->safetysig != SAFETYTCP )
-                {
-                if (debug_on) outs("\n\rTCP: Chain Error\n\r");   // R. Whitby
-                }
+		if ( s->safetysig != SAFETYTCP )
+		{
+			if (debug_on)
+				outs("\n\rTCP: Chain Error\n\r");   // R. Whitby
+		}
 #endif
-                if ( s->hisport != 0 &&
-                     intel16( tp->dstPort ) == s->myport &&
-                     intel16( tp->srcPort ) == s->hisport &&
-                     intel( ip->destination )   == s->myaddr     &&
-                     intel( ip->source ) == s->hisaddr ) break;
-        }
-        if ( !s && (flags & tcp_FlagSYN))
-        {
+		if ( s->hisport != 0 &&
+			 intel16( tp->dstPort ) == s->myport &&
+			 intel16( tp->srcPort ) == s->hisport &&
+			 intel( ip->destination )   == s->myaddr     &&
+			 intel( ip->source ) == s->hisaddr )
+			 break;
+    }
+    
+    if ( !s && (flags & tcp_FlagSYN))
+	{
 /* demux to passive sockets, must be a new session */
-                for ( s = tcp_allsocs; s; s = s->next )
-                    if ((s->hisport == 0) && (intel16( tp->dstPort ) == s->myport ))
-                    {
-                                s->myaddr = intel( ip->destination );
-                                break;
-                }
+#ifdef DEBUG
+		int counter = 0;
+		for ( s = tcp_allsocs; s; s = s->next )
+			if ((s->hisport == 0) && (intel16( tp->dstPort ) == s->myport ))
+			{
+				if (debug_on > 0)
+					printf("TCPDEBUG: accepted new client to sock %d\n", counter);
+				counter = -1;
+				s->myaddr = intel( ip->destination );
+				break;
+			}
+			else counter++;
+		if (debug_on > 0 && counter >= 0)
+			printf("TCPDEBUG: no free socks :(\n");
+#else
+		for ( s = tcp_allsocs; s; s = s->next )
+			if ((s->hisport == 0) && (intel16( tp->dstPort ) == s->myport ))
+			{
+				s->myaddr = intel( ip->destination );
+				break;
+			}
+#endif
     }
 
     if (_dbugrecv) (*_dbugrecv)( (sock_type*)s, ip, tp, 0 );
@@ -1398,6 +1417,7 @@ static void tcp_handler( in_Header *ip )
     scheduleto = set_ttimeout( s->rto + 2 );
     if ( s->rtt_time < scheduleto ) s->rtt_time = scheduleto;
     s->datatimer = 0;   /* EE 99.08.23 */
+    s->gotflush = flags & tcp_FlagPUSH;  /* EE 2002.2.28 */
 
     switch ( s->state ) {
 
@@ -2551,9 +2571,19 @@ int sock_gets( sock_type *s, byte *dp, int n )
     cr_p = memchr( dp, '\r', n); if (cr_p) *cr_p = 0;
     nl_p = memchr( dp, '\n', n); if (nl_p) *nl_p = 0;
 
+    /* handle flushed end of strings EE 02.02.28 */
+    if ( s->tcp.ip_type == TCP_PROTO ) {
+        if ( s->tcp.gotflush) {
+            if ( !cr_p ) {
+                cr_p = dp + n;
+                s->tcp.gotflush = 0;
+            }
+        }
+    }
+
     /* Return if we did not find \r or \n yet, but still had room. */
     // S. Lawson - *and* the connection can get more data!
-    if ( !cr_p && !nl_p && (n > *np) && (*np < rmax)
+    if ( !cr_p && !nl_p && (n >= *np) && (*np < rmax)
          && s->tcp.state != tcp_StateLASTACK
          && s->tcp.state != tcp_StateCLOSED ) {
       *dp = 0;

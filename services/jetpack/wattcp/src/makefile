@@ -21,9 +21,11 @@ DEBUGS= -v
 #CFLAGS= $(DEBUGS) -DMSDOS -ID:\borlandc\include -I..\include
 #CFLAGS= $(DEBUGS) -DMSDOS -IC:\bc4\include -I..\include
 #CFLAGS= $(DEBUGS) -DMSDOS -DSKIPINI -DETH_MSS=576 -IC:\borlandc\include -I..\include
+#CFLAGS= $(DEBUGS) -DDEBUG -DMSDOS -DETH_MSS=576 -IC:\borlandc\include -I..\include
 CFLAGS= $(DEBUGS) -DMSDOS -DETH_MSS=576 -IC:\borlandc\include -I..\include
 MODELS=-ms
 MODELL=-ml
+MODELC=-mc
 MODELH=-mh
 
 # Assembler flags
@@ -41,12 +43,15 @@ AMODELL=-dFUNC_L=1
         tlib ..\lib\wattcpsm -+$*
         bcc -c $(MODELL) $(CFLAGS) $*.c
         tlib ..\lib\wattcplg -+$*
+        bcc -c $(MODELC) $(CFLAGS) $*.c
+        tlib ..\lib\wattcpcm -+$*
         bcc -c $(MODELH) $(CFLAGS) $*.c
         tlib ..\lib\wattcphg -+$*
 
 .asm.obj:
         tasm $(AFLAGS) $(AMODELS) $*;
         tlib ..\lib\wattcpsm -+$*
+        tlib ..\lib\wattcpcm -+$*
         tasm $(AFLAGS) $(AMODELL) $*;
         tlib ..\lib\wattcplg -+$*
         tlib ..\lib\wattcphg -+$*
@@ -68,7 +73,6 @@ pcicmp.obj: pcicmp.c ..\include\wattcp.h
 pcpkt.obj: pcpkt.c ..\include\wattcp.h
 pctcp.obj: pctcp.c ..\include\wattcp.h
 pcarp.obj: pcarp.c ..\include\wattcp.h
-wattcpd.obj: wattcpd.c ..\include\wattcp.h
 pcping.obj: pcping.c ..\include\wattcp.h
 pcsed.obj: pcsed.c ..\include\wattcp.h ..\include\ethdev.h
 sock_prn.obj: sock_prn.c ..\include\wattcp.h

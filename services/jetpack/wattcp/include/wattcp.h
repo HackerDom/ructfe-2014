@@ -309,6 +309,8 @@ typedef struct _tcp_socket {
     longword        inactive_to;           /* for the inactive flag */
     int             sock_delay;
 
+    byte            gotflush;              /* received Flush on last packet */
+
     byte            data[tcp_MaxBufSize+1]; /* data to send */
     longword        datatimer;          /* EE 99.08.23 note broken connections */
     longword	    frag[2];		/* S. Lawson - handle one dropped segment */
@@ -733,6 +735,7 @@ extern word watcbroke;
 
 /* user initialization file */
 extern void (*usr_init)(char *name, char *value);
+extern void (*usr_post_init)();
 
 extern int _survivebootp;
 

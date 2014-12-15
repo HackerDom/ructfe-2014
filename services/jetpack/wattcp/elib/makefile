@@ -9,6 +9,7 @@ CFLAGS= -w -a -d -f- -G -O -Z -DMSDOS -I..\include -IC:\borlandc\include
 #CFLAGS= -w -a -d -f- -G -O -Z -DMSDOS -I..\include -IC:\bc4\include
 MODELS=-ms
 MODELL=-ml
+MODELC=-mc
 MODELH=-mh
 
 # Assembler flags
@@ -23,12 +24,15 @@ AMODELL=-dFUNC_L=1
         tlib ..\lib\wattcpsm -+$*
         bcc -c $(MODELL) $(CFLAGS) $*.c
         tlib ..\lib\wattcplg -+$*
+        bcc -c $(MODELC) $(CFLAGS) $*.c
+        tlib ..\lib\wattcpcm -+$*
         bcc -c $(MODELH) $(CFLAGS) $*.c
         tlib ..\lib\wattcphg -+$*
 
 .asm.obj:
         tasm $(AFLAGS) $(AMODELS) $*;
         tlib ..\lib\wattcpsm -+$*
+        tlib ..\lib\wattcpcm -+$*
         tasm $(AFLAGS) $(AMODELL) $*;
         tlib ..\lib\wattcplg -+$*
         tlib ..\lib\wattcphg -+$*

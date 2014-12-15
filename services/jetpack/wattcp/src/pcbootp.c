@@ -7,6 +7,9 @@
  *
  *   Version
  *
+ *   0.5 : Oct 29, 2001 : J. Toman - fixed DHCP packet size and moved DHCP
+ *                                   lifetime variable so it doesn't clobber
+ *                                   results from the server
  *   0.4 : May 11, 1999 : S. Lawson - added DHCP
  *   0.3 : Feb  1, 1992 : J. Dent - patched up various things
  *   0.2 : May 22, 1991 : E.J. Sutcliffe - added RFC_1048 vendor fields
@@ -62,7 +65,9 @@ int _dobootp( void )
 /*
     const char dhcp_opt[]={DHCP_VN_TYPE,1,DHCP_TY_REQ,DHCP_VN_OPTS,6,1,
                            3,6,42,12,15,0}; */  /* S. Lawson - keep even! */
-    const char dhcp_opt[]={DHCP_VN_OPTS,6,1,3,6,42,12,15,0}; /* Shaun Jackman 2000/3/10 */
+/*    const char dhcp_opt[]={DHCP_VN_OPTS,6,1,3,6,42,12,15,0}; */ /* Shaun Jackman 2000/3/10 */
+    const char dhcp_opt[]={DHCP_VN_OPTS,6,1,3,6,42,12,15}; /* Michael Temari 2002/1/17, keep even */
+
 //    if ( _pktdevclass == PD_SLIP ) return( -1 );
 
 
@@ -71,6 +76,7 @@ int _dobootp( void )
     my_ip_addr = 0;
     dhcp_seen=dhcp_bind=0;      		// S. Lawson
     got_ns=got_gw=got_cy=0;			// S. Lawson
+    dhcp_life = 0L;                             // JCT
 
     if (!udp_open( &bsock, IPPORT_BOOTPC, _bootphost, IPPORT_BOOTPS, NULL )) {
 	outs("\n\rUnable to resolve bootp server\n\r");
@@ -78,7 +84,8 @@ int _dobootp( void )
     }
 
     bootptimeout = set_timeout( _bootptimeout );
-    magictimeout = (xid & 7) + 7;  /* between 7 and 14 seconds */
+    // magictimeout = (xid & 7) + 7;  /* between 7 and 14 seconds */
+    magictimeout = ((word)(xid & 7)) + 7;/* JCT forced to word, 7-14 s */
 
     memset( &sendbootp, 0, sizeof( struct bootp ));
     sendbootp.bp_op = BOOTREQUEST;
@@ -108,7 +115,7 @@ int _dobootp( void )
     while ( 1 ) {
 	sock_fastwrite( (sock_type*)&bsock, (byte *)&sendbootp, sizeof( struct bootp ));
 	sendbootp.bp_secs = intel16( intel16( sendbootp.bp_secs ) + magictimeout );      /* for next time */
-	sendtimeout = set_timeout( magictimeout += (xid >> 5) & 7 );
+        sendtimeout = set_timeout( magictimeout += ((word)(xid >> 5)) & 7 );  // JCT
 
 	while ( !chk_timeout( sendtimeout )) {
 
@@ -123,9 +130,16 @@ int _dobootp( void )
 		templen = sock_fastread( (sock_type*)&bsock, (byte *)&_bootp, sizeof( struct bootp ));
 // S. Lawson - vendor area increased (bootp: 64, dhcp: 312)
 //		if ( templen < sizeof( struct bootp )) {
-		if ( templen < sizeof( struct bootp ) - (312-64) ) {
-		    /* too small, not a bootp packet */
-		    memset( &_bootp, 0, sizeof( struct bootp ));
+
+/*
+ *              if ( templen < sizeof( struct bootp ) - (312-64) ) {
+ * JCT that's not right size either
+ */
+                if ( templen < sizeof( struct bootp ) - 312 ) {
+                   /* too small, not a bootp packet */
+
+
+                    memset( &_bootp, 0, sizeof( struct bootp ));
 		    continue;
 		}
 
@@ -146,7 +160,7 @@ int _dobootp( void )
 		}
 
 		dhcp_seen = 0;          // S. Lawson
-		dhcp_life=0L;		// S. Lawson
+                /* dhcp_life=0L;  wrong place */  // S. Lawson
 
 		if ( intel( *(longword*)(&_bootp.bp_vend)) == VM_RFC1048 ) {
 		    /*RFC1048 complient BOOTP vendor field */
@@ -183,7 +197,10 @@ int _dobootp( void )
 				 break;
 			  case 6: /* Domain Name Servers (BIND) */
 				if (!got_ns) 	// S. Lawson
-				  for ( len = 0; len < *(p+1) ; len += 4 )
+
+                                //for ( len = 0; len < *(p+1) ; len += 4 )
+                                // JCT make promotion to int explicit
+                                for ( len = 0 ; len < (int)*(p+1) ; len += 4 )
 				    _add_server( &_last_nameserver,
 					MAX_NAMESERVERS, def_nameservers,
 					    intel( *(longword*)(&p[2+len])));
@@ -194,7 +211,9 @@ int _dobootp( void )
 				 break;
 			  case 8: /* cookie server */
 				 if (!got_cy) 	// S. Lawson
-				   for ( len = 0; len < *(p+1) ; len += 4 )
+                                   // for ( len = 0; len < *(p+1) ; len += 4 )
+                                   // JCT make promotion to int explicit
+                                   for ( len = 0 ;  len < (int)*(p+1); len += 4 )
 				     _add_server( &_last_cookie, MAX_COOKIES,
 					_cookie, intel( *(longword*)(&p[2+len])));
 				  /* and fall through */
@@ -342,7 +361,7 @@ int dhcp_expired(void) {
    if (expired) return true;
 
    // skip if nested, not dhcp, or the lease is permanent
-   if (nested || !dhcp_bind || dhcp_life==0xFFFFFFFF) return false;
+   if (nested || !dhcp_bind || dhcp_life==0xFFFFFFFFL) return false;
    nested=true;					// avoid tcp_tick() recursion
 
    // on first pass, init the renewal time and start the timer
@@ -359,7 +378,10 @@ int dhcp_expired(void) {
      memset( &_bootp, 0, sizeof( struct bootp ));
      len = sock_fastread( (sock_type*)&bsock, (byte *)&_bootp, sizeof( struct bootp ));
      // (312-64) gives size of original bootp packet - struct bigger for dhcp
-     if ( len >= sizeof( struct bootp ) - (312-64) &&
+     // if ( len >= sizeof( struct bootp ) - (312-64) &&
+     // JCT this is wrong size, fixed as
+     if ( len >= sizeof( struct bootp) - 312 &&
+
 	  _bootp.bp_xid == xid &&
 	  my_ip_addr == intel( _bootp.bp_yiaddr ) &&
 	  intel( *(longword*)(&_bootp.bp_vend)) == VM_RFC1048 ) {
@@ -388,7 +410,7 @@ int dhcp_expired(void) {
 	     break;
 	 } /* end of switch */
        } /* end of while */
-       if (acknak==-1) {			// NAK!
+       if (acknak==(char)-1) {                        // NAK!
 	 dhcp_life=renew=seconds=0;		//   fall through and expire
        } else if (acknak==1 && ltime) {		// ACK!
 	 sock_close((sock_type*)&bsock);
@@ -396,7 +418,7 @@ int dhcp_expired(void) {
 	 dhcp_life=ltime;
 	 renew=dhcp_life>>1;			//   renew at 1/2 lifetime
 	 if ((seconds=renew)>3600) seconds=3600;
-	 timeout=set_timeout(seconds);
+         timeout=set_timeout((int)seconds);
 	 nested=false;
 	 return false;
        }
@@ -463,7 +485,7 @@ int dhcp_expired(void) {
    }
    renew=dhcp_life>>1;				// renew at 1/2 lifetime
    if ((seconds=renew)>3600) seconds=3600;
-   timeout=set_timeout(seconds);
+   timeout=set_timeout((int)seconds);
    nested=false;
    return false;
 }

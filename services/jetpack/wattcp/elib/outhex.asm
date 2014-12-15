@@ -33,7 +33,7 @@ datadef
 cstart  OUTHEX
 
 h1      proc near
-        mov     AL, +@AB [BP]    ; get byte
+;        mov     AL, +@AB [BP]    ; get byte
         and     AL, 0fh
         cmp     AL, 9
         jle     @1
@@ -53,7 +53,7 @@ cpublic outhex
         mov     CL, 4
         shr     AL, CL
 
-        mov     DL, AL
+;        mov     DL, AL
         call    h1
         mov     AL, +@AB [BP]
         call    h1

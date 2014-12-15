@@ -1,50 +1,107 @@
-#include "map/map.h"
-#include "errors.h"
-
 #include <stdio.h>
+#include <mem.h>
+#include <malloc.h>
+#include "slots.h"
+#include "packets.h"
+#include "movie.h"
 
+#include <dos.h> // For FP_*
+#define FP_L(p) (((int32)(FP_SEG(p)) << 4) + FP_OFF(p))
 
-// int jp_init_map(char *new_map_base_dir);
+#define SLOTS 40
 
-// int jp_clear_path(point *path, int length);
+const int port = 16742;
 
-// int jp_build_path(point source, point destination, point *path);
+JPSlot *slots;
 
-// int jp_get_bytes(point *path, byte *buffer, int offset, int length);
+void process_request(JPSlot *slot)
+{
+	slot->position = slot->data_length = 0;
+}
 
-point segment_buffer[10000L];
+void init_slot(JPSlot *slot)
+{
+	slot->state = SLOT_Listen;
+	slot->position = 0;
+	slot->data_length = 0;
+	tcp_listen(&slot->socket, port, 0, 0, NULL, 0);
+}
 
-int main() {
-	char *map_dir = "bin/map";
-	if (jp_init_map(map_dir) != JP_ERROR_OK) {
-		printf("Failed to initialize map\n");
-		return 1;
-	}
-	point path[100];
-	jp_clear_path(path, 100);
+void tick_slot(JPSlot *slot, int id)
+{
+	if (!tcp_tick((sock_type *)&slot->socket))
+   {
+     	printf("!tcp_tick\n");
+     	init_slot(slot);
+      return;
+   }
+	switch (slot->state)
+   {
+   case SLOT_Listen:
+   	if (tcp_established(&slot->socket))
+      {
+      	printf("Accepted client in slot %d!\n", id);
+         slot->state = SLOT_Receive;
+      }
+      break;
+   case SLOT_Receive:
+   	jp_slot_read(slot);
+      if (slot->position >= sizeof(JPRequest))
+      {
+       	process_request(slot);
+         slot->state = SLOT_Send;
+      }
+      break;
+   case SLOT_Send:
+   	jp_slot_write(slot);
+      if (slot->position >= slot->data_length)
+      	init_slot(slot);
+   }
+}
 
-	point source, destination;
-	source.x = 0;
-	source.y = 15;
-	destination.x = 100;
-	destination.y = 15;
+void poll() // TODO: free sockets by timeout
+{
+	static const char wait[] = "-\|/";
+   int i = 0;
+   for (JPSlot *slot = slots; slot->next; slot = slot->next)
+   {
+   	printf("%c\r", wait[i++ % 4]);
+   	tick_slot(slot, i);
+   }
+}
 
-	int errcode = jp_build_path(source, destination, path, segment_buffer);
-	if (errcode != JP_ERROR_OK) {
-		printf("Failed to build path: %d\n", errcode);
-		return 1;
-	}
+void allocate_slots()
+{
+	JPSlot *slot;
+	slots = slot = (JPSlot *)_fmalloc(sizeof(JPSlot));
 
-	byte buffer[4 * 100];
-	int bytes_written = jp_get_bytes(path, buffer, 0, 4 * 100);
-	if (bytes_written > 0) {
-		printf("Failed to convert path to bytes\n");
-		return 1;
-	}
+   for (int i = 1; i < SLOTS; i++)
+   {
+   	slot->next = (JPSlot *)_fmalloc(sizeof(JPSlot));
+      slot = slot->next;
+      printf("Allocated %d slots...\n", i + 1);
+      printf("Last slot is at %p (%ld).\n", slot, FP_L(slot));
+   }
+   slot->next = NULL;
+   int32 size = FP_L(slot) + sizeof(JPSlot) - FP_L(slots);
+   int32 opt_size = (int32)sizeof(JPSlot) * SLOTS;
+   printf("All slots occupy %ld bytes (%ld%% of optimal).\n", size, 100 * size / opt_size);
+}
 
-	for (int i = 0; !jp_is_zero(path[i]); ++i) {
-		printf("%d %d\n", path[i].x, path[i].y);
-	}
-
-	return 0;
+void main()
+{
+	show_image("cirno2.bgi");
+	printf("Server started.\n");
+	printf("Slot size is %d bytes.\n", sizeof(JPSlot));
+   sock_init();
+	allocate_slots();
+	printf("Memory allocated.\n");
+   int count = 0;
+	for (JPSlot *slot = slots; slot->next; slot = slot->next)
+   {
+   	init_slot(slot);
+      printf("Initialized %d slots...\n", ++count);
+   }
+   while (true)
+   	poll();
 }
