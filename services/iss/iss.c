@@ -23,6 +23,19 @@
 
 #define MAX_PENALTY 2
 
+
+struct node
+{
+    struct node *A_child;
+    struct node *T_child;
+    struct node *G_child;
+    struct node *C_child;
+    char *comment;
+};
+
+struct node *root;
+FILE *file;
+
 void make_non_blocking(int fd)
 {
     int flags = fcntl(fd, F_GETFL, 0);
@@ -56,17 +69,6 @@ check_alphabet(char *str)
     }
     return TRUE;
 }
-
-struct node
-{
-    struct node *A_child;
-    struct node *T_child;
-    struct node *G_child;
-    struct node *C_child;
-    char *comment;
-};
-
-struct node *root;
 
 int
 try_match_rec(struct node *cur, const char *dna, int penalty)
@@ -154,8 +156,41 @@ try_add_pattern(const char *pattern, const char * comment)
     {
         cur->comment = malloc(c_len + 1);
         strcpy(cur->comment, comment);
+        fwrite(cur->comment, c_len, 1, file);
+        fwrite("\n", 1, 1, file);
     }
     return cur->comment;
+}
+
+void
+init_state(FILE* fp)
+{
+    char *buffer = malloc(BUFFER_LEN);
+    size_t pos = 0;
+    ssize_t read;
+
+    while ((read = fread(buffer + pos, 1, 1, fp)) != -1)
+    {
+        pos++;
+        if(buffer[pos] == '\n')
+        {
+            buffer[pos] = 0;
+            char *comment = memchr(buffer, ' ', pos);
+
+            if(comment == NULL)
+            {
+                perror("Corrupted state");
+                exit(-1);
+            }
+            buffer[comment] = 0;
+            comment++;
+
+            try_add_pattern(buffer, comment);
+
+            pos = 0;            
+        }       
+        
+    }
 }
 
 void
@@ -180,6 +215,15 @@ run(int listen_port)
     int nfds = 1, current_size = 0, i, j;
 
     root = malloc(sizeof(struct node));
+
+    file = fopen("state", "a+");
+    if(file == NULL)
+    {
+        perror("can't open state file for writing");
+        exit(-1);
+    }
+    init_state(file);
+    make_non_blocking(fileno(file));    
 
     listen_sd = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_sd < 0)
@@ -371,14 +415,12 @@ run(int listen_port)
 
                         if(check_alphabet(buffer))
                         {
-                            char *existing_comment = try_add_pattern(buffer, comment);
-                            if(existing_comment)
-                                msg = existing_comment;
-                            else
-                                msg = comment;
+                            comment = try_add_pattern(buffer, comment);
+                            rc = send(fds[i].fd, comment, strlen(comment), 0);
+                            if(rc >= 0)
+                                rc = send(fds[i].fd, "\n", 1, 0);                            
 
                             //TODO copypaste
-                            rc = send(fds[i].fd, msg, strlen(msg), 0);
                             if (rc < 0)
                             {
                                 perror("    send() failed");
