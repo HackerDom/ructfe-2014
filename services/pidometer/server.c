@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
   struct pollfd         client[OPEN_MAX];
   struct sockaddr_in    cliaddr, servaddr;
   char                  *token, *cmd, line[MAXLINE];
-  PyObject              *pName, *pModule, *addPath, *regUser, *viewData, *lastUsers, *pArgs, *pValue, *pFunc;
+  PyObject              *pName, *pModule, *func1, *func2, *func3, *func4, *pArgs, *pValue, *pFunc;
 
   fprintf(stderr, "%d", getpid());
   Py_Initialize();
@@ -46,18 +46,18 @@ int main(int argc, char **argv) {
   pModule = PyImport_Import(pName);
   Py_DECREF(pName);
   if (pModule != NULL) {
-    addPath  =  PyObject_GetAttrString(pModule, "add_path");
-    regUser  =  PyObject_GetAttrString(pModule, "register");
-    viewData =  PyObject_GetAttrString(pModule, "view_user");
-    lastUsers = PyObject_GetAttrString(pModule, "last_users");
-    if (addPath   && PyCallable_Check(addPath)  &&
-        regUser   && PyCallable_Check(regUser)  &&
-        viewData  && PyCallable_Check(viewData) &&
-        lastUsers && PyCallable_Check(lastUsers)) {
+    func1 = PyObject_GetAttrString(pModule, "func1");
+    func2 = PyObject_GetAttrString(pModule, "func2");
+    func3 = PyObject_GetAttrString(pModule, "func3");
+    func4 = PyObject_GetAttrString(pModule, "func4");
+    if (func1 && PyCallable_Check(func1) &&
+        func2 && PyCallable_Check(func2) &&
+        func3 && PyCallable_Check(func3) &&
+        func4 && PyCallable_Check(func4)) {
 
             listenfd = socket(AF_INET, SOCK_STREAM, 0);
             setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-            nowait(listenfd);
+        nowait(listenfd);
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family      = AF_INET;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -111,16 +111,16 @@ int main(int argc, char **argv) {
                             } else {
                                 cmd = strtok(line, " \r\n");
                                 if (strcmp(cmd, "add") == 0) {
-                                    pFunc = addPath;
+                                    pFunc = func1;
                                     n = 2;
                                 } else if (strcmp(cmd, "register") == 0) {
-                                    pFunc = regUser;
+                                    pFunc = func2;
                                     n = 1;
                                 } else if (strcmp(cmd, "view")     == 0) {
-                                    pFunc = viewData;
+                                    pFunc = func3;
                                     n = 3;
                                 } else if (strcmp(cmd, "activity") == 0) {
-                                    pFunc = lastUsers;
+                                    pFunc = func4;
                                     n = 1;
                                 } else if (strcmp(cmd, "Question") == 0) {
                                     sendto(sockfd, "42\n", 3, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
                                     continue;
                                 }
                                 pArgs = PyTuple_New(n);
-                                for (j = 0; j < n; j++) {
+                                for (j = 0; j < n - 1; j++) {
                                     token = strtok(NULL, " \r\n");
                                     if (token) {
                                         pValue = PyString_FromString(token);
@@ -142,9 +142,17 @@ int main(int argc, char **argv) {
                                     }
                                     break;
                                 }
-
+                                if (j == (n - 1)) {
+                                    token = strtok(NULL, "\r\n");
+                                    if (token) {
+                                        pValue = PyString_FromString(token);
+                                        if (pValue) {
+                                            PyTuple_SetItem(pArgs, j++, pValue);
+                                            token = NULL;
+                                        }
+                                    }
+                                }
                                 for (k = j; k < n; k++) PyTuple_SetItem(pArgs, k, Py_None);
-
                                 pValue = PyObject_CallObject(pFunc, pArgs);
                                 Py_DECREF(pArgs);
                                 if (pValue) {

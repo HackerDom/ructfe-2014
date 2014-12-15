@@ -19,13 +19,13 @@ read -p "Let's configure network insterfaces. Enter your team number: " TEAM
 echo
 
 ipadd="10.$((60 + TEAM / 256)).$((TEAM % 256))."
-services=(home pidometer glass)
-for i in {1..2}
+services=(home vws dscheg pidometer glass)
+for i in {1..4}
 do
 zonename=${services[$i]}
 zonecfg -z $zonename <<EOF
 select net physical=e1000g0
-set address=${ipadd}$((i + 6))/24
+set address=${ipadd}$((i + 4))/24
 end
 verify
 commit
