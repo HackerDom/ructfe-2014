@@ -1,0 +1,41 @@
+wget 'https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.4.1.deb'
+dpkg -i elasticsearch-1.4.1.deb
+
+apt-get install software-properties-common
+add-apt-repository ppa:webupd8team/java
+apt-get install oracle-java7-installer
+
+# edit /etc/elasticsearch/elasticsearch.yml to listen 127.0.0.1
+
+https://packages.graylog2.org/repo/packages/graylog2-0.92-repository-ubuntu14.04_latest.deb
+dpkg -i graylog2-0.92-repository-ubuntu14.04_latest.deb
+apt-get install apt-transport-https
+apt-get update
+apt-get install graylog2-server graylog2-web
+
+apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+echo 'deb http://downloads-distro.mongodb.org/repo/debian-sysvinit dist 10gen' | tee /etc/apt/sources.list.d/mongodb.list
+apt-get update
+apt-get install mongodb-org
+
+# add to /etc/syslog-ng/syslog-ng.conf:
+destination d_graylog2 { udp("10.10.10.7" port(5140)); };
+log { source(s_src); destination(d_graylog2); };
+
+# add to /etc/nginx/htpasswd_log:
+
+log:$apr1$gHrP6ZmQ$HTKERKKHMq1rsO4GZliJC
+
+# add to /etc/nginx/sites-available:
+
+server {
+        listen 80;
+        server_name ructf-srv07g.ructf.yandex.net;
+
+        location / {
+                proxy_pass http://127.0.0.1:9000/;
+        }
+        auth_basic "Oops!";
+        auth_basic_user_file /etc/nginx/htpasswd_log;
+
+}
