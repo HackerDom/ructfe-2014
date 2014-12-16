@@ -15,4 +15,10 @@ struct JPPoint
 
 typedef JPPoint point;
 
+struct JPPath
+{
+	point source;
+	point destination;
+};
+
 #endif
