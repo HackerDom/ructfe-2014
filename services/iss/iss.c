@@ -24,6 +24,8 @@
 
 #define MAX_PENALTY 2
 
+void* malloc(size_t);
+void free(void*);
 
 struct node
 {
