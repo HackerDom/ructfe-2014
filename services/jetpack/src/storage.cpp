@@ -2,6 +2,7 @@
 #include "errors.h"
 
 #include <string.h>
+#include <malloc.h>
 
 byte jp_hash_heading(JPHeading heading);
 int jp_storage_init_cache(JPStorage *storage, JPHeading *cache_buffer, int cache_capacity);
@@ -12,8 +13,7 @@ void jp_add_heading_to_cache(JPStorage *storage, JPHeading heading);
 void jp_add_id(JPStorage *storage, JPHeading heading, JPID id);
 
 JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity) {
-	//TODO: Allocate space
-	JPStorage *storage;
+	JPStorage *storage = (JPStorage *)_fmalloc(sizeof(JPStorage));
 
 	storage->base_path = base_path;
 	if (jp_storage_init_cache(storage, cache_buffer, cache_capacity) != JP_ERROR_OK) {
@@ -35,7 +35,7 @@ void jp_storage_free(JPStorage *storage) {
 	for (int i = 0; i < 256; ++i)
 		if (storage->flag_files[i] != NULL)
 			fclose(storage->flag_files[i]);
-	//TODO: Free allocated space
+	_ffree(storage);
 }
 
 int jp_store_path(JPStorage *storage, JPHeading heading, JPID id) {
@@ -46,8 +46,23 @@ int jp_store_path(JPStorage *storage, JPHeading heading, JPID id) {
 }
 
 int jp_load_ids(JPStorage *storage, JPHeading heading, JPID *ids_buffer, int ids_capacity) {
-	// TODO: Implement
-	return 0;
+	byte hash = jp_hash_heading(heading);
+	JPHeading temp;
+	JPID id;
+	FILE *file = storage->flag_files[hash];
+	int ids_written = 0;
+
+	fseek(file, 0, SEEK_SET);
+
+	while (ids_written < ids_capacity
+		&& fread(&temp, sizeof(JPHeading), 1, file) == sizeof(JPHeading)
+		&& fread(&id, sizeof(JPID), 1, file) == sizeof(JPID)) {
+		if (jp_headings_equal(heading, temp)) {
+			ids_buffer[ids_written++] = id;
+		}
+	}
+
+	return ids_written;
 }
 
 byte jp_hash_heading(JPHeading heading) {
@@ -114,5 +129,6 @@ void jp_add_heading_to_cache(JPStorage *storage, JPHeading heading) {
 
 void jp_add_id(JPStorage *storage, JPHeading heading, JPID id) {
 	byte hash = jp_hash_heading(heading);
+	fwrite(&heading, sizeof(JPHeading), 1, storage->flag_files[hash]);
 	fwrite(&id, sizeof(JPID), 1, storage->flag_files[hash]);
 }
