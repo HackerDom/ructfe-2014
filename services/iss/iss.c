@@ -128,7 +128,7 @@ try_match(const char *dna, char *out_buff)
 }
 
 char *
-try_add_pattern(const char *pattern, const char * comment)
+try_add_pattern(const char *pattern, char * comment)
 {
     int p_len = strlen(pattern);
     int c_len = strlen(comment);
@@ -165,6 +165,7 @@ try_add_pattern(const char *pattern, const char * comment)
     {
         cur->comment = malloc(c_len + 1);
         strcpy(cur->comment, comment);
+        return comment;
     }
     return cur->comment;
 }
@@ -211,7 +212,7 @@ void
 run(int listen_port)
 {
     const char error_msg[] = "Invalid request, must be a '\n'-terminated line no longer than 64 chars\n";
-    const char error_msg1[] = "Invalid DNA string, must contain character from [ATGC] alphabet and have non-zero length\n";
+    const char error_msg1[] = "Invalid DNA string, must contain character only from [ATGC] alphabet and have non-zero length\n";
     const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";    
 
     int len, rc, one = 1;
@@ -349,13 +350,13 @@ run(int listen_port)
                         }
                         break;
                     }
-
                     if (rc == 0)
                     {
                         printf("    Connection closed by peer\n");
                         close_conn = TRUE;
                         break;
                     }
+                    positions[i] += rc;
 
                     printf("    %d bytes received\n", rc);
 
@@ -405,7 +406,8 @@ run(int listen_port)
                                 else
                                     strcpy(result, "NO MATCH FOUND\n");
 
-                                make_blocking(fds[i].fd);
+                                // так как не закрываем соединение с поллящем сервере
+                                // make_blocking(fds[i].fd);
                                 rc = send(fds[i].fd, result, strlen(result), 0);
                                 free(result);
                                 if (rc < 0)
@@ -441,8 +443,11 @@ run(int listen_port)
                             char *result_comment = try_add_pattern(request, comment);
 
                             comment[-1] = ' ';
-                            fwrite(request, len, 1, file);
-                            fwrite("\n", 1, 1, file);
+                            if(result_comment == comment)
+                            {
+                                fwrite(request, len, 1, file);
+                                fwrite("\n", 1, 1, file);
+                            }
 
                             rc = send(fds[i].fd, result_comment, strlen(result_comment), 0);
                             if(rc >= 0)
@@ -468,6 +473,9 @@ run(int listen_port)
                             }
                         }
                     }
+                    memset(request, 0, sizeof(buffers[i]));
+                    positions[i] = 0;
+
                 } while(TRUE);
 
                 if (close_conn)
