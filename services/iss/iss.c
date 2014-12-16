@@ -14,8 +14,9 @@
 
 #define PORT 1013
 
-#define BACKLOG_LEN 128
-#define BUFFER_LEN 64
+#define BACKLOG_LEN 1024
+#define IN_BUFFER_LEN 64
+#define OUT_BUFFER_LEN 64
 #define SOCKETS_COUNT 1 + BACKLOG_LEN
 
 #define TRUE 1
@@ -71,51 +72,59 @@ check_alphabet(char *str)
 }
 
 int
-try_match_rec(struct node *cur, const char *dna, int penalty)
+try_match_rec(struct node *cur, const char *dna, int penalty, char *buff)
 {
     if(penalty > MAX_PENALTY)
         return FALSE;
 
     if(dna[0] == 0 && cur->comment != NULL)
+    {
+        buff[0] = ' ';
+        strcpy(buff + 1, cur->comment);
         return TRUE;
+    }
 
     if(cur->A_child != NULL)
     {
-        if(dna[0] != 0 && try_match_rec(cur->A_child, dna + 1, dna[0] == 'A' ? penalty : penalty + 1))
+        buff[0] = 'A';
+        if(dna[0] != 0 && try_match_rec(cur->A_child, dna + 1, dna[0] == 'A' ? penalty : penalty + 1, buff + 1))
             return TRUE;
-        if(try_match_rec(cur->A_child, dna, penalty + 1))
+        if(try_match_rec(cur->A_child, dna, penalty + 1, buff + 1))
             return TRUE;
     }
     if(cur->T_child != NULL)
     {
-        if(dna[0] != 0 && try_match_rec(cur->T_child, dna + 1, dna[0] == 'T' ? penalty : penalty + 1))
+        buff[0] = 'T';
+        if(dna[0] != 0 && try_match_rec(cur->T_child, dna + 1, dna[0] == 'T' ? penalty : penalty + 1, buff + 1))
             return TRUE;
-        if(try_match_rec(cur->T_child, dna, penalty + 1))
+        if(try_match_rec(cur->T_child, dna, penalty + 1, buff + 1))
             return TRUE;
     }
     if(cur->G_child != NULL)
     {
-        if(dna[0] != 0 && try_match_rec(cur->G_child, dna + 1, dna[0] == 'G' ? penalty : penalty + 1))
+        buff[0] = 'G';
+        if(dna[0] != 0 && try_match_rec(cur->G_child, dna + 1, dna[0] == 'G' ? penalty : penalty + 1, buff + 1))
             return TRUE;
-        if(try_match_rec(cur->G_child, dna, penalty + 1))
+        if(try_match_rec(cur->G_child, dna, penalty + 1, buff + 1))
             return TRUE;
     }
     if(cur->C_child != NULL)
     {
-        if(dna[0] != 0 && try_match_rec(cur->C_child, dna + 1, dna[0] == 'C' ? penalty : penalty + 1))
+        buff[0] = 'C';
+        if(dna[0] != 0 && try_match_rec(cur->C_child, dna + 1, dna[0] == 'C' ? penalty : penalty + 1, buff + 1))
             return TRUE;
-        if(try_match_rec(cur->C_child, dna, penalty + 1))
+        if(try_match_rec(cur->C_child, dna, penalty + 1, buff + 1))
             return TRUE;
     }
 
-    return dna[0] != 0 && try_match_rec(cur, dna + 1, penalty + 1);
+    buff[0] = 0;
+    return dna[0] != 0 && try_match_rec(cur, dna + 1, penalty + 1, buff);
 }
 
 int
-try_match(const char *dna)
+try_match(const char *dna, char *out_buff)
 {
-    int len = strlen(dna);
-    return try_match_rec(root, dna, 0);
+    return try_match_rec(root, dna, 0, out_buff);
 }
 
 char *
@@ -163,7 +172,7 @@ try_add_pattern(const char *pattern, const char * comment)
 int
 init_state(FILE* fp)
 {
-    char *buffer = malloc(BUFFER_LEN);
+    char *buffer = malloc(IN_BUFFER_LEN);
     size_t pos = 0;
     ssize_t read;
 
@@ -194,13 +203,16 @@ init_state(FILE* fp)
     return lines;
 }
 
+//*************
+//TODO close opened connections by timeout
+//*************
+
 void
 run(int listen_port)
 {
     const char error_msg[] = "Invalid request, must be a '\n'-terminated line no longer than 64 chars\n";
     const char error_msg1[] = "Invalid DNA string, must contain character from [ATGC] alphabet and have non-zero length\n";
-    const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";
-    char * msg;
+    const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";    
 
     int len, rc, one = 1;
     int listen_sd = -1, new_sd = -1;
@@ -209,9 +221,9 @@ run(int listen_port)
     struct sockaddr_in sin;
 
     struct pollfd fds[SOCKETS_COUNT];
-    char buffers[SOCKETS_COUNT][BUFFER_LEN];
+    char buffers[SOCKETS_COUNT][IN_BUFFER_LEN];
     int positions[SOCKETS_COUNT];
-    char *buffer;
+    char *request;
 
     int nfds = 1, current_size = 0, i, j;
 
@@ -266,6 +278,7 @@ run(int listen_port)
     memset(buffers, 0, sizeof(buffers));
     memset(positions, 0, sizeof(positions));
 
+    char *result = malloc(OUT_BUFFER_LEN);
     while (1) {
         printf("Waiting on poll()...\n");
         rc = poll(fds, nfds, -1);
@@ -324,8 +337,8 @@ run(int listen_port)
                 do
                 {
                     // printf("Starting recv\n");
-                    buffer = buffers[i];
-                    rc = recv(fds[i].fd, buffer + positions[i], BUFFER_LEN - positions[i], 0);
+                    request = buffers[i];
+                    rc = recv(fds[i].fd, request + positions[i], IN_BUFFER_LEN - positions[i], 0);
                     // printf("Recved %d bytes\n", rc);
                     if (rc < 0)
                     {
@@ -346,10 +359,10 @@ run(int listen_port)
 
                     printf("    %d bytes received\n", rc);
 
-                    len = strnlen(buffer, BUFFER_LEN);
-                    char *eol_pos = memchr(buffer, '\n', len);
+                    len = strnlen(request, IN_BUFFER_LEN);
+                    char *eol_pos = memchr(request, '\n', len);
 
-                    if(eol_pos == NULL && len == BUFFER_LEN)
+                    if(eol_pos == NULL && len == IN_BUFFER_LEN)
                     {
                         //TODO copypaste
                         rc = send(fds[i].fd, error_msg, strlen(error_msg), 0);
@@ -365,15 +378,16 @@ run(int listen_port)
 
 //-------------------PROCESSING PROTOCOL-------------------
 
-                    len = eol_pos - buffer;
-                    if(len > 0 && buffer[len-1] == '\r')
+                    len = eol_pos - request;
+                    if(len > 0 && request[len-1] == '\r')
                         len--;
-                    buffer[len] = 0;
+                    request[len] = 0;
 
-                    char *comment = memchr(buffer, ' ', len);
+                    char *comment = memchr(request, ' ', len);
+
                     if(comment == NULL)
                     {
-                        if(check_alphabet(buffer))
+                        if(check_alphabet(request))
                         {
                             pid_t pid = fork();
                             if(pid == -1)
@@ -383,22 +397,27 @@ run(int listen_port)
                             }
                             else if (pid == 0)
                             {
-                                if(try_match(buffer))
-                                    msg = "MATCHED!\n";
+                                char *match = malloc(OUT_BUFFER_LEN);
+                                memset(match, 0, OUT_BUFFER_LEN);
+
+                                if(try_match(request, match))
+                                    sprintf(result, "MATCH FOR '%s' FOUND: %s\n", request, match);
                                 else
-                                    msg = "NO MATCH\n";
+                                    strcpy(result, "NO MATCH FOUND\n");
 
                                 make_blocking(fds[i].fd);
-                                rc = send(fds[i].fd, msg, strlen(msg), 0);
+                                rc = send(fds[i].fd, result, strlen(result), 0);
+                                free(result);
                                 if (rc < 0)
                                     perror("    send() failed");
                                 exit(0);
                             }
-                            else
-                            {
-                                close_conn = TRUE;
-                                break;
-                            }
+                            // не закрываем соединение с поллящем сервере
+                            // else
+                            // {
+                            //     close_conn = TRUE;
+                            //     break;
+                            // }
                         }
                         else
                         {
@@ -417,12 +436,12 @@ run(int listen_port)
                         comment[0] = 0;
                         comment++;
 
-                        if(check_alphabet(buffer))
+                        if(check_alphabet(request))
                         {
-                            char *result_comment = try_add_pattern(buffer, comment);
+                            char *result_comment = try_add_pattern(request, comment);
 
                             comment[-1] = ' ';
-                            fwrite(buffer, len, 1, file);
+                            fwrite(request, len, 1, file);
                             fwrite("\n", 1, 1, file);
 
                             rc = send(fds[i].fd, result_comment, strlen(result_comment), 0);
