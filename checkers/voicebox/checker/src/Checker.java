@@ -183,6 +183,8 @@ public class Checker {
 
     private static void testForMumble(String response, String startsWith)
     {
+        if (response == null)
+            exitMumble("Service response is null");
         if (!response.toLowerCase().startsWith(startsWith.toLowerCase()))
             exitMumble("Service response: '" + response + "'. Expected: '" + startsWith + "'");
     }
