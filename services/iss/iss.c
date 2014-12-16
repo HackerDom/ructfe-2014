@@ -211,7 +211,7 @@ init_state(FILE* fp)
 void
 run(int listen_port)
 {
-    const char error_msg[] = "Invalid request, must be a '\n'-terminated line no longer than 64 chars\n";
+    const char error_msg[] = "Invalid request, must be a '\\n'-terminated line no longer than 64 chars\n";
     const char error_msg1[] = "Invalid DNA string, must contain character only from [ATGC] alphabet and have non-zero length\n";
     const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";    
 
@@ -360,22 +360,26 @@ run(int listen_port)
 
                     printf("    %d bytes received\n", rc);
 
-                    len = strnlen(request, IN_BUFFER_LEN);
-                    char *eol_pos = memchr(request, '\n', len);
+                    char *eol_pos = memchr(request, '\n', positions[i]);
 
-                    if(eol_pos == NULL && len == IN_BUFFER_LEN)
+                    if(eol_pos == NULL)
                     {
-                        //TODO copypaste
-                        rc = send(fds[i].fd, error_msg, strlen(error_msg), 0);
-                        if (rc < 0)
+                        if(strnlen(request, IN_BUFFER_LEN) == IN_BUFFER_LEN)
                         {
-                            perror("    send() failed");
-                            close_conn = TRUE;
-                            break;
+                            memset(request, 0, sizeof(buffers[i]));
+                            positions[i] = 0;
+
+                            //TODO copypaste
+                            rc = send(fds[i].fd, error_msg, strlen(error_msg), 0);
+                            if (rc < 0)
+                            {
+                                perror("    send() failed");
+                                close_conn = TRUE;
+                                break;
+                            }
                         }
-                    }
-                    else if(eol_pos == NULL)
                         continue;
+                    }
 
 //-------------------PROCESSING PROTOCOL-------------------
 
