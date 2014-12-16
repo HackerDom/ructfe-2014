@@ -5,13 +5,13 @@ use Mojo::Util 'slurp';
 use Mojo::Pg;
 use Time::Piece;
 
-has services   => sub { {} };
-has teams      => sub { {} };
-has scoreboard => sub { [] };
-has round      => sub { {} };
-has status     => sub { {} };
 has flags      => sub { {} };
 has ip2team    => sub { {} };
+has round      => sub { {} };
+has scoreboard => sub { [] };
+has services   => sub { {} };
+has status     => sub { {} };
+has teams      => sub { {} };
 
 has lock => 0;
 
@@ -30,6 +30,7 @@ sub startup {
   my $r = $app->routes;
   $r->get('/')->to('main#index')->name('index');
   $r->get('/flags')->to('main#flags')->name('flags');
+  $r->get('/debug')->to('main#debug')->name('debug');
 
   $app->log->info('Fetch services at startup');
   $app->pg->db->query(
@@ -142,7 +143,7 @@ sub startup {
   };
   $update->();
 
-  Mojo::IOLoop->recurring(30 => $update);
+  Mojo::IOLoop->recurring(5 => $update);
 }
 
 1;
