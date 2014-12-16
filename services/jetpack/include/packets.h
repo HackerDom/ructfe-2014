@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-typedef byte[32] JPID;
-
 enum JPRequestType
 {
 	REQ_Put,

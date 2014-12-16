@@ -1,25 +1,19 @@
 #ifndef JETPACK_STORAGE_H
 #define JETPACK_STORAGE_H
 
-#include <linked_list.h>
-
-struct JPEntry {
-	char key[16];
-	char value[16];
-};
+#include "types.h"
 
 struct JPStorage
 {
-	LinkedList *entries;
+	// ...
 };
 
+JPStorage *jp_storage_init(const char *base_path, JPHeading *oplog_buffer, int oplog_capacity);
 
-int jp_init(JPStorage *storage);
+void jp_storage_free(JPStorage *storage);
 
-int jp_free(JPStorage *storage);
+int jp_store_path(JPStorage *storage, JPHeading heading, JPID id);
 
-int jp_put(JPStorage *storage, JPEntry *entry);
-
-int jp_get(JPStorage *storage, const char *key, JPEntry **entry);
+int jp_load_ids(JPStorage *storage, JPHeading heading, JPID *ids_buffer, int ids_capacity);
 
 #endif

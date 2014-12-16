@@ -7,6 +7,11 @@ typedef unsigned int uint16;
 typedef long int32;
 typedef unsigned long uint32;
 
+struct JPID
+{
+	byte data[32]
+};
+
 struct JPPoint
 {
 	int16 x;
@@ -15,7 +20,7 @@ struct JPPoint
 
 typedef JPPoint point;
 
-struct JPPath
+struct JPHeading
 {
 	point source;
 	point destination;
