@@ -1,5 +1,6 @@
 #include "storage.h"
 #include "errors.h"
+#include "checkalloc.h"
 
 #include <string.h>
 #include <malloc.h>
@@ -16,7 +17,7 @@ FILE *jp_get_flags_file(JPStorage *storage, byte hash);
 FILE *jp_get_headings_cache_file(JPStorage *storage);
 
 JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity) {
-	JPStorage *storage = (JPStorage *)_fmalloc(sizeof(JPStorage));
+	JPStorage *storage = (JPStorage *)checkalloc(sizeof(JPStorage));
 
 	storage->base_path = base_path;
 	if (jp_storage_init_cache(storage, cache_buffer, cache_capacity) != JP_ERROR_OK) {

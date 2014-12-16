@@ -76,6 +76,7 @@ int jp_get_bytes(point *path, byte *buffer, int offset, int length) {
 		*out_buffer = *path;
 		++out_buffer;
 		++path;
+      bytes_written += 4;
 	}
 	return bytes_written;
 }

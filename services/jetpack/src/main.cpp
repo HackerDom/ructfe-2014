@@ -36,16 +36,19 @@ JPID *ids_buffer;
 void respond_error(JPSlot *slot, int code)
 {
 	*(int *)slot->buffer = code;
-   slot->data_length = 0;
+   slot->data_length = 2;
 }
 
 void process_request(JPSlot *slot)
 {
 	JPRequest *request = (JPRequest *)slot->buffer;
+   printf("request type: %d (== PUT: %d)\n", (int)request->type, request->type == REQ_Put);
    int ret, count, bytes;
    switch (request->type)
    {
    case REQ_Put:
+   	printf("calculating path from (%d, %d) to (%d, %d)\n",
+      	request->source.x, request->source.y, request->destination.x, request->destination.y);
 		jp_clear_path(path_buffer, MAX_PATH);
 		ret = jp_build_path(request->source, request->destination, path_buffer, map_chunk);
       if (ret)
@@ -54,14 +57,14 @@ void process_request(JPSlot *slot)
       {
       	jp_store_path(storage, *(JPHeading *)&request->source, request->id);
       	bytes = jp_get_bytes(path_buffer, slot->buffer, 2, SLOT_BUFFER - 2);
-         *(int *)slot->buffer = 0;
+         *(int *)slot->buffer = bytes;
          slot->data_length = bytes + 2;
       }
    	break;
    case REQ_Get:
 		count = jp_load_ids(storage, *(JPHeading *)&request->source, ids_buffer, MAX_IDS);
       _fmemcpy(slot->buffer + 2, ids_buffer, SLOT_BUFFER - 2);
-      *(uint16 *)slot->buffer = count;
+      *(uint16 *)slot->buffer = count * sizeof(JPID);
       slot->data_length = count * sizeof(JPID) + 2;
    	break;
    default:
@@ -97,16 +100,25 @@ void tick_slot(JPSlot *slot, int id)
       break;
    case SLOT_Receive:
    	jp_slot_read(slot);
-      if (slot->position >= sizeof(JPRequest))
+      printf("slot position is %d\n", slot->position);
+      if (slot->position >= 2)
       {
-       	process_request(slot);
-         slot->state = SLOT_Send;
+			int needed_size = ((JPRequest *)slot->buffer)->type == REQ_Put ? JP_PUT_SIZE : JP_GET_SIZE;
+         if (slot->position >= needed_size)
+         {
+       		process_request(slot);
+         	slot->state = SLOT_Send;
+         }
       }
       break;
    case SLOT_Send:
    	jp_slot_write(slot);
       if (slot->position >= slot->data_length)
+      {
+      	printf("sent response (%d of %d)\n", slot->position, slot->data_length);
+         sock_close((sock_type *)&slot->socket);
       	init_slot(slot);
+      }
    }
 }
 
@@ -148,10 +160,14 @@ void allocate_memory() //TODO use checkmallocs in storage code
 	allocate_slots();
    path_buffer = (point *)checkalloc(sizeof(point) * MAX_PATH);
    oplog_buffer = (JPHeading *)checkalloc(sizeof(JPHeading) * MAX_OPLOG);
+   printf("path_buffer is at %08lx, oplog_buffer is at %08lx\n", FP_L(path_buffer), FP_L(oplog_buffer));
+   printf("distance is %ld bytes\n", FP_L(oplog_buffer) + sizeof(point) * MAX_PATH - FP_L(path_buffer));
    map_chunk = (point *)checkalloc(sizeof(point) * MAX_MAP);
    ids_buffer = (JPID *)checkalloc(sizeof(JPID) * MAX_IDS);
 	storage = jp_storage_init("store", oplog_buffer, MAX_OPLOG);
-	jp_init_map("map");
+	int ret = jp_init_map("map");
+   if (ret)
+   	printf("Error: jp_init_map returned %d.", ret);
 	printf("Memory allocated.\n");
 }
 
