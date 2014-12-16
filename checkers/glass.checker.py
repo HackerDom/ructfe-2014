@@ -170,7 +170,7 @@ def main():
     except urllib.error.HTTPError as e:
         ServiceChecker._done(ExitCode.ERROR, "exitcode={}".format(e.getcode()))
     except urllib.error.URLError as e:
-        ServiceChecker._done(ExitCode.ERROR, ServiceChecker.NO_CONNECT)
+        ServiceChecker._done(ExitCode.DOWN, ServiceChecker.NO_CONNECT)
 
 
 if __name__ == '__main__':
