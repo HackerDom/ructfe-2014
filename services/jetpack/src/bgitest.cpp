@@ -4,6 +4,7 @@
 #include <mem.h>
 #include <dos.h>
 #include "types.h"
+#include "checkalloc.h"
 
 #include <stdlib.h>
 #include <dir.h>

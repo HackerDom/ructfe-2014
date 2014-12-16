@@ -5,7 +5,8 @@
 #include "packets.h"
 #include "movie.h"
 #include "storage.h"
-#include "map/map.h"
+#include "map.h"
+#include "checkalloc.h"
 
 #include <dos.h> // For FP_*
 #define FP_L(p) (((int32)(FP_SEG(p)) << 4) + FP_OFF(p))
@@ -40,24 +41,24 @@ void respond_error(JPSlot *slot, int code)
 void process_request(JPSlot *slot)
 {
 	JPRequest *request = (JPRequest *)slot->buffer;
-   int ret;
+   int ret, count, bytes;
    switch (request->type)
    {
    case REQ_Put:
 		jp_clear_path(path_buffer, MAX_PATH);
-		ret = jp_build_path(request->source, request->destination, path_buffer);
+		ret = jp_build_path(request->source, request->destination, path_buffer, map_chunk);
       if (ret)
       	respond_error(slot, ret);
 		else
       {
       	jp_store_path(storage, *(JPHeading *)&request->source, request->id);
-      	int bytes = jp_get_bytes(slot->buffer, 2, SLOT_BUFFER - 2);
+      	bytes = jp_get_bytes(path_buffer, slot->buffer, 2, SLOT_BUFFER - 2);
          *(int *)slot->buffer = 0;
          slot->data_length = bytes + 2;
       }
    	break;
    case REQ_Get:
-		int count = jp_load_ids(storage, *(JPHeading *)&request->source, ids_buffer, MAX_IDS);
+		count = jp_load_ids(storage, *(JPHeading *)&request->source, ids_buffer, MAX_IDS);
       _fmemcpy(slot->buffer + 2, ids_buffer, SLOT_BUFFER - 2);
       *(uint16 *)slot->buffer = count;
       slot->data_length = count * sizeof(JPID) + 2;

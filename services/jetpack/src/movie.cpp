@@ -5,6 +5,7 @@
 #include <mem.h>
 #include "movie.h"
 #include "types.h"
+#include "checkalloc.h"
 
 #define MAX_IMAGE (int16)(10 * 1024)
 

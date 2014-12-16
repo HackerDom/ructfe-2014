@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "checkalloc.h"
 
 void *checkalloc(int32 size)

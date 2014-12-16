@@ -31,3 +31,10 @@ int32 jp_cross_product(point left, point right) {
 int32 jp_dot_product(point left, point right) {
 	return ((int32)left.x) * right.x + ((int32)left.y) * right.y;
 }
+
+bool jp_headings_equal(JPHeading left, JPHeading right) {
+	return left.source.x == right.source.x
+		&& left.destination.x == right.destination.x
+		&& left.source.y == right.source.y
+		&& left.destination.y == right.destination.y;
+}

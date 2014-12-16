@@ -1,4 +1,4 @@
-#include "map/map.h"
+#include "map.h"
 #include "errors.h"
 
 #include <stdio.h>
@@ -19,7 +19,7 @@ int jp_init_map(char *new_map_base_dir) {
 		return JP_ERROR_INVALID_DIRECTORY;
 	char buffer[MAX_BASE_DIR_LENGTH];
 	for (int i = 0; i < MAP_WIDTH / MAP_REGION_WIDTH; ++i) {
-		for (int j = 0; j < MAP_HEIGHT / MAP_REGION_HIEGHT; ++j) {
+		for (int j = 0; j < MAP_HEIGHT / MAP_REGION_HEIGHT; ++j) {
 			jp_get_region_name(buffer, new_map_base_dir, i, j);
 			FILE *file = fopen(buffer, "rb");
 			if (file == NULL)
@@ -125,7 +125,7 @@ int jp_get_region_x(point p) {
 }
 
 int jp_get_region_y(point p) {
-	return p.y / MAP_REGION_HIEGHT;
+	return p.y / MAP_REGION_HEIGHT;
 }
 
 void jp_swap(int *left, int *right) {
