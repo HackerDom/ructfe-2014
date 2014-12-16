@@ -8,8 +8,8 @@ import java.util.Date;
 
 public class Client
 {
-    private static final int CONNECT_TIMEOUT = 7000;
-    private static final int READ_TIMEOUT = 7000;
+    private static final int CONNECT_TIMEOUT = 90000;
+    private static final int READ_TIMEOUT = 90000;
     private static final Boolean SAVE_FILES = false;
 
     private static final String VOICE_NAME = "mbrola_us1";
