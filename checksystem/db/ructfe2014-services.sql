@@ -1,14 +1,5 @@
 -- RuCTFE 2014
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 1, 'VWS'      , '' , true, 2);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 2, 'Pidometer'      , '' , true, 6);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 3, 'Glass'      , '' , true, 7);
-
--- Network Stress
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 11, 'test1'      , '' , true, 101);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 12, 'test2'      , '' , true, 102);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 13, 'test3'      , '' , true, 103);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 14, 'test4'      , '' , true, 104);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 15, 'test5'      , '' , true, 105);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 16, 'test6'      , '' , true, 106);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 17, 'test7'      , '' , true, 107);
-INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 18, 'test8'      , '' , true, 108);
+INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 1, 'VWS'      , '' , true, 5);
+--INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 2, 'Heart'      , '' , true, 6);
+INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 3, 'Pidometer'      , '' , true, 7);
+INSERT INTO services (id,name,checker,is_not_task,vulnbox_suffix) VALUES ( 4, 'Glass'      , '' , true, 8);
