@@ -18,7 +18,7 @@ int show_image(const char *path)
    	printf("Failed to open image file.\n");
    	return -1;
    }
-	byte *data = (byte *)_fmalloc(MAX_IMAGE);
+	byte *data = (byte *)checkalloc(MAX_IMAGE);
    if (!data)
    {
    	printf("Failed to allocate %d bytes.\n", MAX_IMAGE);
