@@ -13,7 +13,7 @@ public class Checker {
     private static final int CODE_CHECKER_ERROR = 110;
 
     private static Integer PORT = 1337;
-    private static final int FLAGID_LEN = 10;
+    private static final int FLAGID_LEN = 16;
 
     private static Random random = new Random();
     private static LetterMapper letterMapper = new LetterMapper();
@@ -130,15 +130,17 @@ public class Checker {
         }
         testForMumble(response, "welcome again");
 
-        String putCommand = null;
+        String mappedFlag = null;
         try {
-            putCommand = String.format("put id %s idea %s", splitWithSpaces(ID), letterMapper.mapString(FLAG));
+            mappedFlag = letterMapper.mapString(FLAG);
         } catch (Exception e) {
             e.printStackTrace();
-            exitCheckerError("Failed to create putCommand");
+            exitCheckerError("Failed to create mappedFlag");
         }
-        response = client.say(putCommand);
+        response = client.say(String.format("put id %s idea %s", splitWithSpaces(ID), mappedFlag));
         testForMumble(response, "Idea put with id: " + ID);
+        if (!response.contains(mappedFlag))
+            exitCorrupt("Cannot find flag in response");
 
         System.out.println(ID.replaceAll(" ", ""));         // Новый ID флага для Checksystem
         exitOK("Success");
@@ -161,10 +163,15 @@ public class Checker {
     private static String newFlagId()
     {
         StringBuilder sb = new StringBuilder();
+        Integer prevDigit = -1;
         for (int i=0; i<FLAGID_LEN; i++)
         {
-            Integer digit = random.nextInt(10);
+            Integer digit;
+            do {
+                digit = random.nextInt(10);
+            } while (digit == prevDigit);
             sb.append(digit.toString());
+            prevDigit = digit;
         }
         return sb.toString();
     }
@@ -176,6 +183,8 @@ public class Checker {
 
     private static void testForMumble(String response, String startsWith)
     {
+        if (response == null)
+            exitMumble("Service response is null");
         if (!response.toLowerCase().startsWith(startsWith.toLowerCase()))
             exitMumble("Service response: '" + response + "'. Expected: '" + startsWith + "'");
     }

@@ -2,6 +2,7 @@ import logging
 import os
 import re
 import sys
+import traceback
 
 PY3 = sys.version_info >= (3, 0, 0)
 
@@ -160,7 +161,10 @@ class Router(object):
         return 404, "Nooo 404!"
 
     def error_response(self, req, error):
-        return 500, str(error)
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        tb = ''.join(traceback.format_tb(exc_traceback))
+        response_body = "<h1>ERROR: {1}</h1><pre>{0}</pre>".format(tb, str(error))
+        return 500, response_body
 
 
 class Template(object):
