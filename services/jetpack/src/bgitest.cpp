@@ -1,6 +1,5 @@
 #include <conio.h>
 #include <stdio.h>
-#include <malloc.h>
 #include <mem.h>
 #include <dos.h>
 #include "types.h"
@@ -186,7 +185,7 @@ void show_movie(const char *path)
    set_mode(VGA_256_COLOR_MODE);
 
    uint16 last_time = *my_clock;
-   while (*my_clock == last_time) ;
+   while (*my_clock == last_time);
    last_time = *my_clock;
    while (true)
    {
@@ -194,10 +193,10 @@ void show_movie(const char *path)
       if (!bytes_read)
       	break;
       jp_stream_read(stream, frame.data, JP_FRAME_DATA_SIZE);
-
+      
       show_frame(&frame);
 
-   	while (*my_clock == last_time) ;
+   	while (*my_clock == last_time);
    	last_time = *my_clock;
    }
 

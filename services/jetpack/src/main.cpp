@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <mem.h>
-#include <malloc.h>
 #include <conio.h>
 #include "slots.h"
 #include "packets.h"
@@ -154,7 +153,7 @@ void allocate_slots()
    printf("All slots occupy %ld bytes (%ld%% of optimal).\n", size, 100 * size / opt_size);
 }
 
-void allocate_memory() //TODO use checkmallocs in storage code
+void allocate_memory()
 {
 	printf("Slot size is %d bytes.\n", sizeof(JPSlot));
 	allocate_slots();

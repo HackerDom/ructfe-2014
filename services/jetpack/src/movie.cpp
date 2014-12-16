@@ -1,7 +1,6 @@
 #include <graphics.h>
 #include <conio.h>
 #include <stdio.h>
-#include <malloc.h>
 #include <mem.h>
 #include "movie.h"
 #include "types.h"

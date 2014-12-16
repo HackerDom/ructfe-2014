@@ -3,7 +3,6 @@
 #include "checkalloc.h"
 
 #include <string.h>
-#include <malloc.h>
 
 byte jp_hash_heading(JPHeading heading);
 int jp_storage_init_cache(JPStorage *storage, JPHeading *cache_buffer, int cache_capacity);
@@ -138,11 +137,11 @@ void jp_add_id(JPStorage *storage, JPHeading heading, JPID id) {
 FILE *jp_get_flags_file(JPStorage *storage, byte hash) {
 	char buffer[256];
 	sprintf(buffer, "%s/%02X.flg", storage->base_path, hash);
-	return fopen(buffer, "a+t");
+	return fopen(buffer, "a+b");
 }
 
 FILE *jp_get_headings_cache_file(JPStorage *storage) {
 	char buffer[256];
 	sprintf(buffer, "%s/headings.csh", storage->base_path);
-	return fopen(buffer, "a+t");
+	return fopen(buffer, "a+b");
 }
