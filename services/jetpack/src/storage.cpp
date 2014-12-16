@@ -12,6 +12,9 @@ void jp_add_heading(JPStorage *storage, JPHeading heading);
 void jp_add_heading_to_cache(JPStorage *storage, JPHeading heading);
 void jp_add_id(JPStorage *storage, JPHeading heading, JPID id);
 
+FILE *jp_get_flags_file(JPStorage *storage, byte hash);
+FILE *jp_get_headings_cache_file(JPStorage *storage);
+
 JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity) {
 	JPStorage *storage = (JPStorage *)_fmalloc(sizeof(JPStorage));
 
@@ -30,11 +33,6 @@ JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int c
 }
 
 void jp_storage_free(JPStorage *storage) {
-	if (storage->oplog_file != NULL)
-		fclose(storage->oplog_file);
-	for (int i = 0; i < 256; ++i)
-		if (storage->flag_files[i] != NULL)
-			fclose(storage->flag_files[i]);
 	_ffree(storage);
 }
 
@@ -49,18 +47,21 @@ int jp_load_ids(JPStorage *storage, JPHeading heading, JPID *ids_buffer, int ids
 	byte hash = jp_hash_heading(heading);
 	JPHeading temp;
 	JPID id;
-	FILE *file = storage->flag_files[hash];
+	FILE *file = jp_get_flags_file(storage, hash);
 	int ids_written = 0;
 
 	fseek(file, 0, SEEK_SET);
 
 	while (ids_written < ids_capacity
-		&& fread(&temp, sizeof(JPHeading), 1, file) == sizeof(JPHeading)
-		&& fread(&id, sizeof(JPID), 1, file) == sizeof(JPID)) {
+		&& fread(&temp, sizeof(JPHeading), 1, file) == 1
+		&& fread(&id, sizeof(JPID), 1, file) == 1) {
+		printf("Read entry\n");
 		if (jp_headings_equal(heading, temp)) {
 			ids_buffer[ids_written++] = id;
 		}
 	}
+
+	fclose(file);
 
 	return ids_written;
 }
@@ -72,10 +73,7 @@ byte jp_hash_heading(JPHeading heading) {
 
 int jp_storage_init_cache(JPStorage *storage, JPHeading *cache_buffer, int cache_capacity) {
 	char buffer[256];
-	sprintf(buffer, "%s/headings.csh", storage->base_path);
-	FILE *file = fopen(buffer, "a+t");
-	if (file == NULL)
-		return JP_ERROR_INVALID_DIRECTORY;
+	FILE *file = jp_get_headings_cache_file(storage);
 
 	storage->cache_buffer = cache_buffer;
 	storage->cache_capacity = cache_capacity;
@@ -84,21 +82,21 @@ int jp_storage_init_cache(JPStorage *storage, JPHeading *cache_buffer, int cache
 
 	fseek(file, 0, SEEK_SET);
 	JPHeading heading;
-	while (fread(&heading, sizeof(JPHeading), 1, file) == sizeof(JPHeading)) {
+	while (fread(&heading, sizeof(JPHeading), 1, file) == 1) {
 		jp_add_heading_to_cache(storage, heading);
 	}
+	fclose(file);
 
 	return JP_ERROR_OK;
 }
 
 int jp_storage_init_descriptors(JPStorage *storage) {
-	char buffer[256];
 	for (int i = 0; i < 256; ++i) {
-		sprintf(buffer, "%s/%02X.flg", storage->base_path, i);
-		FILE *file = fopen(buffer, "a+t");
-		if (file == NULL)
+		FILE *file = jp_get_flags_file(storage, i);
+		if (file == NULL){
 			return JP_ERROR_INVALID_DIRECTORY;
-		storage->flag_files[i] = file;
+		}
+		fclose(file);
 	}
 	return JP_ERROR_OK;
 }
@@ -114,7 +112,9 @@ bool jp_lookup_heading(JPStorage *storage, JPHeading heading) {
 
 void jp_add_heading(JPStorage *storage, JPHeading heading) {
 	jp_add_heading_to_cache(storage, heading);
-	fwrite(&heading, sizeof(JPHeading), 1, storage->oplog_file);
+	FILE *file = jp_get_headings_cache_file(storage);
+	fwrite(&heading, sizeof(JPHeading), 1, file);
+	fclose(file);
 }
 
 void jp_add_heading_to_cache(JPStorage *storage, JPHeading heading) {
@@ -129,6 +129,20 @@ void jp_add_heading_to_cache(JPStorage *storage, JPHeading heading) {
 
 void jp_add_id(JPStorage *storage, JPHeading heading, JPID id) {
 	byte hash = jp_hash_heading(heading);
-	fwrite(&heading, sizeof(JPHeading), 1, storage->flag_files[hash]);
-	fwrite(&id, sizeof(JPID), 1, storage->flag_files[hash]);
+	FILE *file = jp_get_flags_file(storage, hash);
+	fwrite(&heading, sizeof(JPHeading), 1, file);
+	fwrite(&id, sizeof(JPID), 1, file);
+	fclose(file);
+}
+
+FILE *jp_get_flags_file(JPStorage *storage, byte hash) {
+	char buffer[256];
+	sprintf(buffer, "%s/%02X.flg", storage->base_path, hash);
+	return fopen(buffer, "a+t");
+}
+
+FILE *jp_get_headings_cache_file(JPStorage *storage) {
+	char buffer[256];
+	sprintf(buffer, "%s/headings.csh", storage->base_path);
+	return fopen(buffer, "a+t");
 }

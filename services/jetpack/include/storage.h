@@ -9,16 +9,13 @@ struct JPStorage
 {
 	const char *base_path;
 
-	FILE *oplog_file;
-	FILE *flag_files[256];
-
 	JPHeading *cache_buffer;
 	int cache_capacity;
 	int current_cache_base_index;
 	int current_cache_items;
 };
 
-JPStorage *jp_storage_init(const char *base_path, JPHeading *oplog_buffer, int oplog_capacity);
+JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity);
 
 void jp_storage_free(JPStorage *storage);
 
