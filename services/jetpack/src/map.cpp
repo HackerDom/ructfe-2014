@@ -63,6 +63,7 @@ int jp_build_path(point source, point destination, point *path, point *region_bu
 			jp_process_region(source, destination, path, &path_offset, region_buffer);
 		}
 	}
+   printf("found %d points!\n", path_offset);
 
 	return JP_ERROR_OK;
 }
@@ -118,7 +119,7 @@ bool jp_point_satisfy(point source, point destination, point p) {
 	int32 a_b_dp = jp_dot_product(a, b);
 	int32 a_c_dp = jp_dot_product(a, c);
 
-	return a_b_cp * a_b_cp < MAX_ALLOWED_WIDTH * MAX_ALLOWED_WIDTH * jp_length_squared(a) && a_b_dp >= 0 && a_c_dp >= 0;
+	return a_b_cp * a_b_cp <= MAX_ALLOWED_WIDTH * MAX_ALLOWED_WIDTH * jp_length_squared(a) && a_b_dp >= 0 && a_c_dp >= 0;
 }
 
 int jp_get_region_x(point p) {

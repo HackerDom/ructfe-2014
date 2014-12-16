@@ -161,7 +161,7 @@ void allocate_memory() //TODO use checkmallocs in storage code
    path_buffer = (point *)checkalloc(sizeof(point) * MAX_PATH);
    oplog_buffer = (JPHeading *)checkalloc(sizeof(JPHeading) * MAX_OPLOG);
    printf("path_buffer is at %08lx, oplog_buffer is at %08lx\n", FP_L(path_buffer), FP_L(oplog_buffer));
-   printf("distance is %ld bytes\n", FP_L(oplog_buffer) + sizeof(point) * MAX_PATH - FP_L(path_buffer));
+   printf("distance is %ld bytes\n", FP_L(oplog_buffer) - FP_L(path_buffer) - sizeof(point) * MAX_PATH);
    map_chunk = (point *)checkalloc(sizeof(point) * MAX_MAP);
    ids_buffer = (JPID *)checkalloc(sizeof(JPID) * MAX_IDS);
 	storage = jp_storage_init("store", oplog_buffer, MAX_OPLOG);

@@ -73,7 +73,6 @@ byte jp_hash_heading(JPHeading heading) {
 }
 
 int jp_storage_init_cache(JPStorage *storage, JPHeading *cache_buffer, int cache_capacity) {
-	char buffer[256];
 	FILE *file = jp_get_headings_cache_file(storage);
 
 	storage->cache_buffer = cache_buffer;

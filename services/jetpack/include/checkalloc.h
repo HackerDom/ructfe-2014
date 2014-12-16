@@ -4,6 +4,6 @@
 #include <malloc.h>
 #include "types.h"
 
-void *checkalloc(int32 size);
+void *checkalloc(size_t size);
 
 #endif
