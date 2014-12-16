@@ -129,6 +129,7 @@ exit 0
       res.headers.set("Server", "VWS");
       res.headers.set("Content-Type", "application/octet-stream");
       res.headers.set("X-Powered-By", "Vala 0.26.0");
+      res.headers.set("Date", new DateTime.now_utc().to_string());
     }
 
     public async void parse() throws Error {

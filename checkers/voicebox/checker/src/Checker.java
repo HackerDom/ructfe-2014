@@ -1,43 +1,37 @@
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
 
-import java.io.*;
-import java.net.Socket;
 import java.util.Arrays;
+import java.util.Random;
 
 public class Checker {
 
-    private static final int CODE_OK = 101;
-    private static final int CODE_CORRUPT = 102;
-    private static final int CODE_MUMBLE = 103;
-    private static final int CODE_DOWN = 104;
+    private static final int CODE_OK            = 101;
+    private static final int CODE_CORRUPT       = 102;
+    private static final int CODE_MUMBLE        = 103;
+    private static final int CODE_DOWN          = 104;
     private static final int CODE_CHECKER_ERROR = 110;
 
     private static Integer PORT = 1337;
+    private static final int FLAGID_LEN = 10;
 
-    private static String CMD;
+    private static Random random = new Random();
+    private static LetterMapper letterMapper = new LetterMapper();
 
     public static void main(String[] args)
     {
         try {
-            if (args.length < 2 || args.length > 4)
-                throw new CheckerError("Wrong arguments count");
+            if (args.length == 0)
+                exitCheckerError("Give command as first argument (check/put/get)");
 
-            CMD = args[0];
+            String CMD = args[0];
             args = Arrays.copyOfRange(args, 1, args.length);
 
-            if (CMD.equals("check"))
-                check(args);
-            else if (CMD.equals("put"))
-                put(args);
-            else if (CMD.equals("get"))
-                get(args);
-            else if (CMD.equals("list"))    // TODO: kill
-                list(args);
-            else if (CMD.equals("test"))    // TODO: kill
-                test(args);
-            else
-                exitCheckerError("Unknown command: " + CMD);
+            if (CMD.equals("check"))      check(args);
+            else if (CMD.equals("put"))   put(args);
+            else if (CMD.equals("get"))   get(args);
+            else if (CMD.equals("list"))  list(args);
+            else exitCheckerError("Unknown command: " + CMD);
 
             exitCheckerError("Command '" + CMD + "' didn't specify exit code");
         }
@@ -45,23 +39,6 @@ public class Checker {
             e.printStackTrace();
             exitCheckerError(e.getMessage());
         }
-    }
-
-    private static void test(String[] args)
-    {
-        Client client = new Client(args[0], PORT);
-
-        String response;
-
-/*        client.say("ok box");
-        client.say("authorization");
-        client.say("hello");*/
-
-        client.say("ok box");
-        client.say("registration");
-        client.say("hello");
-
-        client.close();
     }
 
     private static void list(String[] args)
@@ -77,14 +54,94 @@ public class Checker {
     {
         if (args.length != 3)
             exitCheckerError("Usage: Checker get <host> <id> <flag>");
-        exitCheckerError("Not implemented");
+
+        String HOST = args[0];
+        String ID = args[1];
+        String FLAG = args[2];
+
+        String mappedFlag = null;
+        try {
+            mappedFlag = letterMapper.mapString(FLAG);
+        } catch (Exception e) {
+            e.printStackTrace();
+            exitCheckerError("Cannot map flag");
+        }
+
+        String response;
+
+        Client client = new Client(HOST, PORT);
+
+        testForMumble(client.say("ok box"), "authorization or registration");
+
+        testForMumble(response = client.say("authorization"), "say:");
+
+        testForMumble(client.say(response.replaceFirst("say:", "")), "welcome again");
+
+        response = client.say(String.format("get %s", splitWithSpaces(ID)));
+        if (response.equals(mappedFlag))
+            exitOK("Flag found");
+        else
+            exitCorrupt("Flag not found (looked for '" + mappedFlag + "')");
     }
 
     private static void put(String[] args) throws CheckerError
     {
         if (args.length != 3)
             exitCheckerError("Usage: Checker put <host> <id> <flag>");
-        exitCheckerError("Not implemented");
+
+        String HOST = args[0];
+        String FLAG = args[2];
+
+        String ID = newFlagId();
+        log("newFlagId: %s", ID);
+
+        String response;
+
+        Client client = new Client(HOST, PORT);
+
+        testForMumble(client.say("ok box"), "authorization or registration");
+        testForMumble(response = client.say("authorization"), "say:");
+        response = client.say(response.replaceFirst("say:", ""));
+
+        if (response.startsWith("unknown user"))
+        {
+            client.close();
+
+            log("No problem. I will try to register new user");
+
+            client = new Client(HOST, PORT);
+
+            testForMumble(client.say("ok box"), "authorization or registration");
+            testForMumble(response = client.say("registration"), "say: ");
+            testForMumble(client.say(response.replaceFirst("say:", "")), "your name");
+            testForMumble(client.say("user"), "welcome");
+
+            client.close();
+
+            // Authorize
+
+            log("Registered new user OK. Trying to login");
+
+            client = new Client(HOST, PORT);
+
+            testForMumble(client.say("ok box"), "authorization or registration");
+            testForMumble(response = client.say("authorization"), "say:");
+            response = client.say(response.replaceFirst("say:", ""));
+        }
+        testForMumble(response, "welcome again");
+
+        String putCommand = null;
+        try {
+            putCommand = String.format("put id %s idea %s", splitWithSpaces(ID), letterMapper.mapString(FLAG));
+        } catch (Exception e) {
+            e.printStackTrace();
+            exitCheckerError("Failed to create putCommand");
+        }
+        response = client.say(putCommand);
+        testForMumble(response, "Idea put with id: " + ID);
+
+        System.out.println(ID.replaceAll(" ", ""));         // Новый ID флага для Checksystem
+        exitOK("Success");
     }
 
     private static void check(String[] args) throws CheckerError
@@ -95,23 +152,42 @@ public class Checker {
         String HOST = args[0];
         Client client = new Client(HOST, PORT);
 
-        String response;
-
-        response = client.say("ok box");
-        if (!response.startsWith("authorization or registration"))
-            exitMumble("Unexpected response at check (step 1)");
-
-        response = client.say("registration");
-        if (!response.startsWith("say: "))
-            exitMumble("Unexpected response at check (step 2)");
+        testForMumble(client.say("ok box"), "authorization or registration");
 
         exitOK("Service seems to be OK");
         client.close();
     }
 
-    private static void sayFlagToStream(Speaker speaker, String flagToSay, BufferedOutputStream stream)
+    private static String newFlagId()
     {
-        speaker.sayToStream(flagToSay, stream, true);
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<FLAGID_LEN; i++)
+        {
+            Integer digit = random.nextInt(10);
+            sb.append(digit.toString());
+        }
+        return sb.toString();
+    }
+
+    private static String splitWithSpaces(String data)
+    {
+        return Arrays.toString(data.split("")).replaceAll(", ", " ").replaceAll("[\\[\\]]", "").trim();
+    }
+
+    private static void testForMumble(String response, String startsWith)
+    {
+        if (!response.toLowerCase().startsWith(startsWith.toLowerCase()))
+            exitMumble("Service response: '" + response + "'. Expected: '" + startsWith + "'");
+    }
+
+    public static void log(String message)
+    {
+        System.err.println(message);
+    }
+
+    public static void log(String format, Object ... args)
+    {
+        log(String.format(format, args));
     }
 
     private static void exit(String message, int code)
