@@ -1,19 +1,18 @@
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Date;
 
 public class Client
 {
-    private static final int CONNECT_TIMEOUT = 5000;
-    private static final int READ_TIMEOUT = 5000;
+    private static final int CONNECT_TIMEOUT = 7000;
+    private static final int READ_TIMEOUT = 7000;
+    private static final Boolean SAVE_FILES = false;
 
-    private static final String VOICE_NAME = "mbrola_us2";
+    private static final String VOICE_NAME = "mbrola_us1";
     private static final String SERVER_CHARSET = "UTF-16";
 
     private Socket s = null;
@@ -33,21 +32,45 @@ public class Client
             Checker.exitDown(e.getMessage());
         }
 
-        System.err.printf("Connected to %s:%d\n", host, port);
+        Checker.log("Connected to %s:%d", host, port);
     }
 
-    public String say(String data)
+    private static void write(String data, BufferedOutputStream outStream)
     {
-        Speaker speaker = getSpeaker(); // Один спикер на все запросы не работает
-        speaker.sayToStream(data, out);
+        Speaker speaker = newSpeaker();         // Один спикер на все запросы не работает
+        speaker.sayToStream(data, outStream);
+    }
+
+    private String read()
+    {
         try {
             String response = in.readLine();
-            System.err.println(String.format("Response: '%s'", response));
+            System.err.println(String.format("<- '%s'", response));
             return response;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public String say(String data)
+    {
+        data = data.trim();
+        if (SAVE_FILES) {
+            try {
+                Date date = new Date();
+                String fileName = "say_" + date.getTime() + ".pcm";
+                FileOutputStream outFile = new FileOutputStream(fileName);
+                Checker.log("xx '%s' (write to file: '%s')", data, fileName);
+                write(data, new BufferedOutputStream(outFile));
+                outFile.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        Checker.log("-> '%s'", data);
+        write(data, out);
+        return read();
     }
 
     public void close()
@@ -68,7 +91,7 @@ public class Client
         catch (Exception e) { }
     }
 
-    private static Speaker getSpeaker()
+    private static Speaker newSpeaker()
     {
         VoiceManager voiceManager = VoiceManager.getInstance();
         Voice voice = voiceManager.getVoice(VOICE_NAME);
