@@ -1,7 +1,7 @@
 #!/bin/bash
 
-pkgadd -d http://get.opencsw.org/now
-/opt/csw/bin/pkgutil -U
+pkgadd -d http://get.opencsw.org/now all
+/opt/csw/bin/pkgutil -U -y
 /opt/csw/bin/pkgutil -i -y python33 nginx wget
 
 sed -i '/server/,$d' /etc/opt/csw/nginx/nginx.conf

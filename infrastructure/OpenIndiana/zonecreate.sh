@@ -7,13 +7,17 @@ chown root:root /export/$zonepath
 chmod 700 /export/$zonepath
 
 zonecfg -z $zonename << EOF
-    create -b
+    create 
     set zonepath=/export/$zonename
     set autoboot=true
     add net
-      set physical=xnf0
+      set physical=e1000g0
       set address=172.16.16.$ipaddr/24
-      end
+    end
+    add capped-memory
+      set physical=360m
+      set swap=512m
+    end
     verify
     commit
     exit
