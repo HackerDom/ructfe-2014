@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <mem.h>
 #include <malloc.h>
+#include <conio.h>
 #include "slots.h"
 #include "packets.h"
 #include "movie.h"
@@ -13,7 +14,7 @@
 
 #define SLOTS 40
 
-#define MAX_OPLOG 8192
+#define MAX_OPLOG 8000
 #define MAX_PATH 64
 #define MAX_IDS 100
 #define MAX_MAP 2000
@@ -109,8 +110,10 @@ void tick_slot(JPSlot *slot, int id)
    }
 }
 
-void poll() // TODO: free sockets by timeout
+bool poll() // TODO: free sockets by timeout
 {
+	if (kbhit() && getch() == 27)
+      return false;
 	static const char wait[] = "-\|/";
    int i = 0;
    for (JPSlot *slot = slots; slot->next; slot = slot->next)
@@ -118,6 +121,7 @@ void poll() // TODO: free sockets by timeout
    	printf("%c\r", wait[i++ % 4]);
    	tick_slot(slot, i);
    }
+   return true;
 }
 
 void allocate_slots()
@@ -138,7 +142,7 @@ void allocate_slots()
    printf("All slots occupy %ld bytes (%ld%% of optimal).\n", size, 100 * size / opt_size);
 }
 
-void allocate_memory()
+void allocate_memory() //TODO use checkmallocs in storage code
 {
 	printf("Slot size is %d bytes.\n", sizeof(JPSlot));
 	allocate_slots();
@@ -167,7 +171,7 @@ void main()
    	init_slot(slot);
       printf("Initialized %d slots...\n", ++count);
    }
-   while (true)
-   	poll();
+   while (poll()) ;
    cleanup();
+   printf("Exiting server...");
 }

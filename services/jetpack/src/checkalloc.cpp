@@ -4,7 +4,7 @@
 
 void *checkalloc(int32 size)
 {
-	void *mem = checkalloc(size);
+	void *mem = _fmalloc(size);
 	if (!mem)
 	{
 		printf("Failed to allocate %ld bytes!\n", size);
