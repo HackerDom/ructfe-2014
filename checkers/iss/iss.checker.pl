@@ -25,7 +25,8 @@ sub check {
   my $s = IO::Select->new($h);
 
   $chain .= $chars[rand @chars] for 1 .. 12;
-  $fake .= $alph[rand @alph] for 1 .. 32;
+  $fake .= $alph[rand @alph] for 1 .. 31;
+  $fake .= "=";
 
   $h->send("$chain $fake\n");
   do {
@@ -37,11 +38,20 @@ sub check {
   chomp $buf;
   return $SERVICE_CORRUPT unless $fake eq $buf;
 
+  undef $buf;
   my $check = $chain;
   substr($check, rand length $check, 1, $chars[rand @chars]);
   $check .= $chars[rand @chars] if rand(2) > 1;
 
-print "$chain $check";
+  $h->send("$check\n");
+  do {
+    return $SERVICE_FAIL unless $s->can_read(5);
+    $h->recv($data, 1024);
+    $buf .= $data;
+  } while ($buf !~ /\n/ and length $buf < 1024);
+
+  return $SERVICE_CORRUPT if $buf !~ /MATCH FOR '.+' FOUND: (.*?) (.*?)\n/ or $2 ne $fake;
+
   return $SERVICE_OK;
 }
 
@@ -76,7 +86,8 @@ sub get {
     or return $SERVICE_FAIL;
   my $s = IO::Select->new($h);
 
-  $fake .= $alph[rand @alph] for 1 .. 32;
+  $fake .= $alph[rand @alph] for 1 .. 31;
+  $fake .= "=";
   $h->send("$id $fake\n");
   my $buf;
   do {

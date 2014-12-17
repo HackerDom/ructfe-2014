@@ -14,7 +14,8 @@ PORT = 80
 class Checker(HttpCheckerBase):
 	def session(self, addr):
 		s = r.Session()
-		s.headers['User-Agent'] = self.randua()
+		ua = self.randua()
+		s.headers['User-Agent'] = ua[0]
 		s.headers['Accept'] = '*/*'
 		s.headers['Accept-Language'] = 'en-US,en;q=0.5'
 		return s
@@ -85,7 +86,7 @@ class Checker(HttpCheckerBase):
 		return EXITCODE_OK
 
 	def randua(self):
-		random.choice([
+		return random.choice([
 			['Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.517 Safari/537.36'],
 			['Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.3319.102 Safari/537.36'],
 			['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36'],
