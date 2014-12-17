@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <dir.h>
 
-const char conf_path[] = "C:\\FDOS\\wattcp.cfg";
+const char wattcp_path[] = "C:\\FDOS\\wattcp.cfg";
+const char mtcp_path[] = "C:\\FDOS\\mtcp.cfg";
 
 int main()
 {
@@ -10,7 +11,7 @@ int main()
 	printf("Welcome to RuCTFE 2014 DOS!\n\n");
 
 	ffblk entry;
-   if (findfirst(conf_path, &entry, 0) == 0)
+   if (findfirst(wattcp_path, &entry, 0) == 0)
    {
    	printf("Network is already configured!\n");
       return 0;
@@ -38,12 +39,27 @@ int main()
    printf(netmask);
    printf(gateway);
 
-   FILE *file = fopen(conf_path, "w");
+   FILE *file = fopen(wattcp_path, "w");
    if (!file)
    {
-   	printf("Failed to open config file!\n");
+   	printf("Failed to open wattcp config!\n");
       return 1;
    }
+   fputs(ip, file);
+   fputs(netmask, file);
+   fputs(gateway, file);
+   fclose(file);
+
+   sprintf(ip, "IPADDR=10.%d.%d.2\n", team_number / 256 + 60, team_number % 256);
+   sprintf(netmask, "NETMASK=255.255.255.0\n");
+   sprintf(gateway, "GATEWAY=10.%d.%d.1\n", team_number / 256 + 60, team_number % 256);
+   file = fopen(mtcp_path, "w");
+   if (!file)
+   {
+   	printf("Failed to open mtcp config!\n");
+      return 1;
+   }
+   fputs("PACKETINT=0x60\n", file);
    fputs(ip, file);
    fputs(netmask, file);
    fputs(gateway, file);
