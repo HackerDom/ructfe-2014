@@ -25,7 +25,7 @@
     <td><b>Team</b></td>
     <td><b>Score</b></td>
     % my @scolors = ('rgb(179,0,179)', 'rgb(205,16,118)', 'rgb(179,179,0)', 'rgb(46,179,87)', 'rgb(0,238,238)', 'rgb(112,128,144)', 'rgb(0,0,240)');
-    % for my $sid (keys %{$self->app->services}) {
+    % for my $sid (sort keys %{$self->app->services}) {
       <td
         class="service"
         data-sid="<%= $sid %>"
