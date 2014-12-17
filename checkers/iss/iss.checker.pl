@@ -4,7 +4,7 @@ use IO::Socket::INET;
 use IO::Select;
 
 use feature ':5.10';
-no warnings 'experimental::smartmatch';
+#no warnings 'experimental::smartmatch';
 my $port = 1013;
 
 my ($SERVICE_OK, $FLAG_GET_ERROR, $SERVICE_CORRUPT, $SERVICE_FAIL, $INTERNAL_ERROR) =
@@ -38,11 +38,20 @@ sub check {
   chomp $buf;
   return $SERVICE_CORRUPT unless $fake eq $buf;
 
+  undef $buf;
   my $check = $chain;
   substr($check, rand length $check, 1, $chars[rand @chars]);
   $check .= $chars[rand @chars] if rand(2) > 1;
 
-print "$chain $check";
+  $h->send("$check\n");
+  do {
+    return $SERVICE_FAIL unless $s->can_read(5);
+    $h->recv($data, 1024);
+    $buf .= $data;
+  } while ($buf !~ /\n/ and length $buf < 1024);
+
+  return $SERVICE_CORRUPT if $buf !~ /MATCH FOR '.+' FOUND: (.*?) (.*?)\n/ or $2 ne $fake;
+
   return $SERVICE_OK;
 }
 
