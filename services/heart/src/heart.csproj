@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EEE06B8D-84B6-4361-8E5E-58EEF7BBB3E8}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>heart</RootNamespace>
+    <AssemblyName>heart</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ciloci.Flee">
+      <HintPath>ext\Ciloci.Flee.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>ext\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Common">
+      <HintPath>ext\ServiceStack\ServiceStack.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Interfaces">
+      <HintPath>ext\ServiceStack\ServiceStack.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Redis">
+      <HintPath>ext\ServiceStack\ServiceStack.Redis.dll</HintPath>
+    </Reference>
+    <Reference Include="ServiceStack.Text">
+      <HintPath>ext\ServiceStack\ServiceStack.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.XML" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="db\DatePoint.cs" />
+    <Compile Include="db\StatMethods.cs" />
+    <Compile Include="handlers\ExpressionHelper.cs" />
+    <Compile Include="utils\Data.cs" />
+    <Compile Include="db\PassHash.cs" />
+    <Compile Include="db\User.cs" />
+    <Compile Include="handlers\AddPointHandler.cs" />
+    <Compile Include="handlers\AuthBaseHandler.cs" />
+    <Compile Include="handlers\BaseHandler.cs" />
+    <Compile Include="handlers\GetAlertsHandler.cs" />
+    <Compile Include="handlers\GetPointsHandler.cs" />
+    <Compile Include="handlers\HttpException.cs" />
+    <Compile Include="handlers\HttpListenerUtils.cs" />
+    <Compile Include="handlers\LoginHandler.cs" />
+    <Compile Include="handlers\RegisterHandler.cs" />
+    <Compile Include="handlers\SetExpressionHandler.cs" />
+    <Compile Include="handlers\Token.cs" />
+    <Compile Include="handlers\TokenCrypt.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="db\Stat.cs" />
+    <Compile Include="db\DbProvider.cs" />
+    <Compile Include="handlers\StaticHandler.cs" />
+    <Compile Include="utils\CookieHelper.cs" />
+    <Compile Include="utils\DateTimeUtils.cs" />
+    <Compile Include="utils\EnumerableUtils.cs" />
+    <Compile Include="utils\StringUtils.cs" />
+    <Compile Include="utils\CommonUtils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="static\css\bootstrap.min.css" />
+    <Content Include="static\css\theme.min.css" />
+    <Content Include="static\js\bootstrap.min.js" />
+    <Content Include="static\js\d3.min.js" />
+    <Content Include="static\index.html" />
+    <Content Include="static\js\jquery.plugins.min.js" />
+    <Content Include="static\js\jquery.min.js" />
+    <Content Include="static\css\theme.css" />
+    <Content Include="static\js\scripts.min.js" />
+    <Content Include="static\register.html" />
+    <Content Include="static\login.html" />
+    <Content Include="static\js\scripts.js" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>mkdir $(TargetDir)static\
+xcopy /r /y /e $(SolutionDir)static\*.* $(TargetDir)static\
+del $(OutDir)static\css\theme.css
+del $(OutDir)static\js\scripts.js</PostBuildEvent>
+  </PropertyGroup>
+</Project>
