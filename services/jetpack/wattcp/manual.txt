@@ -1,0 +1,99 @@
+
+  WATTCP - TCP/IP library routines
+
+  Copyright (c) 1990, 1999 Erick Engelke
+
+     This software is distributed in the hope that it will be useful,
+     but without any warranty; without even the implied warranty of
+     merchantability or fitness for a particular purpose.
+
+RESTRICTIONS
+------------
+  You may freely use this library to produce programs which you may give
+  away or sell in source format, or as compiled executables, or both.
+
+  You may not sell this library or a portion thereof or distribute modified
+  versions the library code in either source or OBJect or LIBrary format
+  without written permission from the author.  The author still maintains
+  copyright privileges and will assert the privileges of ownership for
+  purposes of royalties such distributions.
+
+  This means you cannot include WATTCP in a programming toolkit which
+  you sell or give away without permission.
+
+  Portions of this code were written or enhanced by others and offerred
+  to me for distribution in WATTCP under my copyright.  To my knowledge,
+  all copyrights exercised are listed at the top of this file.  If this
+  is incorrect, please contact me so I can rectify the situation.
+
+
+OFFICIAL SITE
+-------------
+  www.wattcp.com directs you to the latest information and files.
+
+
+DOCUMENTATION
+-------------
+  A programmer's reference manual I wrote is now available from the
+  publisher.  They provide no additional support and cannot help
+  you with any aspect of the software.  But they do pay a royalty
+  to me which has been used to compensate my costs for developing
+  this software and extending it, so I am very appreciative.
+
+  That manual is copyrighted and protected by international law.
+  It may not be copied without the authors permission.  And its
+  sale does not constitute a warranty or an automatic license to
+  use WATTCP beyond the terms described in this file.
+
+  For payment they accept credit cards, cheques, checks, money orders
+  and P.O.s.  Credit card orders can be processed over the telephone.
+
+  The price is $50.
+
+  To order, see: http://www.wattcp.com
+
+  Prices are listed in US dollars.
+
+ Please note, I am not involved in the processing loop for the manual
+ and cannot tell you of the status of your order.
+
+PROFESSIONAL or EMBEDDED APPLICATIONS
+-------------------------------------
+  WATTCP, as distributed, has a learning curve, and developers are likely
+  re-inventing the same wheels.  I know this because I get lots of Email!
+
+  Professional developers may wish to save themselves a lot of time and
+  effort.
+
+  My decade of experience with WATTCP and writing demanding applications
+  (including web/ftp servers, CGI, server-side includes, SYSLOG, SMTP
+  client/servers, real-time Web graphs) can be found in eRTOS
+  (which also includes multithreading and pre-emptive multitasking).
+
+  For example, you can add an FTP server to your applications with just ONE
+  line of code.  Add a web server, complete with CGI for configuration
+  and real time statistical graphs in just a page or two of C code.
+
+  The package comes complete with a license for the Borland C DOS compiler.
+  And while WATTCP is one component, the package contains about 68% commercial
+  code which was never distributed except under license.
+
+  For more details: http://www.ertos.com
+
+
+Developers' Meeting Place
+-------------------------
+ Many of the key people involved in WATTCP frequent the
+ comp.protocols.tcp-ip.ibmpc Usenet newgroup, and there
+ are several people there who can answer most any question.
+
+ If you need my personal attention (I seem to have less and less
+ available) you will have to Email my address below.  I cannot take
+ phone calls relating to WATTCP at my place of occupation.
+
+
+      Erick Engelke                erick@engmail.uwaterloo.ca
+      48 Daytona St.
+      Kitchener, Ont.
+      Canada
+

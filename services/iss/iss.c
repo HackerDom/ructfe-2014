@@ -24,7 +24,6 @@
 
 #define MAX_PENALTY 2
 
-
 struct node
 {
     struct node *A_child;
@@ -128,7 +127,7 @@ try_match(const char *dna, char *out_buff)
 }
 
 char *
-try_add_pattern(const char *pattern, const char * comment)
+try_add_pattern(const char *pattern, char * comment)
 {
     int p_len = strlen(pattern);
     int c_len = strlen(comment);
@@ -139,32 +138,47 @@ try_add_pattern(const char *pattern, const char * comment)
         if(pattern[i] == 'A')
         {
             if(cur->A_child == NULL)
+            {
                 cur->A_child = malloc(sizeof(struct node));
+                memset(cur->A_child, 0, sizeof(struct node));
+            }
             cur = cur->A_child;
         }
         else if(pattern[i] == 'T')
         {
             if(cur->T_child == NULL)
+            {
                 cur->T_child = malloc(sizeof(struct node));
+                memset(cur->T_child, 0, sizeof(struct node));
+            }
             cur = cur->T_child;
         }
         else if(pattern[i] == 'G')
         {
             if(cur->G_child == NULL)
+            {
                 cur->G_child = malloc(sizeof(struct node));
+                memset(cur->G_child, 0, sizeof(struct node));
+            }
             cur = cur->G_child;
         }
         else
         {
             if(cur->C_child == NULL)
+            {
                 cur->C_child = malloc(sizeof(struct node));
+                memset(cur->C_child, 0, sizeof(struct node));
+            }
             cur = cur->C_child;
         }
     }
     if(cur->comment == NULL)
     {
         cur->comment = malloc(c_len + 1);
+        memset(cur->comment, 0, c_len + 1);
+
         strcpy(cur->comment, comment);
+        return comment;
     }
     return cur->comment;
 }
@@ -210,8 +224,8 @@ init_state(FILE* fp)
 void
 run(int listen_port)
 {
-    const char error_msg[] = "Invalid request, must be a '\n'-terminated line no longer than 64 chars\n";
-    const char error_msg1[] = "Invalid DNA string, must contain character from [ATGC] alphabet and have non-zero length\n";
+    const char error_msg[] = "Invalid request, must be a '\\n'-terminated line no longer than 64 chars\n";
+    const char error_msg1[] = "Invalid DNA string, must contain character only from [ATGC] alphabet and have non-zero length\n";
     const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";    
 
     int len, rc, one = 1;
@@ -228,6 +242,7 @@ run(int listen_port)
     int nfds = 1, current_size = 0, i, j;
 
     root = malloc(sizeof(struct node));
+    memset(root, 0, sizeof(struct node));
 
     file = fopen("state", "a+");
     if(file == NULL)
@@ -279,6 +294,7 @@ run(int listen_port)
     memset(positions, 0, sizeof(positions));
 
     char *result = malloc(OUT_BUFFER_LEN);
+    memset(result, 0, OUT_BUFFER_LEN);
     while (1) {
         printf("Waiting on poll()...\n");
         rc = poll(fds, nfds, -1);
@@ -349,32 +365,36 @@ run(int listen_port)
                         }
                         break;
                     }
-
                     if (rc == 0)
                     {
                         printf("    Connection closed by peer\n");
                         close_conn = TRUE;
                         break;
                     }
+                    positions[i] += rc;
 
                     printf("    %d bytes received\n", rc);
 
-                    len = strnlen(request, IN_BUFFER_LEN);
-                    char *eol_pos = memchr(request, '\n', len);
+                    char *eol_pos = memchr(request, '\n', positions[i]);
 
-                    if(eol_pos == NULL && len == IN_BUFFER_LEN)
+                    if(eol_pos == NULL)
                     {
-                        //TODO copypaste
-                        rc = send(fds[i].fd, error_msg, strlen(error_msg), 0);
-                        if (rc < 0)
+                        if(strnlen(request, IN_BUFFER_LEN) == IN_BUFFER_LEN)
                         {
-                            perror("    send() failed");
-                            close_conn = TRUE;
-                            break;
+                            memset(request, 0, sizeof(buffers[i]));
+                            positions[i] = 0;
+
+                            //TODO copypaste
+                            rc = send(fds[i].fd, error_msg, strlen(error_msg), 0);
+                            if (rc < 0)
+                            {
+                                perror("    send() failed");
+                                close_conn = TRUE;
+                                break;
+                            }
                         }
-                    }
-                    else if(eol_pos == NULL)
                         continue;
+                    }
 
 //-------------------PROCESSING PROTOCOL-------------------
 
@@ -405,7 +425,8 @@ run(int listen_port)
                                 else
                                     strcpy(result, "NO MATCH FOUND\n");
 
-                                make_blocking(fds[i].fd);
+                                // так как не закрываем соединение с поллящем сервере
+                                // make_blocking(fds[i].fd);
                                 rc = send(fds[i].fd, result, strlen(result), 0);
                                 free(result);
                                 if (rc < 0)
@@ -441,8 +462,11 @@ run(int listen_port)
                             char *result_comment = try_add_pattern(request, comment);
 
                             comment[-1] = ' ';
-                            fwrite(request, len, 1, file);
-                            fwrite("\n", 1, 1, file);
+                            if(result_comment == comment)
+                            {
+                                fwrite(request, len, 1, file);
+                                fwrite("\n", 1, 1, file);
+                            }
 
                             rc = send(fds[i].fd, result_comment, strlen(result_comment), 0);
                             if(rc >= 0)
@@ -468,6 +492,9 @@ run(int listen_port)
                             }
                         }
                     }
+                    memset(request, 0, sizeof(buffers[i]));
+                    positions[i] = 0;
+
                 } while(TRUE);
 
                 if (close_conn)

@@ -1,0 +1,6 @@
+
+2001/10/29 - PCBOOTP packet size and DHCP lease time fixed
+2000/5/1  - several changes for when used in multithreading library
+2000/3/10 - PCBOOTP xid now assigned random number rather than my_ip_addr=0
+            PCBOOTP refined the opt list
+

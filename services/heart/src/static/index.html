@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>HeartHealth</title>
+	<link type="text/css" href="/css/bootstrap.min.css" rel="stylesheet"/>
+	<link type="text/css" href="/css/theme.min.css" rel="stylesheet"/>
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/js/jquery.plugins.min.js"></script>
+	<script type="text/javascript" src="/js/d3.min.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="/">HeartHealth <sup><span class="small">beta</span></sup></a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li class="active"><a href="#">Home</a></li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li id="login-link"><a href="/login.html">Login</a></li>
+					<li id="register-link"><a href="/register.html">Register</a></li>
+					<li id="login"><a></a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div id="main" class="container">
+		<h3>Heart Rate</h3>
+		<p>The average person's heart will beat about 2 billion times in their lifetime. Yet heart disease and heart attack threaten to cut that number short. Check your heart health now!</p>
+		<div class="panel panel-default">
+			<div class="panel-body" style="padding:0"><div id="js-case-plot"></div></div>
+		</div>
+		<h3>Alerts</h3>
+		<form class="form-alerts">
+			<div class="row">
+				<div class="col-xs-12">
+					<pre class="text-warning small">You can set an expression to get alerts on specific conditions. Your family doctor can suggest the right one.</pre>
+					<div class="input-group">
+						<span class="input-group-addon">
+							<select id="func" class="form-control">
+								<option value="Avg">Average</option><option value="Median">Median</option><option value="StdDev">Standard Deviation</option><option value="Max">Max value</option><option value="Min">Min value</option><option value="Last">Last value</option><!--<option>More than half points with bpm</option>--><!--TODO: custom expression-->
+							</select>
+						</span>
+						<span class="input-group-addon">
+							<select id="cond" class="form-control">
+								<option value="&lt;">less than</option><option value="&lt;=">less than or equal</option><option value="&gt;">greater than</option><option value="&gt;=">greater than or equal</option><option value="=">equal</option><option value="&lt;&gt;">not equal</option>
+							</select>
+						</span>
+						<span class="input-group-addon"><input type="text" id="value" class="form-control" placeholder="Value" maxlength="32"/></span>
+						<span class="input-group-addon"><input type="text" id="mssg" class="form-control" placeholder="Alert msg" maxlength="64"/></span>
+						<span class="input-group-addon"><button class="btn btn-default btn-block" type="submit">Set alerts</button></span>
+					</div>
+					<div style="display:none" class="alert"></div>
+				</div>
+			</div>
+		</form>
+		<table class="table"></table>
+	</div>
+	<script type="text/javascript" src="/js/scripts.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<title>HeartHealth &ndash; Register</title>
+	<link type="text/css" href="/css/bootstrap.min.css" rel="stylesheet"/>
+	<link type="text/css" href="/css/theme.min.css" rel="stylesheet" />
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<div class="container">
+		<form class="form-signin" role="form">
+			<h2 class="form-signin-heading">Please register</h2>
+			<div class="form-group">
+				<input type="text" id="inputEmail" name="login" class="form-control" placeholder="Login" maxlength="64" required autofocus/>
+				<input type="password" id="inputPassword" name="pass" class="form-control" placeholder="Password" maxlength="64" required/>
+			</div>
+			<div class="form-group">
+				<div class="small text-warning">Set this email if you want your family doctor get alerted about heart malfunction.</div>
+				<input type="email" id="inputDoctor" name="doceml" class="form-control" placeholder="Family doctor email" title="Sorry this feature isn't implemented yet!" maxlength="64" required disabled/>
+				<div class="alert alert-warning">Sorry, this feature isn't implemented yet!</div>
+			</div>
+			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+			<div style="display:none" class="form-signin-msg alert"></div>
+		</form>
+		<script type="text/javascript">
+			$(".form-signin").submit(function (e) {
+				e.preventDefault();
+				var $errorMsg = $(".form-signin-msg");
+				$.ajax({
+					url: "/signup/",
+					method: "POST",
+					data: $(this).serialize()
+				}).done(function () {
+					$errorMsg.removeClass("alert-danger").addClass("alert-success").hide();
+					$errorMsg.text("Success, redirecting...").show();
+					setTimeout(function() {window.location = "/";}, 2000);
+				}).fail(function (xhr) {
+					$errorMsg.addClass("alert-danger").text(xhr.responseText ? xhr.responseText : "Unknown error").show();
+				});
+			})
+		</script>
+	</div>
+</body>
+</html>
