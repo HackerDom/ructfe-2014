@@ -8,8 +8,8 @@ import java.util.Date;
 
 public class Client
 {
-    private static final int CONNECT_TIMEOUT = 10000;
-    private static final int READ_TIMEOUT = 10000;
+    private static final int CONNECT_TIMEOUT = 12000;
+    private static final int READ_TIMEOUT = 12000;
     private static final Boolean SAVE_FILES = false;
 
     private static final String VOICE_NAME = "mbrola_us3";
@@ -44,8 +44,10 @@ public class Client
     private String read()
     {
         try {
+            long start = System.nanoTime();
             String response = in.readLine();
-            System.err.println(String.format("<- '%s'", response));
+            long duration = System.nanoTime() - start;
+            System.err.println(String.format("<- '%s' (%d ms)", response, duration/1000000));
             return response;
         } catch (IOException e) {
             e.printStackTrace();
