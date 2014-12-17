@@ -4,7 +4,7 @@ use IO::Socket::INET;
 use IO::Select;
 
 use feature ':5.10';
-#no warnings 'experimental::smartmatch';
+no warnings 'experimental::smartmatch';
 my $port = 1013;
 
 my ($SERVICE_OK, $FLAG_GET_ERROR, $SERVICE_CORRUPT, $SERVICE_FAIL, $INTERNAL_ERROR) =
@@ -25,7 +25,8 @@ sub check {
   my $s = IO::Select->new($h);
 
   $chain .= $chars[rand @chars] for 1 .. 12;
-  $fake .= $alph[rand @alph] for 1 .. 32;
+  $fake .= $alph[rand @alph] for 1 .. 31;
+  $fake .= "=";
 
   $h->send("$chain $fake\n");
   do {
@@ -76,7 +77,8 @@ sub get {
     or return $SERVICE_FAIL;
   my $s = IO::Select->new($h);
 
-  $fake .= $alph[rand @alph] for 1 .. 32;
+  $fake .= $alph[rand @alph] for 1 .. 31;
+  $fake .= "=";
   $h->send("$id $fake\n");
   my $buf;
   do {
