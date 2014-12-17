@@ -47,7 +47,7 @@
     <td class="team-name"><span title="<%= $score->{team}{vuln_box} %>"><%= $score->{team}{name} %></span></td>
     <td class="team-score"><%= sprintf '%.2f', $score->{score} %></td>
 
-    % for my $sid (keys %{$self->app->services}) {
+    % for my $sid (sort keys %{$self->app->services}) {
       % my $status = $self->app->status->{$sid}{$score->{team}{id}}{status};
       % my $comment = $self->app->status->{$sid}{$score->{team}{id}}{fail_comment};
       % my $s = {101 => 'OK', 102 => 'CORRUPT', 103 => 'MUMBLE', 104 => 'DOWN', 110 => 'CHECKER ERROR'};
