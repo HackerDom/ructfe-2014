@@ -7,6 +7,7 @@ import re
 import random
 import string
 import math
+import base64
 
 PORT = 16742
 
@@ -160,9 +161,9 @@ if mode == 'check':
 	check(sys.argv[2])
 if mode == 'put':
 	flag_id = put(sys.argv[2], sys.argv[4])
-	print(flag_id)
+	print(base64.b64encode(flag_id).decode('utf-8'))
 if mode == 'get':
-	if not get(sys.argv[2], sys.argv[3], sys.argv[4]):
+	if not get(sys.argv[2], base64.b64decode(sys.argv[3]), sys.argv[4]):
 		sys.exit(CHECKER_STATUS_CORRUPT)
 
 sys.exit(CHECKER_STATUS_OK)
