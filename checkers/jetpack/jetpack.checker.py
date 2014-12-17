@@ -44,7 +44,6 @@ class Point(object):
 
 def load_points(region_x, region_y):
 	filename = MAP_DIRECTORY + '%04X%04X.map' % (region_x, region_y)
-	# print('loading points from region <%d, %d> in file %s' % (region_x, region_y, filename))
 
 	with open(filename, 'rb') as f:
 		data = f.read()
@@ -72,9 +71,6 @@ def is_eligible(source, destination, p):
 	a_b_cp = jp_cross_product(a, b)
 	a_b_dp = jp_dot_product(a, b)
 	a_c_dp = jp_dot_product(a, c)
-
-	# print('Source: %s Destination: %s Point: %s a: %s b: %s c: %s a_b_cp: %d a_b_dp: %d a_c_dp: %d' % (source, destination, p, a, b, c, a_b_cp, a_b_dp, a_c_dp))
-	# print('Distance: %f' % (a_b_cp / math.sqrt(jp_length_squared(a))))
 
 	return a_b_cp * a_b_cp <= MAX_ALLOWED_WIDTH * MAX_ALLOWED_WIDTH * jp_length_squared(a) and a_b_dp >= 0 and a_c_dp >= 0
 
@@ -139,14 +135,17 @@ def check(host):
 	if not get(host, flag_id, flag):
 		sys.exit(CHECKER_STATUS_MUMBLE)
 
-def put(host, flag):
-	#TODO: Fix 
-	source = Point(random.randint(0, TOTAL_WIDTH), random.randint(0, TOTAL_HEIGHT))
+def generate_heading():
+	source = Point(random.randint(0, TOTAL_WIDTH - 1), random.randint(0, TOTAL_HEIGHT - 1))
 	destination = Point(
-		clamp(source.x + random.randint(-50, 50), 0, TOTAL_WIDTH),
-		clamp(source.y + random.randint(-50, 50), 0, TOTAL_HEIGHT))
+		clamp(source.x + random.randint(-50, 50), 0, TOTAL_WIDTH - 1),
+		clamp(source.y + random.randint(-50, 50), 0, TOTAL_HEIGHT - 1))
+	return source, destination
 
-	# print('%d %d %d %d' % (source.x, source.y, destination.x, destination.y))
+def put(host, flag):
+	source, destination = generate_heading()
+	while len(list(get_path(source, destination))) == 0:
+		source, destination = generate_heading()
 	flag_id = struct.pack('hhhh', source.x, source.y, destination.x, destination.y)
 	jetpack_get(host, source, destination, flag_id, flag)
 	return flag_id
