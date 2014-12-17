@@ -32,33 +32,34 @@ sub startup {
   $r->get('/flags')->to('main#flags')->name('flags');
   $r->get('/debug')->to('main#debug')->name('debug');
 
-  $app->log->info('Fetch services at startup');
-  $app->pg->db->query(
-    'SELECT id, name FROM services',
-    sub {
-      my ($db, $err, $res) = @_;
-      return $app->log->error("Error while select services: $err") if $err;
-
-      $res->arrays->map(sub { $app->services->{$_->[0]} = $_->[1] });
-    });
-
-  $app->log->info('Fetch teams at startup');
-  $app->pg->db->query(
-    'SELECT id, name, vuln_box FROM teams',
-    sub {
-      my ($db, $err, $res) = @_;
-      return $app->log->error("Error while select teams: $err") if $err;
-
-      $res->hashes->map(
-        sub {
-          $app->teams->{$_->{id}}         = $_;
-          $app->ip2team->{$_->{vuln_box}} = $_->{name};
-        });
-    });
-
   my $update = sub {
     return if $app->lock;
     $app->lock(1);
+
+    $app->log->info('Fetch services');
+    $app->pg->db->query(
+      'SELECT id, name FROM services',
+      sub {
+        my ($db, $err, $res) = @_;
+        return $app->log->error("Error while select services: $err") if $err;
+
+        $res->arrays->map(sub { $app->services->{$_->[0]} = $_->[1] });
+      });
+
+    $app->log->info('Fetch teams');
+    $app->pg->db->query(
+      'SELECT id, name, vuln_box FROM teams',
+      sub {
+        my ($db, $err, $res) = @_;
+        return $app->log->error("Error while select teams: $err") if $err;
+
+        $res->hashes->map(
+          sub {
+            $app->teams->{$_->{id}}         = $_;
+            $app->ip2team->{$_->{vuln_box}} = $_->{name};
+          });
+      });
+
     $app->log->info('Update scoreboard');
     Mojo::IOLoop->delay(
       sub {
