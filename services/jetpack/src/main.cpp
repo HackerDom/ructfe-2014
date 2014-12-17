@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <mem.h>
 #include <conio.h>
+#include <string.h>
 #include "slots.h"
 #include "packets.h"
 #include "movie.h"
@@ -88,6 +89,7 @@ void tick_slot(JPSlot *slot, int id)
      	init_slot(slot);
       return;
    }
+   int ret;
 	switch (slot->state)
    {
    case SLOT_Listen:
@@ -98,7 +100,12 @@ void tick_slot(JPSlot *slot, int id)
       }
       break;
    case SLOT_Receive:
-   	jp_slot_read(slot);
+   	ret = jp_slot_read(slot);
+		if (ret < 0)
+      {
+			init_slot(slot);
+         return;
+      }
       printf("slot position is %d\n", slot->position);
       if (slot->position >= 2)
       {
@@ -111,7 +118,12 @@ void tick_slot(JPSlot *slot, int id)
       }
       break;
    case SLOT_Send:
-   	jp_slot_write(slot);
+   	ret = jp_slot_write(slot);
+      if (ret < 0)
+      {
+			init_slot(slot);
+         return;
+      }
       if (slot->position >= slot->data_length)
       {
       	printf("sent response (%d of %d)\n", slot->position, slot->data_length);
@@ -175,8 +187,34 @@ void cleanup()
 	jp_storage_free(storage);
 }
 
-void main()
+#include <malloc.h>
+void check_free_memory()
 {
+	void *handles[64];
+	int i;
+   for (i = 0; i < 64; i++)
+   	if (!(handles[i] = _fmalloc(8192)))
+      	break;
+   printf("Managed to allocate %d 8K blocks (%dK).\n", i, i * 8);
+   for (; i >= 0; i--)
+   	_ffree(handles[i]);
+   getch();
+}
+
+void show_intro()
+{
+	jp_show_movie("intro.mov");
+   jp_show_image("readme.frm");
+   getch();
+}
+
+void main(int argc, const char **argv)
+{
+	bool intro = true;
+	if (argc > 1 && !stricmp(argv[1], "--no-intro"))
+   	intro = false;
+   if (intro)
+   	show_intro();
 	printf("Server started.\n");
    sock_init();
 	allocate_memory();
@@ -186,6 +224,7 @@ void main()
    	init_slot(slot);
       printf("Initialized %d slots...\n", ++count);
    }
+   check_free_memory();
    while (poll()) ;
    cleanup();
    printf("Exiting server...");

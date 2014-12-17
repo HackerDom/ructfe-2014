@@ -1,48 +1,203 @@
-#include <graphics.h>
 #include <conio.h>
 #include <stdio.h>
 #include <mem.h>
-#include "movie.h"
+#include <dos.h>
 #include "types.h"
 #include "checkalloc.h"
 
-#define MAX_IMAGE (int16)(10 * 1024)
+#include <stdlib.h>
+#include <dir.h>
+#include <zlib.h>
 
-int show_movie(const char *path) { }
+#define VIDEO_INT           0x10
+#define SET_MODE            0x00
+#define VGA_256_COLOR_MODE  0x13
+#define TEXT_MODE           0x03
 
-int show_image(const char *path)
+#define SCREEN_WIDTH        320
+#define SCREEN_HEIGHT       200
+
+#define PALETTE_INDEX       0x03c8
+#define PALETTE_DATA        0x03c9
+
+byte *VGA = (byte *)0xA0000000L;
+uint16 *my_clock = (uint16 *)0x0000046C;
+
+#define JP_FRAME_DATA_SIZE 64000U
+#define JP_FRAME_PAL_SIZE 768
+
+#define CHUNK 0x4000
+
+#define windowBits 15
+#define ENABLE_ZLIB_GZIP 32
+
+struct JPImageFrame
 {
-	FILE *image = fopen(path, "w");
-   if (!image)
-   {
-   	printf("Failed to open image file.\n");
-   	return -1;
-   }
-	byte *data = (byte *)checkalloc(MAX_IMAGE);
-   if (!data)
-   {
-   	printf("Failed to allocate %d bytes.\n", MAX_IMAGE);
-   	return -1;
-   }
-	_fmemset(data, '@', MAX_IMAGE);
+	byte palette[JP_FRAME_PAL_SIZE];
+	void *data;
+};
 
-   int gdriver = VGA, gmode = VGAHI;
-	initgraph(&gdriver, &gmode, "bgi");
+struct JPImageStream
+{
+	byte *in_buffer;
+   byte *out_buffer;
+   size_t ready;
+   size_t position;
+   FILE *file;
+   z_stream zstr;
+};
 
-	for (int i = 0; i < 1; i++)
+void set_mode(byte mode)
+{
+	union REGS regs;
+
+   regs.h.ah = SET_MODE;
+  	regs.h.al = mode;
+  	int86(VIDEO_INT, &regs, &regs);
+}
+
+void show_frame(JPImageFrame *frame)
+{
+	outp(PALETTE_INDEX, 0);
+  	for (int i = 0; i < JP_FRAME_PAL_SIZE; i++)
+		outp(PALETTE_DATA, frame->palette[i]);
+
+   _fmemcpy(VGA, frame->data, JP_FRAME_DATA_SIZE);
+}
+
+void jp_stream_close(JPImageStream *stream)
+{
+	_ffree(stream->in_buffer);
+	_ffree(stream->out_buffer);
+   inflateEnd(&stream->zstr);
+   fclose(stream->file);
+	_ffree(stream);
+}
+
+JPImageStream *jp_stream_open(const char *path)
+{
+	JPImageStream *stream = (JPImageStream *)checkalloc(sizeof(JPImageStream));
+   stream->ready = stream->position = 0;
+	stream->file = fopen(path, "rb");
+   if (!stream->file)
+	{
+   	printf("Failed to open file.\n");
+      _ffree(stream);
+		return NULL;
+   }
+	stream->in_buffer = (byte *)checkalloc(CHUNK);
+	stream->out_buffer = (byte *)checkalloc(CHUNK);
+   _fmemset(&stream->zstr, 0, sizeof(z_stream));
+	stream->zstr.zalloc = Z_NULL;
+   stream->zstr.zfree = Z_NULL;
+   stream->zstr.opaque = Z_NULL;
+   stream->zstr.next_in = stream->in_buffer;
+   stream->zstr.avail_in = 0;
+   stream->zstr.next_out = stream->out_buffer;
+   int result = inflateInit2(&stream->zstr, windowBits | ENABLE_ZLIB_GZIP);
+   if (result < 0)
    {
-   	for (int j = 0; j < 1; j++)
+   	printf("inflateInit2 returned error %d.\n", result);
+		jp_stream_close(stream);
+      return NULL;
+   }
+   return stream;
+}
+
+size_t jp_stream_read(JPImageStream *stream, void *buffer, size_t length)
+{
+	size_t to_read = length;
+	while (to_read)
+   {
+   	if (stream->ready)
+   	{
+   		size_t to_take = min(to_read, stream->ready);
+   		_fmemcpy(buffer, stream->out_buffer + stream->position, to_take);
+      	to_read -= to_take;
+      	buffer = (byte *)buffer + to_take;
+      	stream->ready -= to_take;
+         stream->position += to_take;
+   	}
+      if (to_read == 0)
+      	break;
+   	stream->zstr.next_out = stream->out_buffer;
+   	stream->zstr.avail_out = CHUNK;
+      inflate(&stream->zstr, Z_NO_FLUSH);
+      stream->position = 0;
+		if (stream->zstr.avail_out == CHUNK)
       {
-      	putpixel(i, j, RED);
+      	if (feof(stream->file))
+         	return length - to_read;
+         size_t bytes_read = fread(stream->in_buffer, 1, CHUNK, stream->file);
+         stream->zstr.next_in = stream->in_buffer;
+      	stream->zstr.avail_in = bytes_read;
+         stream->zstr.next_out = stream->out_buffer;
+         stream->zstr.avail_out = CHUNK;
+         inflate(&stream->zstr, Z_NO_FLUSH);
       }
+      stream->ready = CHUNK - stream->zstr.avail_out;
    }
-   getch();
-   getimage(0, 0, 1, 1, data);
-   fwrite(data, 1, MAX_IMAGE, image);
+   return length;
+}
 
-	closegraph();
+void jp_show_movie(const char *path)
+{
+	JPImageStream *stream = jp_stream_open(path);
+   if (!stream)
+   {
+   	printf("Failed to open stream.\n");
+      return;
+   }
 
-   fclose(image);
+	JPImageFrame frame;
+   frame.data = checkalloc(JP_FRAME_DATA_SIZE);
 
-   return 0;
+   set_mode(VGA_256_COLOR_MODE);
+
+   uint16 last_time = *my_clock;
+   while (*my_clock == last_time);
+   last_time = *my_clock;
+   while (true)
+   {
+   	size_t bytes_read = jp_stream_read(stream, frame.palette, JP_FRAME_PAL_SIZE);
+      if (!bytes_read)
+      	break;
+      jp_stream_read(stream, frame.data, JP_FRAME_DATA_SIZE);
+
+      show_frame(&frame);
+
+   	while (*my_clock == last_time);
+   	last_time = *my_clock;
+   }
+
+	set_mode(TEXT_MODE);
+
+   _ffree(frame.data);
+   jp_stream_close(stream);
+}
+
+
+void jp_show_image(const char *path)
+{
+	JPImageStream *stream = jp_stream_open(path);
+   if (!stream)
+   {
+   	printf("Failed to open stream.\n");
+      return;
+   }
+
+	JPImageFrame frame;
+   frame.data = checkalloc(JP_FRAME_DATA_SIZE);
+
+   set_mode(VGA_256_COLOR_MODE);
+
+   jp_stream_read(stream, frame.palette, JP_FRAME_PAL_SIZE);
+   jp_stream_read(stream, frame.data, JP_FRAME_DATA_SIZE);
+
+   show_frame(&frame);
+
+	set_mode(TEXT_MODE);
+
+   _ffree(frame.data);
+   jp_stream_close(stream);
 }
