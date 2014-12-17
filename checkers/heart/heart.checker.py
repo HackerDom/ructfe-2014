@@ -233,8 +233,12 @@ class Checker(HttpCheckerBase):
 
 	def randpoint(self, flag_id, flag):
 		rnd = random.randrange(50, 120)
-		event = self.randtitle()
-		return {'val':rnd, 'evt':flag}
+		if not flag:
+			return {'val':rnd}
+		event = flag
+		if random.randrange(0, 5) == 0:
+			event = self.randtitle() + ' ' + flag
+		return {'val':rnd, 'evt':event}
 
 	def randexpr(self):
 		delim = self.randsp() + ',' + self.randsp()
@@ -263,6 +267,8 @@ class Checker(HttpCheckerBase):
 
 		parts = flag_id.split(':', 2)
 		user = {'login':parts[0], 'pass':parts[1]}
+
+		self.debug(user)
 
 		result = self.spost(s, addr, '/signin/', user)
 		if not result or result != 'OK':
@@ -300,7 +306,8 @@ class Checker(HttpCheckerBase):
 			print('get /register.html failed')
 			return EXITCODE_MUMBLE
 
-		user = self.randuser(2)
+		user = self.randuser(3)
+		self.debug(user)
 
 		for i in range(0, 3):
 			try:
@@ -312,16 +319,48 @@ class Checker(HttpCheckerBase):
 				break
 			except HttpWebException as e:
 				if e.value == 409:
-					user = self.randuser(i * 4)
+					user = self.randuser(i * 5)
 				else:
 					raise
 
-		point = self.randpoint(flag_id, flag)
-		self.debug(point)
+		if random.randrange(0, 2) == 0:
+			point0 = self.randpoint(flag_id, '')
+			self.debug(point0)
 
-		result = self.spost(s, addr, '/add/', point)
+			result = self.spost(s, addr, '/add/', point0)
+			if not result or result != 'OK':
+				print('add point failed')
+				return EXITCODE_MUMBLE
+
+		point1 = self.randpoint(flag_id, flag)
+		self.debug(point1)
+
+		result = self.spost(s, addr, '/add/', point1)
 		if not result or result != 'OK':
 			print('add point failed')
+			return EXITCODE_MUMBLE
+
+		if random.randrange(0, 2) == 0:
+			point2 = self.randpoint(flag_id, '')
+			self.debug(point2)
+
+			result = self.spost(s, addr, '/add/', point2)
+			if not result or result != 'OK':
+				print('add point failed')
+				return EXITCODE_MUMBLE
+
+		alert = 'OMG'
+		expr = {'expr':'if(Avg(stat) > 0, "' + alert + '", null)'}
+		self.debug(expr)
+
+		result = self.spost(s, addr, '/setexpr/', expr)
+		if not result or result != 'OK':
+			print('set expression failed')
+			return EXITCODE_MUMBLE
+
+		result = self.jget(s, addr, '/alerts/')
+		if not result or result.get('msg') != alert:
+			print('alert not found')
 			return EXITCODE_MUMBLE
 
 		print('{}:{}'.format(user['login'], user['pass']))
