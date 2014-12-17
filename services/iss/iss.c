@@ -24,9 +24,6 @@
 
 #define MAX_PENALTY 2
 
-void* malloc(size_t);
-void free(void*);
-
 struct node
 {
     struct node *A_child;
@@ -141,31 +138,45 @@ try_add_pattern(const char *pattern, char * comment)
         if(pattern[i] == 'A')
         {
             if(cur->A_child == NULL)
+            {
                 cur->A_child = malloc(sizeof(struct node));
+                memset(cur->A_child, 0, sizeof(struct node));
+            }
             cur = cur->A_child;
         }
         else if(pattern[i] == 'T')
         {
             if(cur->T_child == NULL)
+            {
                 cur->T_child = malloc(sizeof(struct node));
+                memset(cur->T_child, 0, sizeof(struct node));
+            }
             cur = cur->T_child;
         }
         else if(pattern[i] == 'G')
         {
             if(cur->G_child == NULL)
+            {
                 cur->G_child = malloc(sizeof(struct node));
+                memset(cur->G_child, 0, sizeof(struct node));
+            }
             cur = cur->G_child;
         }
         else
         {
             if(cur->C_child == NULL)
+            {
                 cur->C_child = malloc(sizeof(struct node));
+                memset(cur->C_child, 0, sizeof(struct node));
+            }
             cur = cur->C_child;
         }
     }
     if(cur->comment == NULL)
     {
         cur->comment = malloc(c_len + 1);
+        memset(cur->comment, 0, c_len + 1);
+
         strcpy(cur->comment, comment);
         return comment;
     }
@@ -231,6 +242,7 @@ run(int listen_port)
     int nfds = 1, current_size = 0, i, j;
 
     root = malloc(sizeof(struct node));
+    memset(root, 0, sizeof(struct node));
 
     file = fopen("state", "a+");
     if(file == NULL)
@@ -282,6 +294,7 @@ run(int listen_port)
     memset(positions, 0, sizeof(positions));
 
     char *result = malloc(OUT_BUFFER_LEN);
+    memset(result, 0, OUT_BUFFER_LEN);
     while (1) {
         printf("Waiting on poll()...\n");
         rc = poll(fds, nfds, -1);

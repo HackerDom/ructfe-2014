@@ -47,7 +47,7 @@
     <td class="team-name"><span title="<%= $score->{team}{vuln_box} %>"><%= $score->{team}{name} %></span></td>
     <td class="team-score"><%= sprintf '%.2f', $score->{score} %></td>
 
-    % for my $sid (keys %{$self->app->services}) {
+    % for my $sid (sort keys %{$self->app->services}) {
       % my $status = $self->app->status->{$sid}{$score->{team}{id}}{status};
       % my $comment = $self->app->status->{$sid}{$score->{team}{id}}{fail_comment};
       % my $s = {101 => 'OK', 102 => 'CORRUPT', 103 => 'MUMBLE', 104 => 'DOWN', 110 => 'CHECKER ERROR'};
@@ -145,6 +145,9 @@ $(document).ready(function() {
       var ncolor = hsvToRgb(hsv[0], 0.5 + hsv[1] * x * 0.5, hsv[2]);
       var z = 'rgb(' + parseInt(ncolor[0]) + ',' + parseInt(ncolor[1]) + ',' + parseInt(ncolor[2]) + ')';
       $(el).css('background-color', z);
+      if (color === colors['s110']) {
+        $(el).css('color', '#ddd');
+      }
     });
   }
 
