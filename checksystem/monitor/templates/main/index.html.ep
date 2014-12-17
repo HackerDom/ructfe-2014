@@ -145,6 +145,9 @@ $(document).ready(function() {
       var ncolor = hsvToRgb(hsv[0], 0.5 + hsv[1] * x * 0.5, hsv[2]);
       var z = 'rgb(' + parseInt(ncolor[0]) + ',' + parseInt(ncolor[1]) + ',' + parseInt(ncolor[2]) + ')';
       $(el).css('background-color', z);
+      if (color === colors['s110']) {
+        $(el).css('color', '#ddd');
+      }
     });
   }
 
