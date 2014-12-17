@@ -1,3 +1,3 @@
 #!/bin/bash
-grep ^102 -B2 micro.checksystem.err.log | sed -e "s/.*msg: //" | sed -e "s/.*idea //"
+cat micro.checksystem.err*log | grep ^102 -B2 | sed -e "s/.*msg: //" | sed -e "s/.*idea //"
 

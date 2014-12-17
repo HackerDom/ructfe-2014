@@ -27,7 +27,7 @@ public class LetterMapper
         "uncle",
         "village",
         "window",
-        "x-ray",
+        "xerox",
         "yahoo",
         "zipper"
     };

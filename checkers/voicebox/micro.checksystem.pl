@@ -2,7 +2,7 @@
 use strict;
 ++$|;
 
-my $COUNT = 100;
+my $COUNT = 6000;
 my @fch = ('A'..'Z','0'..'9');
 my @ich = ('0'..'9','a'..'z');
 
@@ -14,15 +14,19 @@ $\=$/;
 for (1..$COUNT)
 {
 	printf "%d of %d ...\n", $_, $COUNT;
-	print system("./voicebox.checker.sh check $ip 2>>micro.checksystem.err.log") >> 8;
+	print system("./voicebox.checker.sh check $ip 2>>micro.checksystem.err-$$.log") >> 8;
+
 	my $id = id();
 	my $flag = flag();
-	print system("./voicebox.checker.sh put $ip $id $flag >id-$$.tmp 2>>micro.checksystem.err.log") >> 8;
+	my $putCode = system("./voicebox.checker.sh put $ip $id $flag >id-$$.tmp 2>>micro.checksystem.err-$$.log") >> 8;
+	print $putCode;
+	next unless $putCode == 101;
+
 	open ID, "id-$$.tmp" or die;
 	chomp($id = <ID>);
 	close ID;
 	unlink "id-$$.tmp";
-	print system("./voicebox.checker.sh get $ip $id $flag 2>>micro.checksystem.err.log") >> 8;
+	print system("./voicebox.checker.sh get $ip $id $flag 2>>micro.checksystem.err-$$.log") >> 8;
 }
 
 sub rs {
