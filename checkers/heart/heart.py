@@ -311,7 +311,6 @@ class Checker(HttpCheckerBase):
 				break
 			except HttpWebException as e:
 				if e.value == 409:
-					print('409')
 					user = self.randuser(i * 4)
 				else:
 					raise
