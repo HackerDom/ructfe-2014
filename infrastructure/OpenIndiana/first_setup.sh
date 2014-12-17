@@ -22,6 +22,8 @@ echo
 ipadd="10.$((60 + TEAM / 256)).$((TEAM % 256))."
 ipadm delete-addr e1000g0/v4static
 ipadm create-addr -T static -a ${ipadd}10/24 e1000g0/v4static
+route flush
+route -p flush
 route -p add default ${ipadd}1
 svcadm restart svc:/network/physical:default
 
