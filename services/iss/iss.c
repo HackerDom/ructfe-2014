@@ -15,8 +15,8 @@
 #define PORT 1013
 
 #define BACKLOG_LEN 1024
-#define IN_BUFFER_LEN 64
-#define OUT_BUFFER_LEN 64
+#define IN_BUFFER_LEN 128
+#define OUT_BUFFER_LEN 128
 #define SOCKETS_COUNT 1 + BACKLOG_LEN
 
 #define TRUE 1
@@ -221,12 +221,19 @@ init_state(FILE* fp)
 //TODO close opened connections by timeout
 //*************
 
+//DEBUG
+void
+proof()
+{
+    printf("HACKED!\n");
+}
+
 void
 run(int listen_port)
 {
     const char error_msg[] = "Invalid request, must be a '\\n'-terminated line no longer than 64 chars\n";
     const char error_msg1[] = "Invalid DNA string, must contain character only from [ATGC] alphabet and have non-zero length\n";
-    const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";    
+    const char error_msg2[] = "Invalid Virus Pattern string, must be in <DNA-sequence><space><Comment> format\n";
 
     int len, rc, one = 1;
     int listen_sd = -1, new_sd = -1;
@@ -294,9 +301,9 @@ run(int listen_port)
     memset(positions, 0, sizeof(positions));
 
     char *result = malloc(OUT_BUFFER_LEN);
-    memset(result, 0, OUT_BUFFER_LEN);
+//DEBUG
+    printf("result addr: %p\n", result);
     while (1) {
-        printf("Waiting on poll()...\n");
         rc = poll(fds, nfds, -1);
         if (rc < 0)
         {
@@ -307,21 +314,13 @@ run(int listen_port)
         current_size = nfds;
         for (i = 0; i < current_size; i++)
         {
+
             if(fds[i].revents == 0)
-            {
-                // printf("cur %d, list %d\n", fds[i].fd, listen_sd);
                 continue;
-            }
 
-            // if(fds[i].revents != POLLIN)
-            // {
-            //     printf("    Error! revents = %d\n", fds[i].revents);
-            //     exit(-1);
-            // }
-
-            if (fds[i].fd == listen_sd)
+            int fd = fds[i].fd;
+            if (fd == listen_sd)
             {
-                printf("    Listening socket is readable\n");
                 do
                 {
                     struct sockaddr_in ss;
@@ -337,8 +336,6 @@ run(int listen_port)
                         break;
                     }
 
-                    // printf("    New incoming connection - %d\n", new_sd);
-
                     make_non_blocking(new_sd);
                     fds[nfds].fd = new_sd;
                     fds[nfds].events = POLLIN;
@@ -347,15 +344,12 @@ run(int listen_port)
             }
             else
             {
-                printf("    Descriptor %d is readable\n", fds[i].fd);
                 close_conn = FALSE;
 
                 do
                 {
-                    // printf("Starting recv\n");
                     request = buffers[i];
-                    rc = recv(fds[i].fd, request + positions[i], IN_BUFFER_LEN - positions[i], 0);
-                    // printf("Recved %d bytes\n", rc);
+                    rc = recv(fd, request + positions[i], IN_BUFFER_LEN - positions[i], 0);
                     if (rc < 0)
                     {
                         if (errno != EWOULDBLOCK && errno != EAGAIN)
@@ -373,8 +367,6 @@ run(int listen_port)
                     }
                     positions[i] += rc;
 
-                    printf("    %d bytes received\n", rc);
-
                     char *eol_pos = memchr(request, '\n', positions[i]);
 
                     if(eol_pos == NULL)
@@ -385,7 +377,7 @@ run(int listen_port)
                             positions[i] = 0;
 
                             //TODO copypaste
-                            rc = send(fds[i].fd, error_msg, strlen(error_msg), 0);
+                            rc = send(fd, error_msg, strlen(error_msg), 0);
                             if (rc < 0)
                             {
                                 perror("    send() failed");
@@ -421,29 +413,25 @@ run(int listen_port)
                                 memset(match, 0, OUT_BUFFER_LEN);
 
                                 if(try_match(request, match))
-                                    sprintf(result, "MATCH FOR '%s' FOUND: %s\n", request, match);
+                                    sprintf(result, "PATTERN MATCHED : %s\n", match);
                                 else
-                                    strcpy(result, "NO MATCH FOUND\n");
+                                    strcpy(result, "NO PATTERN MATCHED\n");
 
-                                // так как не закрываем соединение с поллящем сервере
-                                // make_blocking(fds[i].fd);
-                                rc = send(fds[i].fd, result, strlen(result), 0);
-                                free(result);
+                                rc = send(fd, result, strlen(result), 0);
                                 if (rc < 0)
                                     perror("    send() failed");
+
+                                free(match);
+                                free(result);
+                                close(fd);
+
                                 exit(0);
                             }
-                            // не закрываем соединение с поллящем сервере
-                            // else
-                            // {
-                            //     close_conn = TRUE;
-                            //     break;
-                            // }
                         }
                         else
                         {
                             //TODO copypaste
-                            rc = send(fds[i].fd, error_msg1, strlen(error_msg1), 0);
+                            rc = send(fd, error_msg1, strlen(error_msg1), 0);
                             if (rc < 0)
                             {
                                 perror("    send() failed");
@@ -468,9 +456,8 @@ run(int listen_port)
                                 fwrite("\n", 1, 1, file);
                             }
 
-                            rc = send(fds[i].fd, result_comment, strlen(result_comment), 0);
-                            if(rc >= 0)
-                                rc = send(fds[i].fd, "\n", 1, 0);
+                            sprintf(result, "%s\n", result_comment);
+                            rc = send(fd, result, strlen(result), 0);
 
                             //TODO copypaste
                             if (rc < 0)
@@ -483,7 +470,7 @@ run(int listen_port)
                         else
                         {
                             //TODO copypaste
-                            rc = send(fds[i].fd, error_msg2, strlen(error_msg2), 0);
+                            rc = send(fd, error_msg2, strlen(error_msg2), 0);
                             if (rc < 0)
                             {
                                 perror("    send() failed");
@@ -499,7 +486,7 @@ run(int listen_port)
 
                 if (close_conn)
                 {
-                    close(fds[i].fd);
+                    close(fd);
                     fds[i].fd = -1;
                     positions[i] = 0;
                     memset(buffers[i], 0, sizeof(buffers[i]));
@@ -508,7 +495,7 @@ run(int listen_port)
             }
         }
 
-        //TODO неэффективно
+        //TODO ineffective
         if (compress_array)
         {
             compress_array = FALSE;

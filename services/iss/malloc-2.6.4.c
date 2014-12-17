@@ -1708,6 +1708,7 @@ static void do_check_malloced_chunk(p, s) mchunkptr p; INTERNAL_SIZE_T s;
   BK->fd = FD;                                                                \
 }                                                                             \
 
+
 /* Place p as the last remainder */
 
 #define link_last_remainder(P)                                                \
@@ -2336,7 +2337,6 @@ void free(mem) Void_t* mem;
       prevsz = p->prev_size;
       p = chunk_at_offset(p, -prevsz);
       sz += prevsz;
-printf("1 P: %p\n", p);
       unlink(p, bck, fwd);
     }
 
@@ -2360,8 +2360,7 @@ printf("1 P: %p\n", p);
     if (p->fd == last_remainder)             /* keep as last_remainder */
       islr = 1;
     else
-{printf("2 P: %p\n", p);
-      unlink(p, bck, fwd);}
+      unlink(p, bck, fwd);
   }
   
   if (!(inuse_bit_at_offset(next, nextsz)))   /* consolidate forward */
@@ -2374,8 +2373,7 @@ printf("1 P: %p\n", p);
       link_last_remainder(p);   
     }
     else
-{printf("3 P: %p\n", p);
-      unlink(next, bck, fwd);}
+      unlink(next, bck, fwd);
   }
 
 

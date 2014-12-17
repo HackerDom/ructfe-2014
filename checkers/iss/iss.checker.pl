@@ -50,7 +50,7 @@ sub check {
     $buf .= $data;
   } while ($buf !~ /\n/ and length $buf < 1024);
 
-  return $SERVICE_CORRUPT if $buf !~ /MATCH FOR '.+' FOUND: (.*?) (.*?)\n/ or $2 ne $fake;
+  return $SERVICE_CORRUPT if $buf !~ /PATTERN MATCHED : (.*?) (.*?)\n/ or $2 ne $fake;
 
   return $SERVICE_OK;
 }
