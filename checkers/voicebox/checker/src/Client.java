@@ -11,10 +11,10 @@ import java.util.zip.GZIPOutputStream;
 
 public class Client
 {
-    private static final int CONNECT_TIMEOUT = 120000;
-    private static final int READ_TIMEOUT = 120000;
+    private static final int CONNECT_TIMEOUT = 12000;
+    private static final int READ_TIMEOUT = 12000;
 
-    private static final Boolean SAVE_PCM = true;
+    private static final Boolean SAVE_PCM = false;
     private static final Boolean SAVE_GZIP = false;
 
     private static final String VOICE_NAME = "mbrola_us3";

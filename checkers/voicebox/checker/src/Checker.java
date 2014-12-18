@@ -20,7 +20,7 @@ public class Checker {
     private static final String MSG_AUTHORIZATION_OR_REGISTRATION = "authorization or registration";
     private static final String MSG_YOUR_ID = "your id";
 
-    private static final int PORT = 1338;
+    private static final int PORT = 1337;
     private static final int FLAGID_LEN = 10;
 
     private static Random random = new Random();
