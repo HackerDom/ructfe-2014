@@ -4,7 +4,7 @@ use IO::Socket::INET;
 use IO::Select;
 
 use feature ':5.10';
-#no warnings 'experimental::smartmatch';
+no warnings 'experimental::smartmatch';
 my $port = 1013;
 
 my ($SERVICE_OK, $FLAG_GET_ERROR, $SERVICE_CORRUPT, $SERVICE_FAIL, $INTERNAL_ERROR) =
