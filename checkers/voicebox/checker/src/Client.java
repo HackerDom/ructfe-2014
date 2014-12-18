@@ -11,16 +11,14 @@ import java.util.zip.GZIPOutputStream;
 
 public class Client
 {
-    private static final int CONNECT_TIMEOUT = 12000;
-    private static final int READ_TIMEOUT = 12000;
+    private static final int CONNECT_TIMEOUT = 120000;
+    private static final int READ_TIMEOUT = 120000;
 
-    private static final Boolean SAVE_PCM = false;
+    private static final Boolean SAVE_PCM = true;
     private static final Boolean SAVE_GZIP = false;
 
     private static final String VOICE_NAME = "mbrola_us3";
     private static final String SERVER_CHARSET = "UTF-16";
-
-    private Date date = new Date();
 
     private Socket s = null;
     private OutputStream out = null;
@@ -58,11 +56,10 @@ public class Client
     private String read()
     {
         try {
-            Checker.log("Waiting for reply ...");
             long start = System.nanoTime();
             String response = in.readLine();
             long duration = System.nanoTime() - start;
-            Checker.log("<- '%s' (%d ms)", response, duration / 1000000);
+            Checker.log("<- '%s' (%d ms)", response == null ? "<NULL>" : response, duration / 1000000);
             return response;
         } catch (IOException e) {
             e.printStackTrace();
@@ -70,12 +67,12 @@ public class Client
         }
     }
 
-    private String getFileName(String extension)
+    private static String getFileName(String extension)
     {
-        return String.format("say_%d.%s", date.getTime(), extension);
+        return String.format("say_%d.%s", new Date().getTime(), extension);
     }
 
-    private void writeDebugFile(String data, String extension, boolean useGzip) {
+    public static void writeDebugFile(String data, String extension, boolean useGzip) {
         try {
             String fileName = getFileName(extension);
 
