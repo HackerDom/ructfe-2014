@@ -36,35 +36,13 @@ sub startup {
     return if $app->lock;
     $app->lock(1);
 
-    $app->log->info('Fetch services');
-    $app->pg->db->query(
-      'SELECT id, name FROM services',
-      sub {
-        my ($db, $err, $res) = @_;
-        return $app->log->error("Error while select services: $err") if $err;
-
-        $res->arrays->map(sub { $app->services->{$_->[0]} = $_->[1] });
-      });
-
-    $app->log->info('Fetch teams');
-    $app->pg->db->query(
-      'SELECT id, name, vuln_box FROM teams',
-      sub {
-        my ($db, $err, $res) = @_;
-        return $app->log->error("Error while select teams: $err") if $err;
-
-        $res->hashes->map(
-          sub {
-            $app->teams->{$_->{id}}         = $_;
-            $app->ip2team->{$_->{vuln_box}} = $_->{name};
-          });
-      });
-
     $app->log->info('Update scoreboard');
     Mojo::IOLoop->delay(
       sub {
         my $delay = shift;
 
+        $app->pg->db->query('SELECT id, name FROM services'        => $delay->begin);
+        $app->pg->db->query('SELECT id, name, vuln_box FROM teams' => $delay->begin);
         $app->pg->db->query(
           'SELECT DISTINCT ON (team_id, service_id) team_id, service_id, score
             FROM score ORDER BY team_id, service_id, time DESC'
@@ -85,12 +63,22 @@ sub startup {
         $app->pg->db->query('SELECT * FROM services_flags_stolen' => $delay->begin);
       },
       sub {
-        my ($delay, $e1, $scores, $e2, $services, $e3, $round, $e4, $status, $e5, $flags) = @_;
+        my (
+          $delay,    $e1, $s,     $e2, $t,      $e3, $scores, $e4,
+          $services, $e5, $round, $e6, $status, $e7, $flags
+        ) = @_;
         $app->lock(0);
         if (my $e = $e1 || $e2 || $e3 || $e4 || $e5) {
           $app->log->error("Error while update scoreboard: $e");
           return;
         }
+
+        $s->arrays->map(sub { $app->services->{$_->[0]} = $_->[1] });
+        $t->hashes->map(
+          sub {
+            $app->teams->{$_->{id}}         = $_;
+            $app->ip2team->{$_->{vuln_box}} = $_->{name};
+          });
 
         my ($flag_points, $sla_points);
 
