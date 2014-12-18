@@ -165,7 +165,7 @@ def loop():
 
 
     # generate html by result
-    template = open(TEMPLATE_FILE).read()
+    template = open(TEMPLATE_FILE, encoding="utf8").read()
     time_str = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
     html = jinja2.Template(template, autoescape=True).render(
         result=result, time=time_str, netopened=is_net_opened(), sums=sums)
