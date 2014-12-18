@@ -1,5 +1,6 @@
 import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.VoiceManager;
+import com.sun.speech.freetts.audio.AudioPlayer;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -44,8 +45,7 @@ public class Client
     {
         try {
             OutputStream stream = useGzip ?  new GZIPOutputStream(outStream) : outStream;
-            Speaker speaker = newSpeaker();                             // Один спикер на все запросы не работает
-            speaker.sayToStream(data, stream);
+            sayToStream(data, stream);
             if (useGzip)
                 ((GZIPOutputStream) stream).finish();
             stream.flush();
@@ -121,7 +121,7 @@ public class Client
         catch (Exception e) { }
     }
 
-    private static Speaker newSpeaker()
+    private static void sayToStream(String data, OutputStream stream)
     {
         VoiceManager voiceManager = VoiceManager.getInstance();
         Voice voice = voiceManager.getVoice(VOICE_NAME);
@@ -129,6 +129,17 @@ public class Client
         if (voice == null)
             Checker.exitCheckerError("Cannot find voice '" + VOICE_NAME + "'");
 
-        return new Speaker(voice);
+        voice.allocate();
+        try {
+            AudioPlayer player = new RawByteStreamAudioPlayer(stream);
+            voice.setAudioPlayer(player);
+            voice.speak(data);
+            player.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            voice.deallocate();
+        }
     }
 }
