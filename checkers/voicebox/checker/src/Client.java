@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Date;
+import java.util.zip.Deflater;
 import java.util.zip.GZIPOutputStream;
 
 public class Client
@@ -13,8 +14,8 @@ public class Client
     private static final int CONNECT_TIMEOUT = 12000;
     private static final int READ_TIMEOUT = 12000;
 
-    private static final Boolean SAVE_PCM = true;
-    private static final Boolean SAVE_GZIP = true;
+    private static final Boolean SAVE_PCM = false;
+    private static final Boolean SAVE_GZIP = false;
 
     private static final String VOICE_NAME = "mbrola_us3";
     private static final String SERVER_CHARSET = "UTF-16";
@@ -44,7 +45,7 @@ public class Client
     private static void write(String data, OutputStream outStream, boolean useGzip)
     {
         try {
-            OutputStream stream = useGzip ?  new GZIPOutputStream(outStream) : outStream;
+            OutputStream stream = useGzip ? new GZIPOutputStream(outStream){{def.setLevel(Deflater.BEST_COMPRESSION);}} : outStream;
             sayToStream(data, stream);
             if (useGzip)
                 ((GZIPOutputStream) stream).finish();
@@ -57,10 +58,11 @@ public class Client
     private String read()
     {
         try {
+            Checker.log("Waiting for reply ...");
             long start = System.nanoTime();
             String response = in.readLine();
             long duration = System.nanoTime() - start;
-            System.err.println(String.format("<- '%s' (%d ms)", response, duration/1000000));
+            Checker.log("<- '%s' (%d ms)", response, duration / 1000000);
             return response;
         } catch (IOException e) {
             e.printStackTrace();

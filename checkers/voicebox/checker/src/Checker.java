@@ -12,8 +12,8 @@ public class Checker {
     private static final int CODE_DOWN          = 104;
     private static final int CODE_CHECKER_ERROR = 110;
 
-    private static Integer PORT = 1338;
-    private static final int FLAGID_LEN = 16;
+    private static Integer PORT = 1337;
+    private static final int FLAGID_LEN = 10;
 
     private static Random random = new Random();
     private static LetterMapper letterMapper = new LetterMapper();
@@ -50,7 +50,7 @@ public class Checker {
         exitOK("OK");
     }
 
-    private static void get(String[] args) throws CheckerError
+    private static void get(String[] args)
     {
         if (args.length != 3)
             exitCheckerError("Usage: Checker get <host> <id> <flag>");
@@ -84,7 +84,7 @@ public class Checker {
             exitCorrupt("Flag not found (looked for '" + mappedFlag + "')");
     }
 
-    private static void put(String[] args) throws CheckerError
+    private static void put(String[] args)
     {
         if (args.length != 3)
             exitCheckerError("Usage: Checker put <host> <id> <flag>");
@@ -146,7 +146,7 @@ public class Checker {
         exitOK("Success");
     }
 
-    private static void check(String[] args) throws CheckerError
+    private static void check(String[] args)
     {
         if (args.length != 1)
             exitCheckerError("Usage: Checker check <host>");
