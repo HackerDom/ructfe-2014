@@ -3,6 +3,8 @@ import com.sun.speech.freetts.VoiceManager;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Checker {
 
@@ -12,11 +14,20 @@ public class Checker {
     private static final int CODE_DOWN          = 104;
     private static final int CODE_CHECKER_ERROR = 110;
 
-    private static Integer PORT = 1337;
+    private static final String MSG_OK_BOX = "ok box";
+    private static final String MSG_AUTHORIZATION = "authorization";
+    private static final String MSG_REGISTRATION = "registration";
+    private static final String MSG_AUTHORIZATION_OR_REGISTRATION = "authorization or registration";
+    private static final String MSG_YOUR_ID = "your id";
+
+    private static final int PORT = 1338;
     private static final int FLAGID_LEN = 10;
 
     private static Random random = new Random();
+    private static UsersDb usersDb = new UsersDb();
     private static LetterMapper letterMapper = new LetterMapper();
+
+    private static Pattern welcomeRegex = Pattern.compile(".*Your ID is (\\d+).*");
 
     public static void main(String[] args)
     {
@@ -71,13 +82,12 @@ public class Checker {
 
         Client client = new Client(HOST, PORT);
 
-        testForMumble(client.say("ok box"), "authorization or registration");
-
-        testForMumble(response = client.say("authorization"), "say:");
-
+        testForMumble(client.say(MSG_OK_BOX), MSG_AUTHORIZATION_OR_REGISTRATION);
+        testForMumble(client.say(MSG_AUTHORIZATION), MSG_YOUR_ID);
+        testForMumble(response = client.say(usersDb.get(HOST) + " fuck"), "say:");
         testForMumble(client.say(response.replaceFirst("say:", "")), "welcome again");
 
-        response = client.say(String.format("get %s", splitWithSpaces(ID)));
+        response = client.say(String.format("get %s fuck", splitWithSpaces(ID)));
         if (response.equals(mappedFlag))
             exitOK("Flag found");
         else
@@ -99,9 +109,11 @@ public class Checker {
 
         Client client = new Client(HOST, PORT);
 
-        testForMumble(client.say("ok box"), "authorization or registration");
-        testForMumble(response = client.say("authorization"), "say:");
-        response = client.say(response.replaceFirst("say:", ""));
+        testForMumble(client.say(MSG_OK_BOX), MSG_AUTHORIZATION_OR_REGISTRATION);
+        testForMumble(client.say(MSG_AUTHORIZATION), MSG_YOUR_ID);
+        response = client.say(usersDb.get(HOST) + " fuck");
+        if (!response.startsWith("unknown user"))
+            response = client.say(response.replaceFirst("say:", ""));
 
         if (response.startsWith("unknown user"))
         {
@@ -111,10 +123,14 @@ public class Checker {
 
             client = new Client(HOST, PORT);
 
-            testForMumble(client.say("ok box"), "authorization or registration");
-            testForMumble(response = client.say("registration"), "say: ");
+            testForMumble(client.say(MSG_OK_BOX), MSG_AUTHORIZATION_OR_REGISTRATION);
+            testForMumble(response = client.say(MSG_REGISTRATION), "say: ");
             testForMumble(client.say(response.replaceFirst("say:", "")), "your name");
-            testForMumble(client.say("user"), "welcome");
+            testForMumble(response = client.say("user"), "welcome");
+
+            String userId = extractId(response);
+            if (userId == null) exitMumble("Cannot extract UserID");
+            usersDb.put(HOST, userId);
 
             client.close();
 
@@ -124,8 +140,9 @@ public class Checker {
 
             client = new Client(HOST, PORT);
 
-            testForMumble(client.say("ok box"), "authorization or registration");
-            testForMumble(response = client.say("authorization"), "say:");
+            testForMumble(client.say(MSG_OK_BOX), MSG_AUTHORIZATION_OR_REGISTRATION);
+            testForMumble(client.say(MSG_AUTHORIZATION), MSG_YOUR_ID);
+            testForMumble(response = client.say(usersDb.get(HOST)  + " fuck"), "say:");
             response = client.say(response.replaceFirst("say:", ""));
         }
         testForMumble(response, "welcome again");
@@ -137,13 +154,24 @@ public class Checker {
             e.printStackTrace();
             exitCheckerError("Failed to create mappedFlag");
         }
-        response = client.say(String.format("put id %s idea %s", splitWithSpaces(ID), mappedFlag));
-        testForMumble(response, "Idea put with id: " + ID);
-        if (!response.contains(mappedFlag))
+        testForMumble(response = client.say(String.format("put id %s idea %s", splitWithSpaces(ID), mappedFlag)), "Idea put with id: " + ID);
+        if (!response.contains(mappedFlag)) {
+            ID = newFlagId();
+            log("First put has failed. Giving the second chance. newFlagId: %s", ID);
+            testForMumble(response = client.say(String.format("put id %s idea %s", splitWithSpaces(ID), mappedFlag)), "Idea put with id: " + ID);
+        }
+        if (!response.contains(mappedFlag)) {
             exitCorrupt("Cannot find flag in response");
+        }
 
         System.out.println(ID.replaceAll(" ", ""));         // Новый ID флага для Checksystem
         exitOK("Success");
+    }
+
+    private static String extractId(String data)
+    {
+        Matcher m = welcomeRegex.matcher(data);
+        return m.matches() ? m.group(1) : null;
     }
 
     private static void check(String[] args)
@@ -154,7 +182,7 @@ public class Checker {
         String HOST = args[0];
         Client client = new Client(HOST, PORT);
 
-        testForMumble(client.say("ok box"), "authorization or registration");
+        testForMumble(client.say(MSG_OK_BOX), MSG_AUTHORIZATION_OR_REGISTRATION);
 
         exitOK("Service seems to be OK");
         client.close();
