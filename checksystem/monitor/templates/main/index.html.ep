@@ -4,7 +4,7 @@
 % use Mojo::Util 'url_escape';
 
 % content_for r => begin
-  Round <%= $self->app->round->{n} %>
+  Round <%= app->round->{n} %>
 % end
 
 <div class="legend-item"><span  id="s101" style="background-color: rgb(0, 220, 0);" class="color-box">&nbsp;</span><span>&nbsp;UP</span></div>
@@ -25,19 +25,18 @@
     <td><b>Team</b></td>
     <td><b>Score</b></td>
     % my @scolors = ('rgb(179,0,179)', 'rgb(205,16,118)', 'rgb(179,179,0)', 'rgb(46,179,87)', 'rgb(0,238,238)', 'rgb(112,128,144)', 'rgb(0,0,240)');
-    % for my $sid (sort keys %{$self->app->services}) {
+    % for my $sid (sort keys %{app->services}) {
       <td
         class="service"
         data-sid="<%= $sid %>"
         style="background-color: <%= shift @scolors %>;"
       >
-          <b><%= $self->app->services->{$sid} %></b>
+          <b><%= app->services->{$sid} %></b>
       </td>
     % }
-    <td><b>Flags</b></td>
   </tr>
   % my $pos = 0;
-  % for my $score (@{$self->app->scoreboard}) {
+  % for my $score (@{app->scoreboard}) {
   <tr>
     <td class="team-pos"><%= ++$pos %></td>
     <td>
@@ -47,9 +46,9 @@
     <td class="team-name"><span title="<%= $score->{team}{vuln_box} %>"><%= $score->{team}{name} %></span></td>
     <td class="team-score"><%= sprintf '%.2f', $score->{score} %></td>
 
-    % for my $sid (sort keys %{$self->app->services}) {
-      % my $status = $self->app->status->{$sid}{$score->{team}{id}}{status};
-      % my $comment = $self->app->status->{$sid}{$score->{team}{id}}{fail_comment};
+    % for my $sid (sort keys %{app->services}) {
+      % my $status = app->status->{$sid}{$score->{team}{id}}{status};
+      % my $comment = app->status->{$sid}{$score->{team}{id}}{fail_comment};
       % my $s = {101 => 'OK', 102 => 'CORRUPT', 103 => 'MUMBLE', 104 => 'DOWN', 110 => 'CHECKER ERROR'};
       <td
         title="<%= $s->{$status} %>. <%= $comment %>"
@@ -61,11 +60,9 @@
       >
         <div>SLA: <%= sprintf '%d', 100 * $score->{sla}{$sid} %>%</div>
         <div>FP: <%= sprintf '%.2f', $score->{fp}{$sid} %></div>
+        <div>Flags: <%= app->flags->{$score->{team}{id}}{$sid}{count} // 0 %></div>
       </td>
     % }
-    <td>
-      <div style="width: 70px; height: 70px;" id="team_<%= $score->{team}{id} %>"></div>
-    </td>
   </tr>
   % }
 </table>
@@ -150,51 +147,5 @@ $(document).ready(function() {
       }
     });
   }
-
-  $.get("<%= url_for('flags') %>", function(flags) {
-    $.each(flags, function(team, data) {
-      c = '#team_' + team;
-      s = [];
-      $.each(data, function(sid, d) {
-        s.push({
-          x: sid,
-          y: parseInt(d.count),
-          name: d.name,
-          color: $('td[data-sid="' + sid + '"]').css('background-color')
-        });
-      });
-      $(c).highcharts({
-        chart: {
-          margin: [0, 0, 0, 0],
-          spacingTop: 0,
-          spacingBottom: 0,
-          spacingLeft: 0,
-          spacingRight: 0
-        },
-        title: { text: '' },
-        tooltip: {
-          enabled: true
-       },
-       plotOptions: {
-         pie: {
-           animation: false,
-           size:'100%',
-           borderWidth: 0,
-           dataLabels: {
-             enabled: false
-           }
-         }
-       },
-       series: [{
-         type: 'pie',
-         name: team,
-         data: s
-       }],
-       credits: {
-        enabled: false
-      }
-      });
-    });
-  });
 });
 </script>
