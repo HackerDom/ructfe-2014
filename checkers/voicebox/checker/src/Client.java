@@ -73,31 +73,29 @@ public class Client
         return String.format("say_%d.%s", date.getTime(), extension);
     }
 
+    private void writeDebugFile(String data, String extension, boolean useGzip) {
+        try {
+            String fileName = getFileName(extension);
+
+            FileOutputStream outFile = new FileOutputStream(fileName);
+            write(data, outFile, useGzip);
+            outFile.close();
+
+            File file = new File(fileName);
+            Checker.log("xx '%s' (write to file: '%s', %d bytes)", data, fileName, file.length());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public String say(String data)
     {
         data = data.trim();
-        if (SAVE_PCM) {
-            try {
-                String fileName = getFileName("pcm");
-                FileOutputStream outFile = new FileOutputStream(fileName);
-                Checker.log("xx '%s' (write PCM to file: '%s')", data, fileName);
-                write(data, outFile, false);
-                outFile.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        if (SAVE_GZIP) {
-            try {
-                String fileName = getFileName("gzip");
-                FileOutputStream outFile = new FileOutputStream(fileName);
-                Checker.log("xx '%s' (write GZIP to file: '%s')", data, fileName);
-                write(data, outFile, true);
-                outFile.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        if (SAVE_PCM)
+            writeDebugFile(data, "pcm", false);
+        if (SAVE_GZIP)
+            writeDebugFile(data, "gzip", true);
+
         Checker.log("-> '%s'", data);
         write(data, out, true);
         return read();
