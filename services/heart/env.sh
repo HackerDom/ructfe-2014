@@ -44,7 +44,7 @@ cat > /etc/init.d/heart <<EOF2
 #!/bin/sh
 case \$1 in
 'start')
-cd /root/heart && LD_LIBRARY_PATH=/opt/csw/lib /opt/mono/bin/mono service.exe 127.0.0.1:6379 > heart.log 2> heart.err &
+cd /root/heart && LD_LIBRARY_PATH=/opt/csw/lib /opt/mono/bin/mono heart.exe 127.0.0.1:6379 &
 ;;
 'stop')
 echo "Use ps aux | grep heart and kill <PID>"

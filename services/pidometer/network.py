@@ -42,7 +42,10 @@ def func4(t):
 
 def func2(n):
     cr.reinit()
-    return "Token: " + base.b16encode(cr.encrypt(n)) + "\n"
+    try:
+        return "Token: " + base.b16encode(cr.encrypt(n)) + "\n"
+    except:
+        return "Register fails"
 
 
 def gn(t):
@@ -51,15 +54,18 @@ def gn(t):
 
 
 def func3(n, d, c):
-    if not db.exists(n):
-        return "User not found\n"
-    d = d if d else 0
-    c, d = (c, d) if c else (d, 0)
-    return "\n".join(
-        [n + " steps:"] +
-        [to_human_day(i) + ":\t\t" + str(v)
-         for i, v in enumerate(db.lrange(n, d, c))]
-    ) + "\n"
+    try:
+        if not db.exists(n):
+            return "User not found\n"
+        d = d if d else 0
+        c, d = (c, d) if c else (d, 0)
+        return "\n".join(
+            [n + " steps:"] +
+            [to_human_day(i) + ":\t\t" + str(v)
+             for i, v in enumerate(db.lrange(n, d, c))]
+        ) + "\n"
+    except:
+        return "Can't view this"
 
 
 inf=eval

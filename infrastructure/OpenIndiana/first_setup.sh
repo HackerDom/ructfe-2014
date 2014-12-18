@@ -16,7 +16,7 @@ fi
 
 echo "Interface e1000g0 is your trunk uplink."
 echo
-read -p "Let's configure network insterfaces. Enter your team number: " TEAM
+read -p "Let's configure network interfaces. Enter your team number: " TEAM
 echo
 
 ipadd="10.$((60 + TEAM / 256)).$((TEAM % 256))."

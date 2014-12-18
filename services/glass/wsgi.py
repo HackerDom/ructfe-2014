@@ -45,7 +45,7 @@ def application(environ, start_response):
     if isinstance(response_body, string_types):
         response_body = response_body.encode()
 
-    response_status = "200 OK" if 200 == http_status_code else "400 WFT"
+    response_status = "200 OK" if 200 == http_status_code else "400 WTF"
     response_headers = [("Content-Type", "text/html")]
 
     start_response(response_status, response_headers)
