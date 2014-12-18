@@ -29,7 +29,8 @@ def func1(t, p):
             db.lpop(t)
         except:
             pass
-        return "Something wrong: " + str(e) + "\n"
+        finally:
+            return "Something wrong: " + str(e) + "\n"
 
 
 def func4(t):
@@ -48,7 +49,7 @@ def func2(n):
     try:
         return "Token: " + base.b16encode(cr.encrypt(n)) + "\n"
     except:
-        return "Register fails"
+        return "Register fails\n"
 
 
 def gn(t):

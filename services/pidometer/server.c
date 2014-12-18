@@ -130,6 +130,7 @@ int main(int argc, char **argv) {
                                     continue;
                                 }
                                 pArgs = PyTuple_New(n);
+                                j = 0;
                                 for (j = 0; j < n - 1; j++) {
                                     token = strtok(NULL, " \r\n");
                                     if (token) {
@@ -152,7 +153,10 @@ int main(int argc, char **argv) {
                                         }
                                     }
                                 }
-                                for (k = j; k < n; k++) PyTuple_SetItem(pArgs, k, Py_None);
+                                for (k = j; k < n; k++) {
+                                    Py_INCREF(Py_None);
+                                    PyTuple_SetItem(pArgs, k, Py_None);
+                                }
                                 pValue = PyObject_CallObject(pFunc, pArgs);
                                 Py_DECREF(pArgs);
                                 if (pValue) {
@@ -160,8 +164,9 @@ int main(int argc, char **argv) {
                                            char *s = PyString_AsString(pValue);
                                            sendto(sockfd, s, strlen(s), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                                     } else sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
-                                    Py_DECREF(pValue);
                                 } else sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
+                                Py_DECREF(pValue);
+                                PyErr_Clear();
                             }
                         }
                         if (--nready <= 0) break;
