@@ -15,6 +15,12 @@ namespace heart
 			XmlConfigurator.Configure();
 			try
 			{
+				if(args.Length == 0)
+				{
+					Console.Error.WriteLine("heart.exe <redis ip:port>");
+					return;
+				}
+
 				DB = new DbProvider(args[0]);
 
 				var staticHandler = new StaticHandler(GetPrefix(null), Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "static"));

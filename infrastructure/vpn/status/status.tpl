@@ -15,6 +15,7 @@
               .yesnocell {width: 150px; color: #bbbbbb;}
               .yescell {background-color: #00b500;}
               .nocell {background-color: #ff4040;}
+              .graycell {color: gray; font-size:small; }
               .namecell {width: 400px}
               p {color:green}
         </style>
@@ -39,6 +40,16 @@
             <th>Service was UP</th>
             </tr>
 
+            <tr>
+            <th></th>
+            <th></th>
+            <th class="graycell">&sum; = {{sums.router_ping}}</th>
+            <th class="graycell">&sum; = {{sums.image_ping}}</th>
+            <th class="graycell">&sum; = {{sums.service_up}}</th>
+            <th class="graycell">&sum; = {{sums.router_pingonce}}</th>
+            <th class="graycell">&sum; = {{sums.image_pingonce}}</th>
+            <th class="graycell">&sum; = {{sums.service_uponce}}</th>
+            </tr>
         {% for team in result %}
             <tr>
             <td> {{team.id}} </td>
