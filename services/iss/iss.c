@@ -27,6 +27,8 @@
 
 #define MAX_PENALTY 2
 
+#define CONNECTION_TIMEOUT_SEC 30
+
 struct node
 {
     struct node *A_child;
@@ -220,16 +222,12 @@ init_state(FILE* fp)
     return lines;
 }
 
-//*************
-//TODO close opened connections by timeout
-//*************
-
-//DEBUG
-void
-proof()
-{
-    printf("HACKED!\n");
-}
+// //DEBUG
+// void
+// proof()
+// {
+//     printf("HACKED!\n");
+// }
 
 void
 run(int listen_port)
@@ -247,6 +245,7 @@ run(int listen_port)
     struct pollfd fds[SOCKETS_COUNT];
     char buffers[SOCKETS_COUNT][IN_BUFFER_LEN];
     int positions[SOCKETS_COUNT];
+    unsigned int times[SOCKETS_COUNT];
     char *request;
 
     int nfds = 1, current_size = 0, i, j;
@@ -302,10 +301,11 @@ run(int listen_port)
 
     memset(buffers, 0, sizeof(buffers));
     memset(positions, 0, sizeof(positions));
+    memset(times, 0, sizeof(times));
 
     char *result = malloc(OUT_BUFFER_LEN);
-//DEBUG
-    printf("result addr: %p\n", result);
+// //DEBUG
+//     printf("result addr: %p\n", result);
     while (1) {
         rc = poll(fds, nfds, -1);
         if (rc < 0)
@@ -317,187 +317,192 @@ run(int listen_port)
             break;
         }
 
+        int cur_time = (unsigned int)time(NULL);
+
         current_size = nfds;
         for (i = 0; i < current_size; i++)
         {
+            close_conn = FALSE;
 
-            if(fds[i].revents == 0)
-                continue;
+            if(fds[i].fd != listen_sd && times[i] != 0 && times[i] + CONNECTION_TIMEOUT_SEC < cur_time)
+                close_conn = TRUE;
 
             int fd = fds[i].fd;
-            if (fd == listen_sd)
+            if(fds[i].revents != 0)
             {
-                do
+                if (fd == listen_sd)
                 {
-                    struct sockaddr_in ss;
-                    socklen_t slen = sizeof(ss);
-                    new_sd = accept(listen_sd, (struct sockaddr*)&ss, &slen);
-                    if (new_sd < 0)
+                    do
                     {
-                        if (errno != EWOULDBLOCK && errno != EAGAIN)
+                        struct sockaddr_in ss;
+                        socklen_t slen = sizeof(ss);
+                        new_sd = accept(listen_sd, (struct sockaddr*)&ss, &slen);
+                        if (new_sd < 0)
                         {
-                            perror("    accept() failed");
-                            exit(-1);
-                        }
-                        break;
-                    }
-
-                    make_non_blocking(new_sd);
-                    fds[nfds].fd = new_sd;
-                    fds[nfds].events = POLLIN;
-                    nfds++;
-                } while (new_sd != -1);
-            }
-            else
-            {
-                close_conn = FALSE;
-
-                do
-                {
-                    request = buffers[i];
-                    rc = recv(fd, request + positions[i], IN_BUFFER_LEN - positions[i], 0);
-                    if (rc < 0)
-                    {
-                        if (errno != EWOULDBLOCK && errno != EAGAIN)
-                        {
-                            perror("    recv() failed");
-                            close_conn = TRUE;
-                        }
-                        break;
-                    }
-                    if (rc == 0)
-                    {
-                        printf("    Connection closed by peer\n");
-                        close_conn = TRUE;
-                        break;
-                    }
-                    positions[i] += rc;
-
-                    char *eol_pos = memchr(request, '\n', positions[i]);
-
-                    if(eol_pos == NULL)
-                    {
-                        if(strnlen(request, IN_BUFFER_LEN) == IN_BUFFER_LEN)
-                        {
-                            memset(request, 0, sizeof(buffers[i]));
-                            positions[i] = 0;
-
-                            //TODO copypaste
-                            rc = send(fd, error_msg, strlen(error_msg), 0);
-                            if (rc < 0)
+                            if (errno != EWOULDBLOCK && errno != EAGAIN)
                             {
-                                perror("    send() failed");
-                                close_conn = TRUE;
-                                break;
+                                perror("accept() failed");
+                                exit(-1);
                             }
+                            break;
                         }
-                        continue;
-                    }
+
+                        make_non_blocking(new_sd);
+                        fds[nfds].fd = new_sd;
+                        fds[nfds].events = POLLIN;
+                        times[nfds] = (unsigned int)time(NULL);
+                        nfds++;
+                    } while (new_sd != -1);
+                }
+                else
+                {
+                    do
+                    {
+                        request = buffers[i];
+                        rc = recv(fd, request + positions[i], IN_BUFFER_LEN - positions[i], 0);
+                        if (rc < 0)
+                        {
+                            if (errno != EWOULDBLOCK && errno != EAGAIN)
+                            {
+                                perror("recv() failed");
+                                close_conn = TRUE;
+                            }
+                            break;
+                        }
+                        if (rc == 0)
+                        {
+                            close_conn = TRUE;
+                            break;
+                        }
+                        positions[i] += rc;
+
+                        char *eol_pos = memchr(request, '\n', positions[i]);
+
+                        if(eol_pos == NULL)
+                        {
+                            if(strnlen(request, IN_BUFFER_LEN) == IN_BUFFER_LEN)
+                            {
+                                memset(request, 0, sizeof(buffers[i]));
+                                positions[i] = 0;
+
+                                //TODO copypaste
+                                rc = send(fd, error_msg, strlen(error_msg), 0);
+                                if (rc < 0)
+                                {
+                                    perror("send() failed");
+                                    close_conn = TRUE;
+                                    break;
+                                }
+                            }
+                            continue;
+                        }
 
 //-------------------PROCESSING PROTOCOL-------------------
 
-                    len = eol_pos - request;
-                    if(len > 0 && request[len-1] == '\r')
-                        len--;
-                    request[len] = 0;
+                        len = eol_pos - request;
+                        if(len > 0 && request[len-1] == '\r')
+                            len--;
+                        request[len] = 0;
 
-                    char *comment = memchr(request, ' ', len);
+                        char *comment = memchr(request, ' ', len);
 
-                    if(comment == NULL)
-                    {
-                        if(check_alphabet(request))
+                        if(comment == NULL)
                         {
-                            pid_t pid = fork();
-                            if(pid == -1)
+                            if(check_alphabet(request))
                             {
-                                perror("fork()");
-                                exit(-1);
+                                pid_t pid = fork();
+                                if(pid == -1)
+                                {
+                                    perror("fork()");
+                                    exit(-1);
+                                }
+                                else if (pid == 0)
+                                {
+                                    char *match = malloc(OUT_BUFFER_LEN);
+                                    memset(match, 0, OUT_BUFFER_LEN);
+
+                                    if(try_match(request, match))
+                                        sprintf(result, "PATTERN MATCHED : %s\n", match);
+                                    else
+                                        strcpy(result, "NO PATTERN MATCHED\n");
+
+                                    rc = send(fd, result, strlen(result), 0);
+                                    if (rc < 0)
+                                        perror("send() failed");
+
+                                    free(match);
+                                    free(result);
+                                    close(fd);
+
+                                    exit(0);
+                                }
                             }
-                            else if (pid == 0)
+                            else
                             {
-                                char *match = malloc(OUT_BUFFER_LEN);
-                                memset(match, 0, OUT_BUFFER_LEN);
-
-                                if(try_match(request, match))
-                                    sprintf(result, "PATTERN MATCHED : %s\n", match);
-                                else
-                                    strcpy(result, "NO PATTERN MATCHED\n");
-
-                                rc = send(fd, result, strlen(result), 0);
+                                //TODO copypaste
+                                rc = send(fd, error_msg1, strlen(error_msg1), 0);
                                 if (rc < 0)
-                                    perror("    send() failed");
-
-                                free(match);
-                                free(result);
-                                close(fd);
-
-                                exit(0);
+                                {
+                                    perror("send() failed");
+                                    close_conn = TRUE;
+                                    break;
+                                }
                             }
                         }
                         else
                         {
-                            //TODO copypaste
-                            rc = send(fd, error_msg1, strlen(error_msg1), 0);
-                            if (rc < 0)
+                            comment[0] = 0;
+                            comment++;
+
+                            if(check_alphabet(request))
                             {
-                                perror("    send() failed");
-                                close_conn = TRUE;
-                                break;
+                                char *result_comment = try_add_pattern(request, comment);
+
+                                comment[-1] = ' ';
+                                if(result_comment == comment)
+                                {
+                                    fwrite(request, len, 1, file);
+                                    fwrite("\n", 1, 1, file);
+                                }
+
+                                sprintf(result, "%s\n", result_comment);
+                                rc = send(fd, result, strlen(result), 0);
+
+                                //TODO copypaste
+                                if (rc < 0)
+                                {
+                                    perror("send() failed");
+                                    close_conn = TRUE;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                //TODO copypaste
+                                rc = send(fd, error_msg2, strlen(error_msg2), 0);
+                                if (rc < 0)
+                                {
+                                    perror("send() failed");
+                                    close_conn = TRUE;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        comment[0] = 0;
-                        comment++;
+                        memset(request, 0, sizeof(buffers[i]));
+                        positions[i] = 0;
 
-                        if(check_alphabet(request))
-                        {
-                            char *result_comment = try_add_pattern(request, comment);
-
-                            comment[-1] = ' ';
-                            if(result_comment == comment)
-                            {
-                                fwrite(request, len, 1, file);
-                                fwrite("\n", 1, 1, file);
-                            }
-
-                            sprintf(result, "%s\n", result_comment);
-                            rc = send(fd, result, strlen(result), 0);
-
-                            //TODO copypaste
-                            if (rc < 0)
-                            {
-                                perror("    send() failed");
-                                close_conn = TRUE;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            //TODO copypaste
-                            rc = send(fd, error_msg2, strlen(error_msg2), 0);
-                            if (rc < 0)
-                            {
-                                perror("    send() failed");
-                                close_conn = TRUE;
-                                break;
-                            }
-                        }
-                    }
-                    memset(request, 0, sizeof(buffers[i]));
-                    positions[i] = 0;
-
-                } while(TRUE);
-
-                if (close_conn)
-                {
-                    close(fd);
-                    fds[i].fd = -1;
-                    positions[i] = 0;
-                    memset(buffers[i], 0, sizeof(buffers[i]));
-                    compress_array = TRUE;
+                    } while(TRUE);
                 }
+            }
+
+            if (close_conn)
+            {
+                close(fd);
+                fds[i].fd = -1;
+                positions[i] = 0;
+                times[i] = 0;
+                memset(buffers[i], 0, sizeof(buffers[i]));
+                compress_array = TRUE;
             }
         }
 
