@@ -31,7 +31,7 @@ void nowait(int fd) {
 }
 
 int main(int argc, char **argv) {
-  int                   i, maxi, listenfd, connfd, sockfd, j, k, nready, one=1;
+  int                   i, maxi, listenfd, connfd, sockfd, j, k, nready, one=1, slen=0;
   ssize_t               n;
   socklen_t             clilen;
   struct pollfd         client[OPEN_MAX];
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
             listenfd = socket(AF_INET, SOCK_STREAM, 0);
             setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
-        nowait(listenfd);
+            nowait(listenfd);
             bzero(&servaddr, sizeof(servaddr));
             servaddr.sin_family      = AF_INET;
             servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -156,8 +156,10 @@ int main(int argc, char **argv) {
                                 pValue = PyObject_CallObject(pFunc, pArgs);
                                 Py_DECREF(pArgs);
                                 if (pValue) {
-                                       char *s = PyString_AsString(pValue);
-                                       sendto(sockfd, s, strlen(s), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
+                                    if (PyString_Check(pValue)) {
+                                           char *s = PyString_AsString(pValue);
+                                           sendto(sockfd, s, strlen(s), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
+                                    } else sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                                 } else sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                             }
                         }
