@@ -1,17 +1,21 @@
 import com.sun.speech.freetts.audio.AudioPlayer;
 
 import javax.sound.sampled.AudioFormat;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 public class RawByteStreamAudioPlayer implements AudioPlayer
 {
+    private static final Boolean DEBUG = false;
+
     private AudioFormat audioFormat;
     private float volume;
-    private BufferedOutputStream os;
+    private OutputStream os;
+    private int iteration = 0;
+    private int totalBytes = 0;
 
-    public RawByteStreamAudioPlayer(BufferedOutputStream os)
+    public RawByteStreamAudioPlayer(OutputStream os)
     {
         this.os = os;
     }
@@ -50,17 +54,21 @@ public class RawByteStreamAudioPlayer implements AudioPlayer
 
     @Override
     public void cancel() {
-
     }
 
     @Override
     public void close() {
         try {
             byte[] bts = ByteBuffer.allocate(4).putInt(0).array();
+
             os.write(bts, 0, 4);
-            os.flush();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+            totalBytes += 4;
+            if (DEBUG) {
+                Checker.log("  [RawByteStreamAudioPlayer] Written end (4 bytes), value = 0");
+                Checker.log("  [RawByteStreamAudioPlayer] Total (uncompressed) bytes sent: %d", totalBytes);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -98,9 +106,18 @@ public class RawByteStreamAudioPlayer implements AudioPlayer
     public boolean write(byte[] bytes, int offset, int size) {
         try {
             byte[] bts = ByteBuffer.allocate(4).putInt(size).array();
+
             os.write(bts, 0, 4);
+            if (DEBUG)
+                Checker.log("  [RawByteStreamAudioPlayer] Written size (4 bytes), value = %d", size);
+
             os.write(bytes, offset, size);
-        } catch (IOException ioe) {
+            if (DEBUG)
+                Checker.log("  [RawByteStreamAudioPlayer] Written data (%d bytes), iteration = %d", size, iteration++);
+
+            totalBytes += 4 + size;
+        } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
         return true;

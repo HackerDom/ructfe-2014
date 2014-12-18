@@ -2,13 +2,12 @@ import com.sun.speech.freetts.Voice;
 import com.sun.speech.freetts.audio.AudioPlayer;
 
 import java.io.BufferedOutputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Speaker
 {
-    static Map<Character, String> SYMB_TO_SPEECH = new HashMap<Character, String>();
-
     private Voice voice = null;
 
     public Speaker(Voice voice)
@@ -16,7 +15,7 @@ public class Speaker
         this.voice = voice;
     }
 
-    public void sayToStream(String strToSay, BufferedOutputStream os)
+    public void sayToStream(String strToSay, OutputStream os)
     {
 //        voice.setPitch((float)(57));
 //        voice.setPitchShift((float)(2.5));
@@ -30,7 +29,7 @@ public class Speaker
             voice.speak(strToSay);
             audioPlayer.close();
             voice.deallocate();
-            os.flush();
+            //os.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }
