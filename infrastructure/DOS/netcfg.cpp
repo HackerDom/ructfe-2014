@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <dir.h>
 
 const char wattcp_path[] = "C:\\FDOS\\wattcp.cfg";
@@ -50,18 +51,19 @@ int main()
    fputs(gateway, file);
    fclose(file);
 
-   sprintf(ip, "IPADDR=10.%d.%d.2\n", team_number / 256 + 60, team_number % 256);
-   sprintf(netmask, "NETMASK=255.255.255.0\n");
-   sprintf(gateway, "GATEWAY=10.%d.%d.1\n", team_number / 256 + 60, team_number % 256);
+   sprintf(ip, "IPADDR 10.%d.%d.2\n", team_number / 256 + 60, team_number % 256);
+   sprintf(netmask, "NETMASK 255.255.255.0\n");
+   sprintf(gateway, "GATEWAY 10.%d.%d.1\n", team_number / 256 + 60, team_number % 256);
    file = fopen(mtcp_path, "w");
    if (!file)
    {
    	printf("Failed to open mtcp config!\n");
       return 1;
    }
-   fputs("PACKETINT=0x60\n", file);
+   fputs("PACKETINT 0x60\n", file);
    fputs(ip, file);
    fputs(netmask, file);
    fputs(gateway, file);
    fclose(file);
+   system("pause");
 }

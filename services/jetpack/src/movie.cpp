@@ -4,6 +4,7 @@
 #include <dos.h>
 #include "types.h"
 #include "checkalloc.h"
+#include "movie.h"
 
 #include <stdlib.h>
 #include <dir.h>
@@ -40,164 +41,158 @@ struct JPImageFrame
 struct JPImageStream
 {
 	byte *in_buffer;
-   byte *out_buffer;
-   size_t ready;
-   size_t position;
-   FILE *file;
-   z_stream zstr;
+	byte *out_buffer;
+	size_t ready;
+	size_t position;
+	FILE *file;
+	z_stream zstr;
 };
 
 void set_mode(byte mode)
 {
 	union REGS regs;
 
-   regs.h.ah = SET_MODE;
-  	regs.h.al = mode;
-  	int86(VIDEO_INT, &regs, &regs);
+	regs.h.ah = SET_MODE;
+	regs.h.al = mode;
+	int86(VIDEO_INT, &regs, &regs);
 }
 
 void show_frame(JPImageFrame *frame)
 {
 	outp(PALETTE_INDEX, 0);
-  	for (int i = 0; i < JP_FRAME_PAL_SIZE; i++)
+	for (int i = 0; i < JP_FRAME_PAL_SIZE; i++)
 		outp(PALETTE_DATA, frame->palette[i]);
 
-   _fmemcpy(VGA, frame->data, JP_FRAME_DATA_SIZE);
+	_fmemcpy(VGA, frame->data, JP_FRAME_DATA_SIZE);
 }
 
 void jp_stream_close(JPImageStream *stream)
 {
 	_ffree(stream->in_buffer);
 	_ffree(stream->out_buffer);
-   inflateEnd(&stream->zstr);
-   fclose(stream->file);
+	inflateEnd(&stream->zstr);
+	fclose(stream->file);
 	_ffree(stream);
 }
 
-JPImageStream *jp_stream_open(const char *path)
+JPImageStream *jp_stream_open(const char *path, log_t log)
 {
-	JPImageStream *stream = (JPImageStream *)checkalloc(sizeof(JPImageStream));
-   stream->ready = stream->position = 0;
+	JPImageStream *stream = (JPImageStream *)checkalloc(sizeof(JPImageStream), log);
+	stream->ready = stream->position = 0;
 	stream->file = fopen(path, "rb");
-   if (!stream->file)
+	if (!stream->file)
 	{
-   	printf("Failed to open file.\n");
-      _ffree(stream);
+		jp_log(log, "Failed to open file %s.", path);
+		_ffree(stream);
 		return NULL;
-   }
-	stream->in_buffer = (byte *)checkalloc(CHUNK);
-	stream->out_buffer = (byte *)checkalloc(CHUNK);
-   _fmemset(&stream->zstr, 0, sizeof(z_stream));
+	}
+	stream->in_buffer = (byte *)checkalloc(CHUNK, log);
+	stream->out_buffer = (byte *)checkalloc(CHUNK, log);
+	_fmemset(&stream->zstr, 0, sizeof(z_stream));
 	stream->zstr.zalloc = Z_NULL;
-   stream->zstr.zfree = Z_NULL;
-   stream->zstr.opaque = Z_NULL;
-   stream->zstr.next_in = stream->in_buffer;
-   stream->zstr.avail_in = 0;
-   stream->zstr.next_out = stream->out_buffer;
-   int result = inflateInit2(&stream->zstr, windowBits | ENABLE_ZLIB_GZIP);
-   if (result < 0)
-   {
-   	printf("inflateInit2 returned error %d.\n", result);
+	stream->zstr.zfree = Z_NULL;
+	stream->zstr.opaque = Z_NULL;
+	stream->zstr.next_in = stream->in_buffer;
+	stream->zstr.avail_in = 0;
+	stream->zstr.next_out = stream->out_buffer;
+	int result = inflateInit2(&stream->zstr, windowBits | ENABLE_ZLIB_GZIP);
+	if (result < 0)
+	{
+		jp_log(log, "inflateInit2 returned error %d.", result);
 		jp_stream_close(stream);
-      return NULL;
-   }
-   return stream;
+		return NULL;
+	}
+	return stream;
 }
 
 size_t jp_stream_read(JPImageStream *stream, void *buffer, size_t length)
 {
 	size_t to_read = length;
 	while (to_read)
-   {
-   	if (stream->ready)
-   	{
-   		size_t to_take = min(to_read, stream->ready);
-   		_fmemcpy(buffer, stream->out_buffer + stream->position, to_take);
-      	to_read -= to_take;
-      	buffer = (byte *)buffer + to_take;
-      	stream->ready -= to_take;
-         stream->position += to_take;
-   	}
-      if (to_read == 0)
-      	break;
-   	stream->zstr.next_out = stream->out_buffer;
-   	stream->zstr.avail_out = CHUNK;
-      inflate(&stream->zstr, Z_NO_FLUSH);
-      stream->position = 0;
+	{
+		if (stream->ready)
+		{
+			size_t to_take = min(to_read, stream->ready);
+			_fmemcpy(buffer, stream->out_buffer + stream->position, to_take);
+			to_read -= to_take;
+			buffer = (byte *)buffer + to_take;
+			stream->ready -= to_take;
+			stream->position += to_take;
+		}
+		if (to_read == 0)
+			break;
+		stream->zstr.next_out = stream->out_buffer;
+		stream->zstr.avail_out = CHUNK;
+		inflate(&stream->zstr, Z_NO_FLUSH);
+		stream->position = 0;
 		if (stream->zstr.avail_out == CHUNK)
-      {
-      	if (feof(stream->file))
-         	return length - to_read;
-         size_t bytes_read = fread(stream->in_buffer, 1, CHUNK, stream->file);
-         stream->zstr.next_in = stream->in_buffer;
-      	stream->zstr.avail_in = bytes_read;
-         stream->zstr.next_out = stream->out_buffer;
-         stream->zstr.avail_out = CHUNK;
-         inflate(&stream->zstr, Z_NO_FLUSH);
-      }
-      stream->ready = CHUNK - stream->zstr.avail_out;
-   }
-   return length;
+		{
+			if (feof(stream->file))
+				return length - to_read;
+			size_t bytes_read = fread(stream->in_buffer, 1, CHUNK, stream->file);
+			stream->zstr.next_in = stream->in_buffer;
+			stream->zstr.avail_in = bytes_read;
+			stream->zstr.next_out = stream->out_buffer;
+			stream->zstr.avail_out = CHUNK;
+			inflate(&stream->zstr, Z_NO_FLUSH);
+		}
+		stream->ready = CHUNK - stream->zstr.avail_out;
+	}
+	return length;
 }
 
-void jp_show_movie(const char *path)
+void jp_show_movie(const char *path, log_t log)
 {
-	JPImageStream *stream = jp_stream_open(path);
-   if (!stream)
-   {
-   	printf("Failed to open stream.\n");
-      return;
-   }
+	JPImageStream *stream = jp_stream_open(path, log);
+	if (!stream)
+		return;
 
 	JPImageFrame frame;
-   frame.data = checkalloc(JP_FRAME_DATA_SIZE);
+	frame.data = checkalloc(JP_FRAME_DATA_SIZE, log);
 
-   set_mode(VGA_256_COLOR_MODE);
+	set_mode(VGA_256_COLOR_MODE);
 
-   uint16 last_time = *my_clock;
-   while (*my_clock == last_time);
-   last_time = *my_clock;
-   while (true)
-   {
-   	size_t bytes_read = jp_stream_read(stream, frame.palette, JP_FRAME_PAL_SIZE);
-      if (!bytes_read)
-      	break;
-      jp_stream_read(stream, frame.data, JP_FRAME_DATA_SIZE);
+	uint16 last_time = *my_clock;
+	while (*my_clock == last_time) ;
+	last_time = *my_clock;
+	while (true)
+	{
+		size_t bytes_read = jp_stream_read(stream, frame.palette, JP_FRAME_PAL_SIZE);
+		if (!bytes_read)
+			break;
+		jp_stream_read(stream, frame.data, JP_FRAME_DATA_SIZE);
 
-      show_frame(&frame);
+		show_frame(&frame);
 
-   	while (*my_clock == last_time);
-   	last_time = *my_clock;
-   }
+		while (*my_clock == last_time) ;
+		last_time = *my_clock;
+	}
 
 	set_mode(TEXT_MODE);
 
-   _ffree(frame.data);
-   jp_stream_close(stream);
+	_ffree(frame.data);
+	jp_stream_close(stream);
 }
 
 
-void jp_show_image(const char *path)
+void jp_show_image(const char *path, log_t log)
 {
-	JPImageStream *stream = jp_stream_open(path);
-   if (!stream)
-   {
-   	printf("Failed to open stream.\n");
-      return;
-   }
+	JPImageStream *stream = jp_stream_open(path, log);
+	if (!stream)
+		return;
 
 	JPImageFrame frame;
-   frame.data = checkalloc(JP_FRAME_DATA_SIZE);
+	frame.data = checkalloc(JP_FRAME_DATA_SIZE, log);
 
-   set_mode(VGA_256_COLOR_MODE);
+	set_mode(VGA_256_COLOR_MODE);
 
-   jp_stream_read(stream, frame.palette, JP_FRAME_PAL_SIZE);
-   jp_stream_read(stream, frame.data, JP_FRAME_DATA_SIZE);
+	jp_stream_read(stream, frame.palette, JP_FRAME_PAL_SIZE);
+	jp_stream_read(stream, frame.data, JP_FRAME_DATA_SIZE);
 
-   show_frame(&frame);
+	show_frame(&frame);
 
 	set_mode(TEXT_MODE);
 
-   _ffree(frame.data);
-   jp_stream_close(stream);
+	_ffree(frame.data);
+	jp_stream_close(stream);
 }

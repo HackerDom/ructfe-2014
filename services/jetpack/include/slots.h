@@ -4,6 +4,7 @@
 extern "C" {
 #include <wattcp.h>
 }
+#include <time.h>
 #include "types.h"
 
 #define SLOT_BUFFER 4096
@@ -20,7 +21,9 @@ struct JPSlot
 	int16 state;
 	int16 position;
 	int16 data_length;
+	clock_t accept_time;
 	JPSlot *next;
+	char name[16];
 	tcp_Socket socket;
 	byte buffer[SLOT_BUFFER];
 };

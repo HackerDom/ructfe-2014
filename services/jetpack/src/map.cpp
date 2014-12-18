@@ -63,7 +63,6 @@ int jp_build_path(point source, point destination, point *path, point *region_bu
 			jp_process_region(source, destination, path, &path_offset, region_buffer);
 		}
 	}
-   printf("found %d points!\n", path_offset);
 
 	return JP_ERROR_OK;
 }

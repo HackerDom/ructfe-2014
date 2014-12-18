@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <mem.h>
 #include <dos.h>
+#include <malloc.h>
 #include "types.h"
-#include "checkalloc.h"
 
 #include <stdlib.h>
 #include <dir.h>
@@ -67,7 +67,7 @@ void show_frame(JPImageFrame *frame)
 
 JPImageStream *jp_stream_open(const char *path)
 {
-	JPImageStream *stream = (JPImageStream *)checkalloc(sizeof(JPImageStream)); //TODO All mallocs to safe
+	JPImageStream *stream = (JPImageStream *)_fmalloc(sizeof(JPImageStream));
    stream->ready = stream->position = 0;
 	stream->file = fopen(path, "rb");
    if (!stream->file)
@@ -76,8 +76,8 @@ JPImageStream *jp_stream_open(const char *path)
       _ffree(stream);
 		return NULL;
    }
-	stream->in_buffer = (byte *)checkalloc(CHUNK);
-	stream->out_buffer = (byte *)checkalloc(CHUNK);
+	stream->in_buffer = (byte *)_fmalloc(CHUNK);
+	stream->out_buffer = (byte *)_fmalloc(CHUNK);
    _fmemset(&stream->zstr, 0, sizeof(z_stream));
 	stream->zstr.zalloc = Z_NULL;
    stream->zstr.zfree = Z_NULL;
@@ -171,7 +171,7 @@ void show_movie(const char *path)
    //printf("stream opened\n");getch();
 
 	JPImageFrame frame;
-   frame.data = checkalloc(JP_FRAME_DATA_SIZE); //TODO Make safemalloc
+   frame.data = _fmalloc(JP_FRAME_DATA_SIZE);
 
    if (!frame.data)
    {

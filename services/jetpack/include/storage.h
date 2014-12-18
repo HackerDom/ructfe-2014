@@ -1,9 +1,10 @@
 #ifndef JETPACK_STORAGE_H
 #define JETPACK_STORAGE_H
 
-#include "types.h"
-
 #include <stdio.h>
+
+#include "types.h"
+#include "logging.h"
 
 struct JPStorage
 {
@@ -15,7 +16,7 @@ struct JPStorage
 	int current_cache_items;
 };
 
-JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity);
+JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity, log_t log);
 
 void jp_storage_free(JPStorage *storage);
 

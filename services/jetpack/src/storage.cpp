@@ -15,8 +15,8 @@ void jp_add_id(JPStorage *storage, JPHeading heading, JPID id);
 FILE *jp_get_flags_file(JPStorage *storage, byte hash);
 FILE *jp_get_headings_cache_file(JPStorage *storage);
 
-JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity) {
-	JPStorage *storage = (JPStorage *)checkalloc(sizeof(JPStorage));
+JPStorage *jp_storage_init(const char *base_path, JPHeading *cache_buffer, int cache_capacity, log_t log) {
+	JPStorage *storage = (JPStorage *)checkalloc(sizeof(JPStorage), log);
 
 	storage->base_path = base_path;
 	if (jp_storage_init_cache(storage, cache_buffer, cache_capacity) != JP_ERROR_OK) {
@@ -55,7 +55,6 @@ int jp_load_ids(JPStorage *storage, JPHeading heading, JPID *ids_buffer, int ids
 	while (ids_written < ids_capacity
 		&& fread(&temp, sizeof(JPHeading), 1, file) == 1
 		&& fread(&id, sizeof(JPID), 1, file) == 1) {
-		printf("Read entry\n");
 		if (jp_headings_equal(heading, temp)) {
 			ids_buffer[ids_written++] = id;
 		}
