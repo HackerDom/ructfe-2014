@@ -9,11 +9,13 @@ my @ich = ('0'..'9','a'..'z');
 my $ip = shift or die "give ip as argument\n";
 my $ret;
 
+my $count = shift or die "give count as argument\n";
+
 $\=$/;
 
-for (1..$COUNT)
+for (1..$count)
 {
-	printf "%d of %d ...\n", $_, $COUNT;
+	printf "%d of %d ...\n", $_, $count;
 	print system("./voicebox.checker.sh check $ip 2>>micro.checksystem.err-$$.log") >> 8;
 
 	my $id = id();
