@@ -43,12 +43,12 @@
             <tr>
             <th></th>
             <th></th>
-            <th class="graycell">∑ = {{sums.router_ping}}</th>
-            <th class="graycell">∑ = {{sums.image_ping}}</th>
-            <th class="graycell">∑ = {{sums.service_up}}</th>
-            <th class="graycell">∑ = {{sums.router_pingonce}}</th>
-            <th class="graycell">∑ = {{sums.image_pingonce}}</th>
-            <th class="graycell">∑ = {{sums.service_uponce}}</th>
+            <th class="graycell">&sum; = {{sums.router_ping}}</th>
+            <th class="graycell">&sum; = {{sums.image_ping}}</th>
+            <th class="graycell">&sum; = {{sums.service_up}}</th>
+            <th class="graycell">&sum; = {{sums.router_pingonce}}</th>
+            <th class="graycell">&sum; = {{sums.image_pingonce}}</th>
+            <th class="graycell">&sum; = {{sums.service_uponce}}</th>
             </tr>
         {% for team in result %}
             <tr>
