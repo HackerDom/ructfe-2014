@@ -205,24 +205,22 @@ class Checker(HttpCheckerBase):
 
 	def randtitle(self):
 		return random.choice([
-			'eating',
-			'sleeeepingggg',
-			'test',
-			'Hello, world',
-			'cool stuff',
-			'i feel bad',
-			'Doctor, please help!',
-			'Check my heart',
-			'i\'m tired',
-			'Lunch',
-			'dinner',
-			'eat food',
-			'sit at table',
-			'do my homework',
-			'go up the stairs',
-			'RUN',
-			'outdoor',
-			'walk'
+			'eating', 'sleeeepingggg', 'test', 'Hello, world',
+			'cool stuff', 'i feel bad', 'Doctor, please help!',
+			'Check my heart', 'i\'m tired', 'Lunch', 'dinner',
+			'eat food', 'sit at table', 'do my homework',
+			'go up the stairs', 'RUN', 'outdoor', 'walk',
+			'up the hill', 'gogo', 'oh', 'auch', 'SnooZe',
+			'TEST', 'check', 'work', 'watch TV', 'Play chess',
+			'hospital', 'GOOD', 'yeah!', 'qwerty', '123'
+		])
+
+	def randalert(self):
+		if random.randrange(0, 10) != 0:
+			return self.randphrase()
+		return random.choice([
+			'died', 'alert', 'WARN', 'OMG!', 'Call doctor', 'my heart!!', 'What happened',
+			'AAAAAAAAAAAAA', 'check it', 'LOOK AT THIS', 'Help', 'danger', 'qwety', 'test'
 		])
 
 	def randuser(self, randlen):
@@ -232,7 +230,7 @@ class Checker(HttpCheckerBase):
 		return {'login':self.randlogin() + login, 'pass':password}
 
 	def randpoint(self, flag_id, flag):
-		rnd = random.randrange(50, 120)
+		rnd = random.randrange(50, 100)
 		if not flag:
 			return {'val':rnd}
 		event = flag
@@ -247,11 +245,52 @@ class Checker(HttpCheckerBase):
 		falseword = '"false"'
 		cond = random.choice(['<', '>', '<=', '>=', '=', '<>'])
 		func = random.choice(['Avg', 'Median', 'StdDev', 'Max', 'Min', 'Last'])
-		value = str(random.randrange(30, 150))
+		value = str(random.randrange(50, 100))
 		if random.randrange(0, 1) == 1:
 			value += decpoint
 			value += str(random.randrange(1, 9))
 		return 'if' + self.randsp() + '(' + self.randsp() + func + self.randsp() + '(' + self.randsp() + 'stat' + self.randsp() + ')' + self.randsp() + cond + self.randsp() + value + delim + trueword + delim + falseword + self.randsp() + ')'
+
+	def randtruesubexpr(self, points):
+		cond = random.choice(['<', '>', '<=', '>=', '=', '<>'])
+		func = random.choice(['Avg', 'Median', 'StdDev', 'Max', 'Min', 'Last'])
+		value = 0
+		if cond in ['>', '>=']:
+			if func != 'StdDev':
+				value = random.randrange(0, 49)
+			else:
+				value = -random.randrange(1, 100)
+		if cond in ['<', '<=', '<>']:
+			if func != 'StdDev':
+				value = random.randrange(101, 199)
+			else:
+				value = random.randrange(51, 100)
+		if cond == '=':
+			func = 'Last'
+			value = self.findlast(points)
+		if cond != '=' and random.randrange(0, 2) == 1:
+			value += random.randrange(1, 100) / 100
+		return func + self.randsp() + '(' + self.randsp() + 'stat' + self.randsp() + ')' + self.randsp() + cond + self.randsp() + str(value)
+
+	def randtrueexpr(self, points, alert):
+		decpoint = '.'
+		trueword = '"' + alert + '"'
+		falseword = 'null'
+		if random.randrange(0, 10) == 0:
+			falseword = '"' + self.randsp() + self.randword() + self.randsp() + '"'
+		delim = self.randsp() + ',' + self.randsp()
+		subexpr = self.randtruesubexpr(points)
+		for i in range(0, random.randrange(0, 2)):
+			op = random.choice([' and ', ' or '])
+			subexpr += self.randsp() + op + self.randsp() + self.randtruesubexpr(points)
+		return 'if' + self.randsp() + '(' + self.randsp() + subexpr + delim + self.randsp() + trueword + self.randsp() + delim + self.randsp() + 'null' + self.randsp() + ')'
+
+	def findlast(self, points):
+		last = points[0]
+		for point in points:
+			if point:
+				last = point;
+		return last.get('val')
 
 	def randsp(self):
 		spaces = '   '
@@ -323,7 +362,8 @@ class Checker(HttpCheckerBase):
 				else:
 					raise
 
-		if random.randrange(0, 2) == 0:
+		point0 = None
+		if random.randrange(0, 4) == 0:
 			point0 = self.randpoint(flag_id, '')
 			self.debug(point0)
 
@@ -340,7 +380,8 @@ class Checker(HttpCheckerBase):
 			print('add point failed')
 			return EXITCODE_MUMBLE
 
-		if random.randrange(0, 2) == 0:
+		point2 = None
+		if random.randrange(0, 4) == 0:
 			point2 = self.randpoint(flag_id, '')
 			self.debug(point2)
 
@@ -349,8 +390,9 @@ class Checker(HttpCheckerBase):
 				print('add point failed')
 				return EXITCODE_MUMBLE
 
-		alert = 'OMG'
-		expr = {'expr':'if(Avg(stat) > 0, "' + alert + '", null)'}
+		alert = self.randalert()
+
+		expr = {'expr': self.randtrueexpr([point0, point1, point2], alert)}
 		self.debug(expr)
 
 		result = self.spost(s, addr, '/setexpr/', expr)
