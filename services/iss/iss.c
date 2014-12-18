@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sys/wait.h>
+#include <signal.h>
+
 #define PORT 1013
 
 #define BACKLOG_LEN 1024
@@ -307,6 +310,9 @@ run(int listen_port)
         rc = poll(fds, nfds, -1);
         if (rc < 0)
         {
+            if(errno == EINTR)
+                continue;
+
             perror("poll() failed");
             break;
         }
@@ -515,6 +521,10 @@ run(int listen_port)
     }
 }
 
+void handle_sigchld(int sig) {
+  while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {}
+}
+
 int
 main(int argc, char **argv)
 {
@@ -527,6 +537,15 @@ main(int argc, char **argv)
             fprintf(stderr, "Invalid listen_port '%s'\n", argv[1]);
             return -1;
         }
+    }
+
+    struct sigaction sa;
+    sa.sa_handler = &handle_sigchld;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    if (sigaction(SIGCHLD, &sa, 0) == -1) {
+      perror(0);
+      exit(1);
     }
 
     run(listen_port);
