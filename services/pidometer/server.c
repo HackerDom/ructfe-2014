@@ -160,6 +160,7 @@ int main(int argc, char **argv) {
                                            char *s = PyString_AsString(pValue);
                                            sendto(sockfd, s, strlen(s), 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                                     } else sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
+                                    Py_DECREF(pValue);
                                 } else sendto(sockfd, "Error\n", 6, 0, (struct sockaddr *) &cliaddr, sizeof(cliaddr));
                             }
                         }
