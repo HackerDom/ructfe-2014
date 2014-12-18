@@ -7,7 +7,7 @@
   Round <%= app->round->{n} %>
 % end
 
-<div class="legend-item"><span  id="s101" style="background-color: rgb(0, 220, 0);" class="color-box">&nbsp;</span><span>&nbsp;UP</span></div>
+<div class="legend-item"><span id="s101" style="background-color: rgb(0, 220, 0);" class="color-box">&nbsp;</span><span>&nbsp;UP</span></div>
 
 <div class="legend-item"><span id="s102" style="background-color: rgb(255, 255, 0);" class="color-box">&nbsp;</span><span>&nbsp;CORRUPT</span></div>
 

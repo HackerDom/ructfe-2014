@@ -112,7 +112,7 @@ sub startup {
             };
         }
 
-        @data = sort { $b->{score} <=> $a->{score} } @data;
+        @data = sort { $b->{score} <=> $a->{score} || $a->{team}{name} cmp $b->{team}{name} } @data;
         $app->scoreboard(\@data);
 
         my $r = $round->hash;
