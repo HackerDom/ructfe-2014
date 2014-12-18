@@ -25,7 +25,10 @@ def func1(t, p):
         return "stored:" + sa + "\n"
 
     except Exception as e:
-        db.lpop(t)
+        try:
+            db.lpop(t)
+        except:
+            pass
         return "Something wrong: " + str(e) + "\n"
 
 
