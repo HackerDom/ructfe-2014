@@ -18,9 +18,9 @@ daemonize yes
 port 6379
 logfile /opt/redis.log
 pidfile /opt/redis.pid
-save 900 1
-save 300 5
-save 60  10
+save 900 5
+save 300 2
+save 60  1
 dbfilename db.rdb
 dir /opt/
 # rename-command CONFIG ""
