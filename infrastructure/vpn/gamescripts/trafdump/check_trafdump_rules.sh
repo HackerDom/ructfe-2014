@@ -21,4 +21,22 @@ for chain in INPUT FORWARD OUTPUT; do
     else
         echo " 10.10.10.2/32 rule is ON"
     fi
+
+    if ! iptables -t mangle -C $chain -s 10.10.10.3/32 -j TEE --gateway 10.10.10.6 &>/dev/null; then
+        echo " 10.10.10.3/32 rule is OFF"
+    else
+        echo " 10.10.10.3/32 rule is ON"
+    fi
+
+    if ! iptables -t mangle -C $chain -s 10.10.10.4/32 -j TEE --gateway 10.10.10.6 &>/dev/null; then
+        echo " 10.10.10.4/32 rule is OFF"
+    else
+        echo " 10.10.10.4/32 rule is ON"
+    fi
+
+    if ! iptables -t mangle -C $chain -s 10.10.10.5/32 -j TEE --gateway 10.10.10.6 &>/dev/null; then
+        echo " 10.10.10.5/32 rule is OFF"
+    else
+        echo " 10.10.10.5/32 rule is ON"
+    fi
 done
