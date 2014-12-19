@@ -24,7 +24,7 @@ sub check {
     or return $SERVICE_FAIL;
   my $s = IO::Select->new($h);
 
-  $chain .= $chars[rand @chars] for 1 .. 12;
+  $chain .= $chars[rand @chars] for 1 .. 14;
   $fake .= $alph[rand @alph] for 1 .. 31;
   $fake .= "=";
 
@@ -62,7 +62,7 @@ sub put {
     or return $SERVICE_FAIL;
   my $s = IO::Select->new($h);
 
-  $chain .= $chars[rand @chars] for 1 .. 12;
+  $chain .= $chars[rand @chars] for 1 .. 14;
 
   $h->send("$chain $flag\n");
   do {
