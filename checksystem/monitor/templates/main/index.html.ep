@@ -54,8 +54,8 @@
         data-service="<%= $sid %>"
         data-score="<%= ($score->{sla}{$sid} // 0) * ($score->{fp}{$sid} // 0) %>"
       >
-        <div>SLA: <%= sprintf '%d', 100 * $score->{sla}{$sid} %>%</div>
-        <div>FP: <%= sprintf '%.2f', $score->{fp}{$sid} %></div>
+        <div>SLA: <%= sprintf '%d', 100 * ($score->{sla}{$sid} // 0) %>%</div>
+        <div>FP: <%= sprintf '%.2f', ($score->{fp}{$sid} // 0) %></div>
         <div>Flags: <%= app->flags->{$score->{team}{id}}{$sid}{count} // 0 %></div>
       </td>
     % }
