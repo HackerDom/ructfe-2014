@@ -16,6 +16,7 @@ public class Client
 
     private static final Boolean SAVE_PCM = false;
     private static final Boolean SAVE_GZIP = false;
+    private String SAVE_PREFIX = "";
 
     private static final String VOICE_NAME = "mbrola_us3";
     private static final String SERVER_CHARSET = "UTF-16";
@@ -26,6 +27,7 @@ public class Client
 
     public Client(String host, int port)
     {
+        SAVE_PREFIX = host;
         try {
             s = new Socket();
             s.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT);
@@ -67,12 +69,12 @@ public class Client
         }
     }
 
-    private static String getFileName(String extension)
+    private String getFileName(String extension)
     {
-        return String.format("say_%d.%s", new Date().getTime(), extension);
+        return String.format("say_%s_%d.%s", SAVE_PREFIX, System.nanoTime(), extension);
     }
 
-    public static void writeDebugFile(String data, String extension, boolean useGzip) {
+    public void writeDebugFile(String data, String extension, boolean useGzip) {
         try {
             String fileName = getFileName(extension);
 
