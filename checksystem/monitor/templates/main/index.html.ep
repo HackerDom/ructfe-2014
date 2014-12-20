@@ -43,6 +43,7 @@
 
     % for my $sid (sort keys %{app->services}) {
       % my $status = app->status->{$sid}{$score->{team}{id}}{status};
+      % $status = 101 if (app->round->{n} // 0) == 0;
       % my $comment = app->status->{$sid}{$score->{team}{id}}{fail_comment};
       % my $s = {101 => 'OK', 102 => 'CORRUPT', 103 => 'MUMBLE', 104 => 'DOWN', 110 => 'CHECKER ERROR'};
       <td
@@ -51,10 +52,10 @@
         data-status="s<%= $status %>"
         data-team="<%= $score->{team}{id} %>"
         data-service="<%= $sid %>"
-        data-score="<%= $score->{sla}{$sid} * $score->{fp}{$sid} %>"
+        data-score="<%= ($score->{sla}{$sid} // 0) * ($score->{fp}{$sid} // 0) %>"
       >
-        <div>SLA: <%= sprintf '%d', 100 * $score->{sla}{$sid} %>%</div>
-        <div>FP: <%= sprintf '%.2f', $score->{fp}{$sid} %></div>
+        <div>SLA: <%= sprintf '%d', 100 * ($score->{sla}{$sid} // 0) %>%</div>
+        <div>FP: <%= sprintf '%.2f', ($score->{fp}{$sid} // 0) %></div>
         <div>Flags: <%= app->flags->{$score->{team}{id}}{$sid}{count} // 0 %></div>
       </td>
     % }
