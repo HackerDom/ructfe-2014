@@ -322,7 +322,7 @@ class Checker(HttpCheckerBase):
 		points = result.get('points')
 		if not points or len(points) == 0:
 			print('points not found')
-			return EXITCODE_CORRUPT
+			return EXITCODE_MUMBLE
 
 		event = ''
 		for index, item in enumerate(points):
