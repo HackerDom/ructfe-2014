@@ -119,25 +119,31 @@ public class Client
         catch (Exception e) { }
     }
 
-    private static void sayToStream(String data, OutputStream stream)
-    {
-        VoiceManager voiceManager = VoiceManager.getInstance();
-        Voice voice = voiceManager.getVoice(VOICE_NAME);
-
-        if (voice == null)
-            Checker.exitCheckerError("Cannot find voice '" + VOICE_NAME + "'");
-
-        voice.allocate();
+    private static void sayToStream(String data, OutputStream stream) {
         try {
-            AudioPlayer player = new RawByteStreamAudioPlayer(stream);
-            voice.setAudioPlayer(player);
-            voice.speak(data);
-            player.close();
+            VoiceManager voiceManager = VoiceManager.getInstance();
+            Voice voice = voiceManager.getVoice(VOICE_NAME);
+
+            if (voice == null)
+                Checker.exitCheckerError("Cannot find voice '" + VOICE_NAME + "'");
+
+            voice.allocate();
+            try {
+                AudioPlayer player = new RawByteStreamAudioPlayer(stream);
+                voice.setAudioPlayer(player);
+                voice.speak(data);
+                player.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                voice.deallocate();
+            }
         } catch (Exception e) {
+            Checker.log("sayToStream Exception");
             e.printStackTrace();
-        }
-        finally {
-            voice.deallocate();
+        } catch (Error e) {
+            Checker.log("sayToStream Error");
+            e.printStackTrace();
         }
     }
 }
