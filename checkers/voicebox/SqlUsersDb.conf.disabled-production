@@ -1,0 +1,3 @@
+jdbc:postgresql://10.10.10.3:5432/voicebox
+voicebox
+1qazVOICEBOX!

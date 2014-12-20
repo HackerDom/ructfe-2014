@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UsersDb
+public class UsersDb implements IUsersDb
 {
     private final static String dirName = "users.db";
     private final static Charset CHARSET = StandardCharsets.UTF_8;
