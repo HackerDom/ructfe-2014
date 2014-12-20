@@ -171,7 +171,8 @@ def main():
         ServiceChecker._done(ExitCode.ERROR, "exitcode={}".format(e.getcode()))
     except urllib.error.URLError as e:
         ServiceChecker._done(ExitCode.DOWN, ServiceChecker.NO_CONNECT)
-
+    except Exception as e:
+        ServiceChecker._done(ExitCode.DOWN, "DOWN", str(e))
 
 if __name__ == '__main__':
     main()
