@@ -303,10 +303,10 @@ class Checker(HttpCheckerBase):
 	def get(self, addr, flag_id, flag):
 		s = self.session(addr)
 
-		result = self.sget(s, addr, '/login.html')
-		if not result or len(result) == 0:
-			print('get /login.html failed')
-			return EXITCODE_MUMBLE
+		#result = self.sget(s, addr, '/login.html')
+		#if not result or len(result) == 0:
+		#	print('get /login.html failed')
+		#	return EXITCODE_MUMBLE
 
 		parts = flag_id.split(':', 2)
 		user = {'login':parts[0], 'pass':parts[1]}
@@ -344,10 +344,10 @@ class Checker(HttpCheckerBase):
 	def put(self, addr, flag_id, flag):
 		s = self.session(addr)
 
-		result = self.sget(s, addr, '/register.html')
-		if not result or len(result) == 0:
-			print('get /register.html failed')
-			return EXITCODE_MUMBLE
+		#result = self.sget(s, addr, '/register.html')
+		#if not result or len(result) == 0:
+		#	print('get /register.html failed')
+		#	return EXITCODE_MUMBLE
 
 		user = self.randuser(3)
 		self.debug(user)
@@ -384,19 +384,19 @@ class Checker(HttpCheckerBase):
 			print('add point failed')
 			return EXITCODE_MUMBLE
 
-		point2 = None
-		if random.randrange(0, 4) == 0:
-			point2 = self.randpoint(flag_id, '')
-			self.debug(point2)
+		#point2 = None
+		#if random.randrange(0, 4) == 0:
+		#	point2 = self.randpoint(flag_id, '')
+		#	self.debug(point2)
 
-			result = self.spost(s, addr, '/add/', point2)
-			if not result or result != 'OK':
-				print('add point failed')
-				return EXITCODE_MUMBLE
+		#	result = self.spost(s, addr, '/add/', point2)
+		#	if not result or result != 'OK':
+		#		print('add point failed')
+		#		return EXITCODE_MUMBLE
 
 		alert = self.randalert()
 
-		expr = {'expr': self.randtrueexpr([point0, point1, point2], alert)}
+		expr = {'expr': self.randtrueexpr([point0, point1], alert)}
 		self.debug(expr)
 
 		result = self.spost(s, addr, '/setexpr/', expr)
