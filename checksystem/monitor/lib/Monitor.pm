@@ -92,7 +92,7 @@ sub startup {
         for my $tid (keys %{$app->teams}) {
 
           my $score = 0;
-          if ((app->round->{n} // 0) != 0) {
+          if (($app->round->{n} // 0) != 0) {
             $score += $sla_points->{$tid}{$_} * $flag_points->{$tid}{$_} for keys %{$app->services};
           }
 
