@@ -168,11 +168,11 @@ def main():
     try:
         {'check': chk.check, 'put': chk.put, 'get': chk.get}[mode](id_, flag)
     except urllib.error.HTTPError as e:
-        ServiceChecker._done(ExitCode.DOWN, "exitcode={}".format(e.getcode()))
+        ServiceChecker._done(ExitCode.MUMBLE, "exitcode={}".format(e.getcode()))
     except urllib.error.URLError as e:
         ServiceChecker._done(ExitCode.DOWN, ServiceChecker.NO_CONNECT)
     except Exception as e:
-        ServiceChecker._done(ExitCode.DOWN, "DOWN", str(e))
+        ServiceChecker._done(ExitCode.MUMBLE, "WTF", str(e))
 
 
 if __name__ == '__main__':
