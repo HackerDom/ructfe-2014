@@ -46,7 +46,7 @@
       % my $comment = app->status->{$sid}{$score->{team}{id}}{fail_comment};
       % my $s = {101 => 'OK', 102 => 'CORRUPT', 103 => 'MUMBLE', 104 => 'DOWN', 110 => 'CHECKER ERROR'};
       <td
-        title="<%= $s->{$status} %> (<%= $comment %>)"
+        title="<%= $s->{$status} %> <%= $comment %>"
         class="s<%= $status %> service-status"
         data-status="s<%= $status %>"
         data-team="<%= $score->{team}{id} %>"
