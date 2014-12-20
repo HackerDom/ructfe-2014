@@ -52,7 +52,7 @@
         data-status="s<%= $status %>"
         data-team="<%= $score->{team}{id} %>"
         data-service="<%= $sid %>"
-        data-score="<%= $score->{sla}{$sid} * $score->{fp}{$sid} %>"
+        data-score="<%= ($score->{sla}{$sid} // 0) * ($score->{fp}{$sid} // 0) %>"
       >
         <div>SLA: <%= sprintf '%d', 100 * $score->{sla}{$sid} %>%</div>
         <div>FP: <%= sprintf '%.2f', $score->{fp}{$sid} %></div>
