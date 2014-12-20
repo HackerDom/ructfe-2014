@@ -23,8 +23,8 @@ public class Checker {
     private static final int PORT = 1337;
     private static final int FLAGID_LEN = 10;
 
+    private static IUsersDb usersDb;
     private static Random random = new Random();
-    private static UsersDb usersDb = new UsersDb();
     private static LetterMapper letterMapper = new LetterMapper();
 
     private static Pattern welcomeRegex = Pattern.compile(".*Your ID is (\\d+).*");
@@ -32,6 +32,8 @@ public class Checker {
     public static void main(String[] args)
     {
         try {
+            usersDb = SqlUsersDb.configExists() ? new SqlUsersDb() : new UsersDb();
+
             if (args.length == 0)
                 exitCheckerError("Give command as first argument (check/put/get)");
 
