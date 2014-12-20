@@ -22,7 +22,7 @@ public class WorkerManager extends Thread{
 			TaskManagerClient.finishTask(taskId, newFlagId, status, failStage, failComment, newFlagSuccess, randomFlagSuccess);
 		}
 		catch (Exception e) {
-			logger.error(e);
+			logger.error(String.format("Failed to finish task with id '%s'", taskId.toString()), e);
 		}
 		finally{
 			freeThreads++;		
