@@ -61,6 +61,10 @@ class Checker(HttpCheckerBase):
 		response = s.get(self.url(addr, suffix), timeout=5)
 		return self.parsestringresponse(response, suffix)
 
+	def fastsget(self, s, addr, suffix):
+		response = s.get(self.url(addr, suffix), timeout=2)
+		return self.parsestringresponse(response, suffix)
+
 	def randword(self):
 		word = ''
 		rnd = random.randrange(2,10)
@@ -78,7 +82,7 @@ class Checker(HttpCheckerBase):
 	def check(self, addr):
 		s = self.session(addr)
 
-		result = self.sget(s, addr, '/')
+		result = self.fastsget(s, addr, '/')
 		if not result or len(result) == 0:
 			print('get / failed')
 			return EXITCODE_MUMBLE
