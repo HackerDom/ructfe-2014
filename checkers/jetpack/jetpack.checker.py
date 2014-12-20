@@ -106,8 +106,11 @@ def communicate(host, data):
 		sock.close()
 
 def chunk_to_point(chunk):
-	x, y = struct.unpack('hh', chunk)
-	return Point(x, y)
+	try:
+		x, y = struct.unpack('hh', chunk)
+		return Point(x, y)
+	except Exception:
+		return None
 
 def jetpack_get(host, source, destination, flag_id, flag):
 	path_data = communicate(host, b'\x00' + flag_id + flag.encode())
@@ -118,7 +121,7 @@ def jetpack_get(host, source, destination, flag_id, flag):
 	if set(path) != set(control_path):
 		sys.stderr.write('Wrong path. Expected "%s", but was "%s"\n' % 
 			(", ".join([ '<%d, %d>' % (p.x, p.y) for p in control_path ]),
-				", ".join([ '<%d, %d>' % (p.x, p.y) for p in path ])))
+				", ".join([ '<%d, %d>' % (None if p is None else p.x, None if p is None else p.y) for p in path ])))
 		sys.exit(CHECKER_STATUS_MUMBLE)
 
 
