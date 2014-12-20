@@ -13,8 +13,6 @@ has services   => sub { {} };
 has status     => sub { {} };
 has teams      => sub { {} };
 
-has lock => 0;
-
 sub startup {
   my $app = shift;
 
@@ -33,9 +31,6 @@ sub startup {
   $r->get('/debug')->to('main#debug')->name('debug');
 
   my $update = sub {
-    return if $app->lock;
-    $app->lock(1);
-
     $app->log->info('Update scoreboard');
     Mojo::IOLoop->delay(
       sub {
@@ -67,7 +62,6 @@ sub startup {
           $delay,    $e1, $s,     $e2, $t,      $e3, $scores, $e4,
           $services, $e5, $round, $e6, $status, $e7, $flags
         ) = @_;
-        $app->lock(0);
         if (my $e = $e1 || $e2 || $e3 || $e4 || $e5) {
           $app->log->error("Error while update scoreboard: $e");
           return;
@@ -98,7 +92,9 @@ sub startup {
         for my $tid (keys %{$app->teams}) {
 
           my $score = 0;
-          $score += $sla_points->{$tid}{$_} * $flag_points->{$tid}{$_} for keys %{$app->services};
+          if (($app->round->{n} // 0) != 0) {
+            $score += $sla_points->{$tid}{$_} * $flag_points->{$tid}{$_} for keys %{$app->services};
+          }
 
           push @data, {
             team => {
@@ -132,7 +128,7 @@ sub startup {
   };
   $update->();
 
-  Mojo::IOLoop->recurring(5 => $update);
+  Mojo::IOLoop->recurring(15 => $update);
 }
 
 1;

@@ -3,13 +3,18 @@ $\=$/;
 @teams = split /\],\[/, `curl http://ructf.org/e/2014/teams/info`;
 for(@teams)
 {
-	next unless /^(\d+),"(.*)"$/,
+	undef $id;
+	undef $name;
+	undef $oc1;
+	undef $oc2;
+
+	next unless /^(\d+),"(.*)"/,
 	$id = $1;
 	$name = $2;
 	$name =~ s/\'/\'\'/;
 	$oc1 = 60 + int $id / 256;
 	$oc2 = $id % 256;
-	print "INSERT INTO teams (id,name,network,vuln_box,enabled) VALUES ($id, '$name', '10.$oc1.$oc2.0/24', '10.$oc1.$oc2.2', true);";
+	print "INSERT INTO teams (id,name,network,vuln_box,enabled) VALUES ($id, '$name', '10.$oc1.$oc2.0/24', '10.$oc1.$oc2.0', true);";
 }
 
 
