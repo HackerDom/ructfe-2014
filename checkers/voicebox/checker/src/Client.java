@@ -61,7 +61,7 @@ public class Client
             String response = in.readLine();
             long duration = System.nanoTime() - start;
             Checker.log("<- '%s' (%d ms)", response == null ? "<NULL>" : response, duration / 1000000);
-            return response;
+            return response == null ? "" : response;
         } catch (IOException e) {
             e.printStackTrace();
             return "";
