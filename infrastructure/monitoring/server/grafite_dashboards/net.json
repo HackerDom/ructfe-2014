@@ -66,7 +66,7 @@
           },
           "targets": [
             {
-              "target": "aliasByNode(servers.vpn-dev.loadavg.01, 1, 3)"
+              "target": "aliasByNode(servers.vpn.loadavg.01, 1, 3)"
             }
           ],
           "aliasColors": {},
@@ -123,10 +123,10 @@
           },
           "targets": [
             {
-              "target": "aliasByNode(servers.vpn-dev.conntrack.ip_conntrack_count, 1, 3)"
+              "target": "aliasByNode(servers.vpn.conntrack.ip_conntrack_count, 1, 3)"
             },
             {
-              "target": "aliasByNode(servers.vpn-dev.conntrack.ip_conntrack_max, 1, 3)"
+              "target": "aliasByNode(servers.vpn.conntrack.ip_conntrack_max, 1, 3)"
             }
           ],
           "aliasColors": {},
@@ -191,10 +191,10 @@
           },
           "targets": [
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.tx_packets), \"vpn-dev.tx\")"
+              "target": "alias(sumSeries(servers.vpn.network.eth*.tx_packets), \"vpn.tx\")"
             },
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.rx_packets), \"vpn-dev.rx\")"
+              "target": "alias(sumSeries(servers.vpn.network.eth*.rx_packets), \"vpn.rx\")"
             }
           ],
           "aliasColors": {},
@@ -251,10 +251,10 @@
           },
           "targets": [
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.tx_bit), 'vpn-dev.tx')"
+              "target": "alias(sumSeries(servers.vpn.network.eth*.tx_bit), 'vpn.tx')"
             },
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.eth*.rx_bit), 'vpn-dev.rx')"
+              "target": "alias(sumSeries(servers.vpn.network.eth*.rx_bit), 'vpn.rx')"
             }
           ],
           "aliasColors": {},
@@ -311,10 +311,10 @@
           },
           "targets": [
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.*.tx_drop), 'vpn-dev.tx')"
+              "target": "alias(sumSeries(servers.vpn.network.*.tx_drop), 'vpn.tx')"
             },
             {
-              "target": "alias(sumSeries(servers.vpn-dev.network.*.rx_drop), 'vpn-dev.rx')"
+              "target": "alias(sumSeries(servers.vpn.network.*.rx_drop), 'vpn.rx')"
             }
           ],
           "aliasColors": {},
@@ -383,7 +383,7 @@
           },
           "targets": [
             {
-              "target": "aliasByNode(highestAverage(servers.vpn-dev.network.team*.rx_packets, 32), 3)",
+              "target": "aliasByNode(highestAverage(servers.vpn.network.team*.tx_packets, 32), 3)",
               "hide": false
             }
           ],
@@ -446,7 +446,141 @@
           },
           "targets": [
             {
-              "target": "aliasByNode(highestAverage(servers.vpn-dev.network.team*.tx_packets, 32), 3)",
+              "target": "aliasByNode(highestAverage(servers.vpn.network.team*.rx_packets, 32), 3)",
+              "hide": false
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": [],
+          "height": ""
+        }
+      ]
+    },
+    {
+      "title": "Row1",
+      "height": "300px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "title": "Outcoming bits",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 8,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": true,
+            "min": false,
+            "max": false,
+            "current": true,
+            "total": true,
+            "avg": true,
+            "rightSide": false,
+            "alignAsTable": true,
+            "sortDesc": true,
+            "sort": "total"
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "target": "aliasByNode(highestAverage(servers.vpn.network.team*.tx_bit, 32), 3)",
+              "hide": false
+            }
+          ],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "links": [],
+          "height": ""
+        },
+        {
+          "title": "Incoming bits",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 9,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "y_formats": [
+            "short",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "percentage": false,
+          "legend": {
+            "show": true,
+            "values": true,
+            "min": false,
+            "max": false,
+            "current": true,
+            "total": true,
+            "avg": true,
+            "rightSide": false,
+            "alignAsTable": true,
+            "sortDesc": true,
+            "sort": "total"
+          },
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "shared": false
+          },
+          "targets": [
+            {
+              "target": "aliasByNode(highestAverage(servers.vpn.network.team*.rx_bit, 32), 3)",
               "hide": false
             }
           ],

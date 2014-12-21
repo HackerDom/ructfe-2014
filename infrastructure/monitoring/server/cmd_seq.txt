@@ -4,7 +4,7 @@ apt-get install nginx nginx-extras
 apt-get install uwsgi uwsgi-plugin-python
 
 /etc/carbon/carbon.conf:
-MAX_UPDATES_PER_SECOND = 10000
+MAX_UPDATES_PER_SECOND = 100
 USE_WHITELIST = True
 MAX_CREATES_PER_MINUTE = 1000
 
