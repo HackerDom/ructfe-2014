@@ -1,0 +1,9 @@
+sudo su backuper
+scp /var/checksystem_backup/a/20141220-0805.txt.gz postgres@130.193.60.210:~
+
+ssh root@ructf-srv02h.ructf.yandex.net
+su postgres
+
+dropdb 'ructfe2014'
+zcat 20141220-0805.txt.gz > 20141220-0805.txt
+psql -f 20141220-0805.txt
